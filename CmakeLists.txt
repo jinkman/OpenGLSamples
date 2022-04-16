@@ -1,0 +1,49 @@
+# 最低指定的CMake版本
+cmake_minimum_required(VERSION 3.0)
+
+# 括号里面填你的工程名
+PROJECT(OpenGLSamples)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/installDir)
+
+set(third-party-path ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+
+ADD_SUBDIRECTORY(${third-party-path}/assimp)
+ADD_SUBDIRECTORY(${third-party-path}/glfw)
+ADD_SUBDIRECTORY(${third-party-path}/glm)
+ADD_SUBDIRECTORY(${third-party-path}/soil)
+
+list(APPEND INCLUDES_DIR ${third-party-path}/assimp/include)
+list(APPEND INCLUDES_DIR ${third-party-path}/glfw/include)
+list(APPEND INCLUDES_DIR ${third-party-path}/glm/include)
+list(APPEND INCLUDES_DIR ${third-party-path}/soil/include)
+
+list(APPEND INCLUDES_DIR ${third-party-path}/glad/include)
+
+set(glad-c ${CMAKE_CURRENT_SOURCE_DIR}/third-party/glad/src/glad.c)
+
+# 生成可执行文件，生成的test即为可执行文件
+add_executable(test 
+	${CMAKE_CURRENT_SOURCE_DIR}/samples/1.1-createWindow/src/Test.cpp
+	${glad-c}
+)
+target_include_directories(test 
+	PUBLIC
+	${INCLUDES_DIR}
+)
+
+set_property(TARGET test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
+
+target_link_directories(test 
+	PRIVATE
+	${CMAKE_INSTALL_PREFIX}/bin/
+	${CMAKE_INSTALL_PREFIX}/lib/
+)
+
+target_link_libraries(test 
+	PRIVATE
+	assimp
+	glfw
+	glm
+	soil
+)
