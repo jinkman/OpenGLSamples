@@ -71,7 +71,7 @@ public:
 			else if(name == "texture_specular")
 				number = char(specularNr++);
 
-			shader.setFloat(("material." + name + number).c_str(), i);
+			shader.setFloat(("material." + name + number).c_str(), (float)i);
 			//绑定纹理属于哪个纹理单元
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
@@ -79,7 +79,7 @@ public:
 
 		// 开始绘制网格
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 

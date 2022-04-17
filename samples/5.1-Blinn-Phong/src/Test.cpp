@@ -1,14 +1,12 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
-#include "stb_image.h"
-#include "shader_s.h"
-#include "camera.h"
-
+#include <glfw/glfw3.h>
+#include <stb_image.h>
+#include <shader_s.h>
+#include <camera.h>
 #include <iostream>
+#include <common.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -70,7 +68,7 @@ int main()
 	// 配置全局OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	// 建立着色器
-	Shader shader("advanced_lighting.vs", "advanced_lighting.fs");
+	Shader shader(getLocalPath("shader/5.1-advanced_lighting.vs").c_str(), getLocalPath("shader/5.1-advanced_lighting.fs").c_str());
 
 	// 配置着色器
 	shader.use();
@@ -83,7 +81,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -124,7 +122,6 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -155,24 +152,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
@@ -217,7 +213,7 @@ unsigned int loadTexture(char const * path)
 
 void rendPlan()
 {	
-	static unsigned int floorTexture = loadTexture("老王.jpg");
+	static unsigned int floorTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	if(planVAO==0)
 	{
 		float planeVertices[] = {

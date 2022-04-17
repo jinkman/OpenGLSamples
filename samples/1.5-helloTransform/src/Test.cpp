@@ -1,15 +1,15 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include "shader_s.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include <gl/stb_image.h>
+#include <glfw/glfw3.h>
+#include <shader_s.h>
+#include <stb_image.h>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <common.h>
 
 
 void processInput(GLFWwindow *window);
@@ -17,7 +17,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 unsigned int loadTexture(char const * path);
 
 // 屏幕大小
-const unsigned int SCR_WIDTH = 600;
+const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 int main()
@@ -47,7 +47,7 @@ int main()
 	}
 
 	//使用着色器类
-	Shader ourShader("texture.vs", "texture.fs");
+	Shader ourShader(getLocalPath("shader/1.5-texture.vs").c_str(), getLocalPath("shader/1.5-texture.fs").c_str());
 
 	float vertices[] = {
 		// 位置              // 纹理坐标
@@ -78,7 +78,7 @@ int main()
 	glEnableVertexAttribArray(1);
 
 	//设置纹理
-	unsigned int texture1 = loadTexture("a.jpg");
+	unsigned int texture1 = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	//激活着色器
 	ourShader.use(); 
 	//着色器采样器属于哪个纹理单元
@@ -91,10 +91,10 @@ int main()
 
 		//清除颜色缓存
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// 创建矩阵
-		glm::mat4 transform;
+		glm::mat4 transform(1.0);
 		transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f)); //位移
 		transform = glm::rotate(transform, (float)glfwGetTime()*5, glm::vec3(1.0f, 0.0f, 0.0f)); //旋转
 		transform = glm::scale(transform, glm::vec3(1.0, 1.0, 1.0));  //缩放

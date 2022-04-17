@@ -1,12 +1,12 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
-#include "shader_s.h"
-#include "camera.h"
-#include "Model.h"
+#include <shader_s.h>
+#include <camera.h>
+#include <Model.h>
 #include <iostream>
+#include <common.h>
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -19,7 +19,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // 相机初始化
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 2.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -63,16 +63,16 @@ int main()
 	//深度缓冲
 	glEnable(GL_DEPTH_TEST);
 	//加载着色器
-	Shader ourShader("model_loading.vs", "model_loading.fs");
+	Shader ourShader(getLocalPath("shader/3.1-model_loading.vs").c_str(), getLocalPath("shader/3.1-model_loading.fs").c_str());
 
 	//模型导入
-	Model ourModel("model/nanosuit.obj");		//此处必须用‘/’   后续纹理有使用	相对输入顶点数据  只增加此处
+	Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());		//此处必须用‘/’   后续纹理有使用	相对输入顶点数据  只增加此处
 
 
 	//渲染循环
 	while (!glfwWindowShouldClose(window))
 	{
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -90,9 +90,9 @@ int main()
 
 
 		// 渲染加载的模型
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // 放置在屏幕中央
-		//model = glm::scale(model, glm::vec3(0.2f));	// 缩小他   太大了
+		model = glm::scale(model, glm::vec3(0.2f));	// 缩小他   太大了
 		ourShader.setMat4("model", model);
 
 		ourModel.Draw(ourShader);
@@ -124,31 +124,28 @@ void processInput(GLFWwindow *window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-
 	glViewport(0, 0, width, height);
 }
 
-//鼠标移动回调函数
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-//鼠标滚轮回调函数
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }

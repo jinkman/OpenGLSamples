@@ -1,18 +1,18 @@
 // Mandelbrot Set.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 bool firstMouse=true;
 float lastX = SCR_WIDTH / 2.0f;
@@ -29,7 +29,7 @@ unsigned int loadTexture(char const * path);
 
 unsigned int objectVAO=0, objectVBO;
 static float size=1.3f;
-glm::vec2 offset(0.0);
+glm::vec2 offset(0.0f);
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//创建全屏
-	bool isFullScreen = true;
+	bool isFullScreen = false;
 	GLFWwindow* window = NULL;
 	if (isFullScreen)
 	{
@@ -48,8 +48,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -77,7 +77,7 @@ int main()
 		return -1;
 	}
 	//使用着色器
-	Shader shader("object.vs","object.fs");
+	Shader shader(getLocalPath("shader/case6-object.vs").c_str(), getLocalPath("shader/case6-object.fs").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -133,7 +133,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void rendObject()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(objectVAO==0)
 	{
 		std::vector<float> Arr;
@@ -154,7 +154,7 @@ void rendObject()
 	}
 	//绑定纹理
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/4); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/4); // 绘制
 	glBindVertexArray(0);
 }
 

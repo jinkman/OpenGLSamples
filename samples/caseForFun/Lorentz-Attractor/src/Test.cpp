@@ -1,14 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
-
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
@@ -44,8 +43,8 @@ int main()
 
 	//创建全屏
 	bool isFullScreen = false;
-	if(MessageBox(NULL,L"是否全屏？",L"提示",MB_YESNO | MB_ICONQUESTION) == IDYES)
-		isFullScreen = true;
+	/*if(MessageBox(NULL,"是否全屏？","提示",MB_YESNO | MB_ICONQUESTION) == IDYES)
+		isFullScreen = true;*/
 	GLFWwindow* window = NULL;
 	if (isFullScreen)
 	{
@@ -84,10 +83,11 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader frameShader("object.vs","object.fs");
+	Shader frameShader(getLocalPath("shader/case5-object.vs").c_str(), getLocalPath("shader/case5-object.fs").c_str());
+	frameShader.use();
 	frameShader.setInt("diffuseMap",0);
 	frameShader.setInt("frameMap",1);
-	Shader screenShader("screen.vs","screen.fs");
+	Shader screenShader(getLocalPath("shader/case5-screen.vs").c_str(), getLocalPath("shader/case5-screen.fs").c_str());
 	screenShader.use();
 	screenShader.setInt("screenMap",0);
 
@@ -119,10 +119,10 @@ int main()
 	}
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	static unsigned int diffuseMap = loadCubemap("Earth/Blue_Marble");
+	static unsigned int diffuseMap = loadCubemap(getLocalPath("skybox/Blue_Marble").c_str());
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -137,13 +137,13 @@ int main()
 		//设置着色器参数
 		frameShader.use();
 
-		static float x=1.0;
-		static float y=1.0;
-		static float z=2.5;
-		static float a=10.0;
-		static float b=28.0;
-		static float c=2.667;
-		static float t=0.001;
+		static float x=1.0f;
+		static float y=1.0f;
+		static float z=2.5f;
+		static float a=10.0f;
+		static float b=28.0f;
+		static float c=2.667f;
+		static float t=0.001f;
 		x+=(a*(y-x))*t;
 		y+=(x*(b-z)-y)*t;
 		z+=(x*y-c*z)*t;
@@ -166,7 +166,7 @@ int main()
 		//清除缓存
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		screenShader.use();
 		screenShader.setMat4("model",model);
 		glActiveTexture(GL_TEXTURE0);
@@ -217,23 +217,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 unsigned int loadCubemap(std::string name)
@@ -242,12 +242,12 @@ unsigned int loadCubemap(std::string name)
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 	std::vector<std::string> faces;
-	faces.push_back(name+"_right.jpg");
-	faces.push_back(name+"_left.jpg");
-	faces.push_back(name+"_top.jpg");
-	faces.push_back(name+"_bottom.jpg");
-	faces.push_back(name+"_front.jpg");
-	faces.push_back(name+"_back.jpg");
+	faces.push_back(name+"right.jpg");
+	faces.push_back(name+"left.jpg");
+	faces.push_back(name+"top.jpg");
+	faces.push_back(name+"bottom.jpg");
+	faces.push_back(name+"front.jpg");
+	faces.push_back(name+"back.jpg");
 	int width, height, nrChannels;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{

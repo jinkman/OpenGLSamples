@@ -1,14 +1,13 @@
 // 独孤信印.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 using namespace std;
 using namespace glm;
 
@@ -16,7 +15,7 @@ using namespace glm;
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 
 // 时间
@@ -24,7 +23,7 @@ GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 // 相机
 bool firstMouse = true;
-Camera camera(vec3(0.0f, 0.0f, 2.0f));
+Camera camera(vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
@@ -47,7 +46,7 @@ float Angle = 0.0f;		 //旋转角度
 bool dir =false;		 //旋转方向
 unsigned int texture[15]; //纹理数组
 unsigned int texIndex[26]; //面纹理索引
-unsigned int vertextNum[26]; //顶点数目
+size_t vertextNum[26]; //顶点数目
 
 int main()
 {
@@ -66,8 +65,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -100,25 +99,25 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	//使用着色器
-	Shader stampShader("依赖文件/stamp.vs","依赖文件/stamp.fs","依赖文件/stamp.gs");
+	Shader stampShader(getLocalPath("shader/case10-stamp.vs").c_str(), getLocalPath("shader/case10-stamp.fs").c_str(), getLocalPath("shader/case10-stamp.gs").c_str());
 	stampShader.use();
-	stampShader.setInt("texture",0);
+	stampShader.setInt("texture0",0);
 	//读取纹理
-	texture[0]= loadTexture("依赖文件/耶敕.png");
-	texture[1]= loadTexture("依赖文件/令.png");
-	texture[2]= loadTexture("依赖文件/密.png");
-	texture[3]= loadTexture("依赖文件/独孤信白书.png");
-	texture[4]= loadTexture("依赖文件/信白笺.png");
-	texture[5]= loadTexture("依赖文件/臣信上疏.png");
-	texture[6]= loadTexture("依赖文件/臣信上章.png");
-	texture[7]= loadTexture("依赖文件/臣信上表.png");
-	texture[8]= loadTexture("依赖文件/信启事.png");
-	texture[9]= loadTexture("依赖文件/臣信启事.png");
-	texture[10]= loadTexture("依赖文件/大司马印.png");
-	texture[11]= loadTexture("依赖文件/大都督印.png");
-	texture[12]= loadTexture("依赖文件/刺史之印.png");
-	texture[13]= loadTexture("依赖文件/柱国之印.png");
-	texture[14]= loadTexture("依赖文件/背景.png");
+	texture[0]= loadTexture(getLocalPath("texture/耶敕.png").c_str());
+	texture[1]= loadTexture(getLocalPath("texture/令.png").c_str());
+	texture[2]= loadTexture(getLocalPath("texture/密.png").c_str());
+	texture[3]= loadTexture(getLocalPath("texture/独孤信白书.png").c_str());
+	texture[4]= loadTexture(getLocalPath("texture/信白笺.png").c_str());
+	texture[5]= loadTexture(getLocalPath("texture/臣信上疏.png").c_str());
+	texture[6]= loadTexture(getLocalPath("texture/臣信上章.png").c_str());
+	texture[7]= loadTexture(getLocalPath("texture/臣信上表.png").c_str());
+	texture[8]= loadTexture(getLocalPath("texture/信启事.png").c_str());
+	texture[9]= loadTexture(getLocalPath("texture/臣信启事.png").c_str());
+	texture[10]= loadTexture(getLocalPath("texture/大司马印.png").c_str());
+	texture[11]= loadTexture(getLocalPath("texture/大都督印.png").c_str());
+	texture[12]= loadTexture(getLocalPath("texture/刺史之印.png").c_str());
+	texture[13]= loadTexture(getLocalPath("texture/柱国之印.png").c_str());
+	texture[14]= loadTexture(getLocalPath("texture/背景.png").c_str());
 	readVertext();
 	//读入面表数据
 	//顶部
@@ -201,20 +200,20 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//每帧相隔逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
 		//处理外部输入
 		processInput(window); 
 		//清除缓存
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//获取变换参数
 		mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		mat4 view = camera.GetViewMatrix();
-		mat4 model;
+		mat4 model(1.0f);
 		if (ifRotate)
 		{
 			if((Angle+=0.02f)>=360.0f)
@@ -242,7 +241,7 @@ int main()
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texIndex[i]);
 			glBindVertexArray(stampVAO[i]);
-			glDrawArrays(GL_TRIANGLES, 0, vertextNum[i]/5); // 绘制
+			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum[i]/5); // 绘制
 			glBindVertexArray(0);
 		}
 
@@ -300,23 +299,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 //读入顶点坐标

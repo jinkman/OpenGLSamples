@@ -1,19 +1,19 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 //相机
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -95,8 +95,8 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader mountainShader("mountain.vs", "mountain.fs", "mountain.gs");
-	Shader perlinShader("perlin.vs","perlin.fs");
+	Shader mountainShader(getLocalPath("shader/case2-mountain.vs").c_str(), getLocalPath("shader/case2-mountain.fs").c_str(), getLocalPath("shader/case2-mountain.gs").c_str());
+	Shader perlinShader(getLocalPath("shader/case2-perlin.vs").c_str(), getLocalPath("shader/case2-perlin.fs").c_str());
 
 	mountainShader.use();
 	mountainShader.setInt("diffuseMap",0);
@@ -121,7 +121,7 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -132,7 +132,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 
 		//渲染帧缓冲
 		if(changePerlin)
@@ -221,9 +221,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void drawMountain()
 {
-	static int num=0;
-	static	unsigned int mountainMap = loadTexture("草坪.jpg");
-	static	unsigned int mountainMap1 = loadTexture("草地.jpg");
+	static size_t num=0;
+	static	unsigned int mountainMap = loadTexture(getLocalPath("texture/草坪.jpg").c_str());
+	static	unsigned int mountainMap1 = loadTexture(getLocalPath("texture/草地.jpg").c_str());
 	if (moutainVAO==0)
 	{
 		std::vector<float> Arr;
@@ -250,7 +250,7 @@ void drawMountain()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, perlinColorMap);
 	glBindVertexArray(moutainVAO);
-	glDrawArrays(GL_TRIANGLES, 0, num/4);
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)num/4);
 	glBindVertexArray(0);
 }
 
@@ -334,23 +334,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 unsigned int loadTexture(char const * path)

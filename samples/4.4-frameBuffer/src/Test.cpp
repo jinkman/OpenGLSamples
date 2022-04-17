@@ -1,14 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
@@ -18,8 +17,8 @@ unsigned int SCR_HEIGHT = 600;
 
 
 // 时间
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 // 相机
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
@@ -37,7 +36,7 @@ void drawPlan();
 void drawQuad();
 void readVertext(std::vector<float> &Arr);
 unsigned int loadTexture(char const * path);
-void Rotatez(glm::vec3 &a,double Thta);
+void Rotatez(glm::vec3 &a,float Thta);
 
 
 unsigned int cubeVAO=0, cubeVBO;
@@ -62,8 +61,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -95,8 +94,8 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader shader("framebuffers.vs", "framebuffers.fs");
-	Shader screenShader("framebuffers_screen.vs", "framebuffers_screen.fs");
+	Shader shader(getLocalPath("shader/4.4-framebuffers.vs").c_str(), getLocalPath("shader/4.4-framebuffers.fs").c_str());
+	Shader screenShader(getLocalPath("shader/4.4-framebuffers_screen.vs").c_str(), getLocalPath("shader/4.4-framebuffers_screen.fs").c_str());
 
 	// 帧缓冲配置
 	unsigned int framebuffer;
@@ -122,8 +121,8 @@ int main()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);	   //返回默认缓冲
 
 	// 加载纹理
-	unsigned int cubeTexture = loadTexture("a.jpg");
-	unsigned int floorTexture = loadTexture("b.jpg");
+	unsigned int cubeTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
+	unsigned int floorTexture = loadTexture(getLocalPath("texture/test1.jpg").c_str());
 	shader.use();
 	shader.setInt("texture",0);
 
@@ -131,7 +130,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//每帧相隔逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -140,7 +139,7 @@ int main()
 		//获取变换参数
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glEnable(GL_DEPTH_TEST);
@@ -158,14 +157,14 @@ int main()
 		shader.setMat4("model", model);
 		drawCube();
 
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(1.5f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		drawCube();
 		// 地板
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, floorTexture);
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -0.0001f, 0.0f));
 		shader.setMat4("model", model);
 		drawPlan();
@@ -180,7 +179,7 @@ int main()
 		screenShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
 		screenShader.setMat4("model", model);
 		drawQuad();
@@ -190,10 +189,10 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 		shader.use();
-		model=glm::mat4();
+		model=glm::mat4(1.0f);
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model,glm::vec3(0.7));
+		model = glm::scale(model,glm::vec3(0.7f));
 		shader.setMat4("model", model);
 		drawSphere();
 		glDisable(GL_DEPTH_TEST); 
@@ -245,29 +244,29 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
 void drawSphere()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(sphereVAO==0)
 	{
 		std::vector<float> Arr;
@@ -288,7 +287,7 @@ void drawSphere()
 		Arr.clear();
 	}
 	glBindVertexArray(sphereVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/5); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/5); // 绘制
 	glBindVertexArray(0);
 }
 
@@ -420,11 +419,11 @@ void drawQuad()
 void readVertext(std::vector<float> &Arr)
 {
 	glm::vec3 cpt[4];
-	for(double Theta=0;Theta<180;Theta+=1.0)
+	for(float Theta=0;Theta<180.0f;Theta+=1.0f)
 	{
-		glm::vec3 p1(sin(Theta*PI/180.0),cos(Theta*PI/180.0),0);
-		glm::vec3 p2(sin((Theta+1.0)*PI/180.0),cos((Theta+1.0)*PI/180.0),0);
-		for(double Phi=0;Phi<360;Phi+=1.0)
+		glm::vec3 p1(sin(Theta*PI/180.0f),cos(Theta*PI/180.0f),0);
+		glm::vec3 p2(sin((Theta+1.0f)*PI/180.0f),cos((Theta+1.0f)*PI/180.0f),0.0f);
+		for(float Phi=0;Phi<360.0f;Phi+=1.0f)
 		{
 			cpt[0].x=p1.x;cpt[0].y=p1.y;cpt[0].z=p1.z;
 			Rotatez(p1,1.0);
@@ -436,45 +435,45 @@ void readVertext(std::vector<float> &Arr)
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f-(Phi+1.0f)/360.0f);
+			Arr.push_back(Theta/180.0f);
 			Arr.push_back(cpt[3].x);
 			Arr.push_back(cpt[3].y);
 			Arr.push_back(cpt[3].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f-(Phi+1.0f)/360.0f);
+			Arr.push_back((Theta+1.0f)/180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f-Phi/360.0f);
+			Arr.push_back((Theta+1.0f)/180.0f);
 			//第一个三角形  102
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f-(Phi+1.0f)/360.0f);
+			Arr.push_back(Theta/180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f-Phi/360.0f);
+			Arr.push_back((Theta+1.0f)/180.0f);
 			Arr.push_back(cpt[0].x);
 			Arr.push_back(cpt[0].y);
 			Arr.push_back(cpt[0].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f-Phi/360.0f);
+			Arr.push_back(Theta/180.0f);
 		}
 	}
 }
 
 //绕y轴旋转
-void Rotatez(glm::vec3 &a,double Thta)									
+void Rotatez(glm::vec3 &a,float Thta)									
 {
-	double a1=a.z;			
-	double b1=a.x;
-	a.x=b1*cos(Thta*PI/180.0)-a1*sin(Thta*PI/180.0);
-	a.z=b1*sin(Thta*PI/180.0)+a1*cos(Thta*PI/180.0);
+	float a1 = a.z;			
+	float b1 = a.x;
+	a.x= b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
+	a.z= b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
 }
 
 

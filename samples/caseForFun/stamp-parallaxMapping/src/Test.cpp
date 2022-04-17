@@ -1,13 +1,13 @@
 // 独孤信印.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 using namespace std;
 using namespace glm;
 
@@ -23,7 +23,7 @@ GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 // 相机
 bool firstMouse = true;
-Camera camera(vec3(0.0f, 0.0f, 2.0f));
+Camera camera(vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
@@ -49,7 +49,7 @@ bool dir =false;		 //旋转方向
 bool light = true;      //光照模型
 
 unsigned int texIndex[26]; //面纹理索引
-unsigned int vertextNum[26]; //顶点数目
+size_t vertextNum[26]; //顶点数目
 unsigned int diffuseMap[15]; //纹理数组
 unsigned int depthMap[15];  //深度纹理
 unsigned int normalMap[15];  //深度纹理
@@ -73,8 +73,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -106,10 +106,10 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader depthShader("依赖文件/depthBuffer.vs","依赖文件/depthBuffer.fs");
-	Shader normalShader("依赖文件/normalBuffer.vs","依赖文件/normalBuffer.fs");
-	Shader stampShader("依赖文件/stamp.vs","依赖文件/stamp.fs");
-	Shader textureShader("依赖文件/texture.vs","依赖文件/texture.fs");
+	Shader depthShader(getLocalPath("shader/case11-depthBuffer.vs").c_str(), getLocalPath("shader/case11-depthBuffer.fs").c_str());
+	Shader normalShader(getLocalPath("shader/case11-normalBuffer.vs").c_str(), getLocalPath("shader/case11-normalBuffer.fs").c_str());
+	Shader stampShader(getLocalPath("shader/case11-stamp.vs").c_str(), getLocalPath("shader/case11-stamp.fs").c_str());
+	Shader textureShader(getLocalPath("shader/case11-texture.vs").c_str(), getLocalPath("shader/case11-texture.fs").c_str());
 	depthShader.use();
 	depthShader.setInt("diffuseMap",0);
 	normalShader.use();
@@ -121,21 +121,21 @@ int main()
 	textureShader.use();
 	textureShader.setInt("diffuseMap",0);
 	//读取纹理
-	diffuseMap[0]= loadTexture("依赖文件/耶敕.png");
-	diffuseMap[1]= loadTexture("依赖文件/令.png");
-	diffuseMap[2]= loadTexture("依赖文件/密.png");
-	diffuseMap[3]= loadTexture("依赖文件/独孤信白书.png");
-	diffuseMap[4]= loadTexture("依赖文件/信白笺.png");
-	diffuseMap[5]= loadTexture("依赖文件/臣信上疏.png");
-	diffuseMap[6]= loadTexture("依赖文件/臣信上章.png");
-	diffuseMap[7]= loadTexture("依赖文件/臣信上表.png");
-	diffuseMap[8]= loadTexture("依赖文件/信启事.png");
-	diffuseMap[9]= loadTexture("依赖文件/臣信启事.png");
-	diffuseMap[10]= loadTexture("依赖文件/大司马印.png");
-	diffuseMap[11]= loadTexture("依赖文件/大都督印.png");
-	diffuseMap[12]= loadTexture("依赖文件/刺史之印.png");
-	diffuseMap[13]= loadTexture("依赖文件/柱国之印.png");
-	diffuseMap[14]= loadTexture("依赖文件/背景.png");
+	diffuseMap[0]= loadTexture(getLocalPath("texture/耶敕.png").c_str());
+	diffuseMap[1]= loadTexture(getLocalPath("texture/令.png").c_str());
+	diffuseMap[2]= loadTexture(getLocalPath("texture/密.png").c_str());
+	diffuseMap[3]= loadTexture(getLocalPath("texture/独孤信白书.png").c_str());
+	diffuseMap[4]= loadTexture(getLocalPath("texture/信白笺.png").c_str());
+	diffuseMap[5]= loadTexture(getLocalPath("texture/臣信上疏.png").c_str());
+	diffuseMap[6]= loadTexture(getLocalPath("texture/臣信上章.png").c_str());
+	diffuseMap[7]= loadTexture(getLocalPath("texture/臣信上表.png").c_str());
+	diffuseMap[8]= loadTexture(getLocalPath("texture/信启事.png").c_str());
+	diffuseMap[9]= loadTexture(getLocalPath("texture/臣信启事.png").c_str());
+	diffuseMap[10]= loadTexture(getLocalPath("texture/大司马印.png").c_str());
+	diffuseMap[11]= loadTexture(getLocalPath("texture/大都督印.png").c_str());
+	diffuseMap[12]= loadTexture(getLocalPath("texture/刺史之印.png").c_str());
+	diffuseMap[13]= loadTexture(getLocalPath("texture/柱国之印.png").c_str());
+	diffuseMap[14]= loadTexture(getLocalPath("texture/背景.png").c_str());
 	readVertext();
 	//读入面表数据
 	//顶部
@@ -253,50 +253,54 @@ int main()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);	   //返回默认缓冲
 	}
 	
+	
 
 	while (!glfwWindowShouldClose(window))
 	{
 		//每帧相隔逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
 		//处理外部输入
 		processInput(window); 
-		
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glViewport(0,0,400,400);	 //设置视口
+
+		glViewport(0, 0, 400, 400);	 //设置视口
 		//绘制深度图
-		for (int i=0;i<15;i++)
+		for (int i = 0; i < 15; i++)
 		{
 			//绑定缓冲
 			glBindFramebuffer(GL_FRAMEBUFFER, depthBuffer[i]);
 			glClear(GL_COLOR_BUFFER_BIT);
-			
+
 			depthShader.use();
-			depthShader.setFloat("heightScale",heightScale);
-			depthShader.setMat4("model",glm::mat4());
+			depthShader.setFloat("heightScale", heightScale);
+			depthShader.setMat4("model", glm::mat4(1.0f));
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, diffuseMap[i]);
 			rendObject();
 		}
 
 		//绘制法线图
-		for (int i=0;i<15;i++)
+		for (int i = 0; i < 15; i++)
 		{
 			//绑定缓冲
 			glBindFramebuffer(GL_FRAMEBUFFER, normalBuffer[i]);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			normalShader.use();
-			normalShader.setMat4("model",glm::mat4());
+			normalShader.setMat4("model", glm::mat4(1.0f));
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, depthMap[i]);
 			rendObject();
 		}
-		
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);	   //返回默认缓冲
-		glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);	 //设置视口
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);	 //设置视口
+		
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/*textureShader.use();
@@ -319,7 +323,7 @@ int main()
 		//设置着色器参数
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		stampShader.use();
 		if (dir)
 			model = rotate(model,float(radians(Angle)),vec3(0.0,1.0,0.0));
@@ -342,7 +346,7 @@ int main()
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, normalMap[texIndex[i]]);
 			glBindVertexArray(stampVAO[i]);
-			glDrawArrays(GL_TRIANGLES, 0, vertextNum[i]/14); // 绘制
+			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum[i]/14); // 绘制
 			glBindVertexArray(0);
 		}
 
@@ -396,16 +400,16 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	{
 		if (heightScale > 0.0f)
-			heightScale -= 0.0005f;
+			heightScale -= 0.005f;
 		else
 			heightScale = 0.0f;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
-		if (heightScale < 1.0f)
-			heightScale += 0.0005f;
+		if (heightScale < 2.0f)
+			heightScale += 0.005f;
 		else
-			heightScale = 1.0f;
+			heightScale = 2.0f;
 	}
 		
 }
@@ -420,28 +424,28 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 void rendObject()
 {
-	static int Num = 0;
+	static size_t Num = 0;
 	
 	if(textureVAO==0)
 	{
@@ -490,7 +494,7 @@ void rendObject()
 	}
 	//绑定纹理
 	glBindVertexArray(textureVAO);
-	glDrawArrays(GL_TRIANGLES, 0, Num/4); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)Num/4); // 绘制
 	glBindVertexArray(0);
 }
 

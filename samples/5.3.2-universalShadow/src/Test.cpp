@@ -1,16 +1,15 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include<gl/glut.h>
-#include "stb_image.h"
-#include "camera.h"
-#include "shader_s.h"
-#include<math.h>
+#include <glfw/glfw3.h>
+#include <stb_image.h>
+#include <camera.h>
+#include <shader_s.h>
+#include <math.h>
+#include <common.h>
 
 // 屏幕
-#define PI 3.1415926
+#define PI 3.1415926f
 const unsigned int  SCR_WIDTH = 800, SCR_HEIGHT = 600;
 
 // 函数声明
@@ -19,7 +18,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow *window);
 void readVertext(std::vector<float> &Arr);
-void Rotatez(glm::vec3 &a,double Thta);
+void Rotatez(glm::vec3 &a,float Thta);
 unsigned int loadTexture(char const * path);
 void RenderScene(Shader &shader);
 void RenderSphere();
@@ -33,8 +32,8 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
 // 时间
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+float deltaTime = 0.0;
+float lastFrame = 0.0;
 
 // 选项
 bool shadows = true;
@@ -87,9 +86,9 @@ int main()
 	glEnable(GL_MULTISAMPLE);
 
 	// 建立着色器
-	Shader shader("3.2.2.point_shadows.vs", "3.2.2.point_shadows.fs");
-	Shader simpleDepthShader("3.2.2.point_shadows_depth.vs", "3.2.2.point_shadows_depth.fs", "3.2.2.point_shadows_depth.gs");
-	Shader sphereShader("Sphere.vs", "Sphere.fs");
+	Shader shader(getLocalPath("shader/5.3.2-point_shadows.vs").c_str(), getLocalPath("shader/5.3.2-point_shadows.fs").c_str());
+	Shader simpleDepthShader(getLocalPath("shader/5.3.2-point_shadows_depth.vs").c_str(), getLocalPath("shader/5.3.2-point_shadows_depth.fs").c_str(), getLocalPath("shader/5.3.2-point_shadows_depth.gs").c_str());
+	Shader sphereShader(getLocalPath("shader/5.3.2-sphere.vs").c_str(), getLocalPath("shader/5.3.2-sphere.fs").c_str());
 
 
 	// 设置纹理样本
@@ -100,7 +99,7 @@ int main()
 	shader.setInt("shadowMap",1);
 
 	// 加载纹理
-	woodTexture = loadTexture("瓷器纹理.jpg");
+	woodTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
 
 	// c配置深度贴图帧缓冲
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -139,7 +138,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -148,7 +147,7 @@ int main()
 
 		// 移动光照
 		if (change)
-			lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
+			lightPos.z = sin((float)glfwGetTime() * 0.5f) * 3.0f;
 
 		// 渲染
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -200,7 +199,7 @@ int main()
 
 		//渲染光源
 		sphereShader.use();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model,glm::vec3(0.2,0.2,0.2));
 		sphereShader.setMat4("model",model);
@@ -337,7 +336,7 @@ void RenderCube()
 
 void RenderSphere()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(sphereVAO == 0)
 	{
 		std::vector<float> Arr;
@@ -360,69 +359,68 @@ void RenderSphere()
 	}
 	//绑定纹理
 	glBindVertexArray(sphereVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/5); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/5); // 绘制
 	glBindVertexArray(0);
 }
 
-// 渲染立方体
 void readVertext(std::vector<float> &Arr)
 {
 	glm::vec3 cpt[4];
-	for(double Theta=0;Theta<180;Theta+=1.0)
+	for (float Theta = 0; Theta < 180.0f; Theta += 1.0f)
 	{
-		glm::vec3 p1(sin(Theta*PI/180.0),cos(Theta*PI/180.0),0);
-		glm::vec3 p2(sin((Theta+1.0)*PI/180.0),cos((Theta+1.0)*PI/180.0),0);
-		for(double Phi=0;Phi<360;Phi+=1.0)
+		glm::vec3 p1(sin(Theta*PI / 180.0f), cos(Theta*PI / 180.0f), 0.0f);
+		glm::vec3 p2(sin((Theta + 1.0f)*PI / 180.0f), cos((Theta + 1.0f)*PI / 180.0f), 0.0f);
+		for (float Phi = 0.0f; Phi < 360.0f; Phi += 1.0f)
 		{
-			cpt[0].x=p1.x;cpt[0].y=p1.y;cpt[0].z=p1.z;
-			Rotatez(p1,1.0);
-			cpt[1].x=p1.x;cpt[1].y=p1.y;cpt[1].z=p1.z;
-			cpt[2].x=p2.x;cpt[2].y=p2.y;cpt[2].z=p2.z;
-			Rotatez(p2,1.0);
-			cpt[3].x=p2.x;cpt[3].y=p2.y;cpt[3].z=p2.z;
+			cpt[0].x = p1.x; cpt[0].y = p1.y; cpt[0].z = p1.z;
+			Rotatez(p1, 1.0f);
+			cpt[1].x = p1.x; cpt[1].y = p1.y; cpt[1].z = p1.z;
+			cpt[2].x = p2.x; cpt[2].y = p2.y; cpt[2].z = p2.z;
+			Rotatez(p2, 1.0f);
+			cpt[3].x = p2.x; cpt[3].y = p2.y; cpt[3].z = p2.z;
 			//第一个三角形  132
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 			Arr.push_back(cpt[3].x);
 			Arr.push_back(cpt[3].y);
 			Arr.push_back(cpt[3].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
 			//第一个三角形  102
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
 			Arr.push_back(cpt[0].x);
 			Arr.push_back(cpt[0].y);
 			Arr.push_back(cpt[0].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 		}
 	}
 }
 
 //绕y轴旋转
-void Rotatez(glm::vec3 &a,double Thta)									
+void Rotatez(glm::vec3 &a, float Thta)
 {
-	double a1=a.z;			
-	double b1=a.x;
-	a.x=b1*cos(Thta*PI/180.0)-a1*sin(Thta*PI/180.0);
-	a.z=b1*sin(Thta*PI/180.0)+a1*cos(Thta*PI/180.0);
+	float a1 = a.z;
+	float b1 = a.x;
+	a.x = b1 * cos(Thta*PI / 180.0f) - a1 * sin(Thta*PI / 180.0f);
+	a.z = b1 * sin(Thta*PI / 180.0f) + a1 * cos(Thta*PI / 180.0f);
 }
 
 
@@ -505,21 +503,21 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }

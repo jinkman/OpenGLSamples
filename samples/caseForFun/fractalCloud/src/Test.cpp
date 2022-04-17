@@ -1,19 +1,19 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 //相机
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -30,13 +30,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
-void LeftMultiMatrix(double M0[][4],glm::vec3 P0[][4]);//左乘矩阵M*P
-void RightMultiMatrix(glm::vec3 P0[][4],double M1[][4]);//右乘矩阵P*M
-void TransposeMatrix(double M0[][4]);//转置矩阵
+void LeftMultiMatrix(float M0[][4],glm::vec3 P0[][4]);//左乘矩阵M*P
+void RightMultiMatrix(glm::vec3 P0[][4],float M1[][4]);//右乘矩阵P*M
+void TransposeMatrix(float M0[][4]);//转置矩阵
 void readQuadPoint(std::vector<float> &Arr);
 unsigned int objectVAO=0, objectVBO;
 glm::vec3  P3[4][4];//三维顶点
-double MT[4][4];//M的转置矩阵
+float MT[4][4];//M的转置矩阵
 
 int main()
 {
@@ -85,11 +85,11 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader cloudShader("cloud.vs","cloud.fs");
+	Shader cloudShader(getLocalPath("shader/case1-cloud.vs").c_str(), getLocalPath("shader/case1-cloud.fs").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -100,10 +100,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 5000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 
 		cloudShader.use();
-		model=glm::mat4();
+		model=glm::mat4(1.0f);
 		model=glm::translate(model,glm::vec3(0.0f,-300.0f,0.0));
 		model=glm::scale(model,glm::vec3(1000));
 		cloudShader.setMat4("projection", projection);
@@ -112,7 +112,7 @@ int main()
 		cloudShader.setVec3("uSkyColor",glm::vec3(98/255.0f,156/255.0f,223/255.0f));
 		cloudShader.setVec3("uCloudColor",glm::vec3(0.8,0.8,0.8));
 		cloudShader.setFloat("uCloudSize",30.0f);
-		cloudShader.setFloat("uTime",glfwGetTime()/5.0f);
+		cloudShader.setFloat("uTime",(float)glfwGetTime()/5.0f);
 		rendObject();
 
 		//交换缓冲与消息分配
@@ -155,7 +155,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void rendObject()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(objectVAO==0)
 	{
 		std::vector<float> Arr;
@@ -176,7 +176,7 @@ void rendObject()
 		Arr.clear();
 	}
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum / 5); // 绘制实例
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5); // 绘制实例
 	glBindVertexArray(0);
 }
 
@@ -185,23 +185,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
@@ -211,19 +211,19 @@ void readQuadPoint(std::vector<float> &Arr)
 	//初始化控制点
 	for (int i=0;i<4;i++)
 		for (int j=0;j<4;j++)
-			P3[i][j]=glm::vec3(i-1.5, 0.0, j-1.5);
-	P3[1][1].y=1.0;
-	P3[1][2].y=1.0;
-	P3[2][1].y=1.0;
-	P3[2][2].y=1.0;
+			P3[i][j]=glm::vec3(i-1.5f, 0.0f, j-1.5f);
+	P3[1][1].y=1.0f;
+	P3[1][2].y=1.0f;
+	P3[2][1].y=1.0f;
+	P3[2][2].y=1.0f;
 
 	//计算所有点
-	double x,y,z,u,v,u1,u2,u3,u4,v1,v2,v3,v4;
-	double M[4][4];
-	M[0][0]=-1;M[0][1]=3; M[0][2]=-3;M[0][3]=1;
-	M[1][0]=3; M[1][1]=-6;M[1][2]=3; M[1][3]=0;
-	M[2][0]=-3;M[2][1]=3; M[2][2]=0; M[2][3]=0;
-	M[3][0]=1; M[3][1]=0; M[3][2]=0; M[3][3]=0;
+	float x,y,z,u,v,u1,u2,u3,u4,v1,v2,v3,v4;
+	float M[4][4];
+	M[0][0]=-1.0f;M[0][1]=3.0f; M[0][2]=-3.0f;M[0][3]=1.0f;
+	M[1][0]=3.0f; M[1][1]=-6.0f;M[1][2]=3.0f; M[1][3]=0.0f;
+	M[2][0]=-3.0f;M[2][1]=3.0f; M[2][2]=0.0f; M[2][3]=0.0f;
+	M[3][0]=1.0f; M[3][1]=0.0f; M[3][2]=0.0f; M[3][3]=0.0f;
 	LeftMultiMatrix(M,P3);//数字矩阵左乘三维点矩阵
 	TransposeMatrix(M);//计算转置矩阵
 	RightMultiMatrix(P3,MT);//数字矩阵右乘三维点矩阵
@@ -231,10 +231,10 @@ void readQuadPoint(std::vector<float> &Arr)
 
 	int index =0;
 	glm::vec3 newP[25],oldP[25];
-	for(u=0;u<=1;u+=0.04)
+	for(u=0;u<=1.0f;u+=0.04f)
 	{	
 		index=0;
-		for(v=0;v<=1;v+=0.04)
+		for(v=0;v<=1.0f;v+=0.04f)
 		{
 			u1=u*u*u;u2=u*u;u3=u;u4=1;v1=v*v*v;v2=v*v;v3=v;v4=1;
 			x=(u1*P3[0][0].x+u2*P3[1][0].x+u3*P3[2][0].x+u4*P3[3][0].x)*v1
@@ -261,33 +261,33 @@ void readQuadPoint(std::vector<float> &Arr)
 				Arr.push_back(newP[i].y);
 				Arr.push_back(newP[i].z);
 				Arr.push_back(u);
-				Arr.push_back(i*0.04);
+				Arr.push_back(i*0.04f);
 				Arr.push_back(oldP[i].x);
 				Arr.push_back(oldP[i].y);
 				Arr.push_back(oldP[i].z);
-				Arr.push_back(u-0.04);
-				Arr.push_back(i*0.04);
+				Arr.push_back(u-0.04f);
+				Arr.push_back(i*0.04f);
 				Arr.push_back(oldP[i+1].x);
 				Arr.push_back(oldP[i+1].y);
 				Arr.push_back(oldP[i+1].z);
-				Arr.push_back(u-0.04);
-				Arr.push_back((i+1)*0.04);
+				Arr.push_back(u-0.04f);
+				Arr.push_back((i+1)*0.04f);
 				//第二个三角形
 				Arr.push_back(oldP[i+1].x);
 				Arr.push_back(oldP[i+1].y);
 				Arr.push_back(oldP[i+1].z);
-				Arr.push_back(u-0.04);
-				Arr.push_back((i+1)*0.04);
+				Arr.push_back(u-0.04f);
+				Arr.push_back((i+1)*0.04f);
 				Arr.push_back(newP[i+1].x);
 				Arr.push_back(newP[i+1].y);
 				Arr.push_back(newP[i+1].z);
 				Arr.push_back(u);
-				Arr.push_back((i+1)*0.04);
+				Arr.push_back((i+1)*0.04f);
 				Arr.push_back(newP[i].x);
 				Arr.push_back(newP[i].y);
 				Arr.push_back(newP[i].z);
 				Arr.push_back(u);
-				Arr.push_back(i*0.04);
+				Arr.push_back(i*0.04f);
 			}
 		}
 		for(int i=0;i<index;i++)
@@ -295,7 +295,7 @@ void readQuadPoint(std::vector<float> &Arr)
 	}
 }
 
-void LeftMultiMatrix(double M0[][4],glm::vec3 P0[][4])//左乘矩阵M*P
+void LeftMultiMatrix(float M0[][4],glm::vec3 P0[][4])//左乘矩阵M*P
 {
 	glm::vec3 T[4][4];//临时矩阵
 	int i,j;
@@ -311,7 +311,7 @@ void LeftMultiMatrix(double M0[][4],glm::vec3 P0[][4])//左乘矩阵M*P
 				P3[i][j]=T[i][j];
 }
 
-void RightMultiMatrix(glm::vec3 P0[][4],double M1[][4])//右乘矩阵P*M
+void RightMultiMatrix(glm::vec3 P0[][4],float M1[][4])//右乘矩阵P*M
 {
 	glm::vec3 T[4][4];//临时矩阵
 	int i,j;
@@ -327,7 +327,7 @@ void RightMultiMatrix(glm::vec3 P0[][4],double M1[][4])//右乘矩阵P*M
 				P3[i][j]=T[i][j];
 }
 
-void TransposeMatrix(double M0[][4])//转置矩阵
+void TransposeMatrix(float M0[][4])//转置矩阵
 {
 	for(int i=0;i<4;i++)
 		for(int j=0;j<4;j++)

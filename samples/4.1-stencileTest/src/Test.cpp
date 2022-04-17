@@ -1,13 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
@@ -21,8 +21,8 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-static float deltaTime = 0.0f;
-static float lastFrame = 0.0f;
+static float deltaTime = 0.0;
+static float lastFrame = 0.0;
 
 //函数声明
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -89,8 +89,8 @@ int main()
 	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 	//使用着色器
 	// 建立着色器
-	Shader shader("stencil_testing.vs", "stencil_testing.fs");
-	Shader shaderSingleColor("stencil_testing.vs", "stencil_single_color.fs");
+	Shader shader(getLocalPath("shader/4.1-stencil_testing.vs").c_str(), getLocalPath("shader/4.1-stencil_testing.fs").c_str());
+	Shader shaderSingleColor(getLocalPath("shader/4.1-stencil_testing.vs").c_str(), getLocalPath("shader/4.1-stencil_single_color.fs").c_str());
 
 	shader.use();
 	shader.setInt("texture1", 0);
@@ -99,7 +99,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 调整速度
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -115,7 +115,7 @@ int main()
 
 		// 设置着色器参数
 		shaderSingleColor.use();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		shaderSingleColor.setMat4("view", view);
 		shaderSingleColor.setMat4("projection", projection);
 
@@ -136,7 +136,7 @@ int main()
 		shader.setMat4("model", model);
 		// 立方体
 		rendObject();
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		rendObject();
@@ -146,15 +146,15 @@ int main()
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
 		shaderSingleColor.use();
-		float scale = 1.1;
+		float scale = 1.1f;
 		// 轮廓立方体
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		model = glm::scale(model, glm::vec3(scale, scale, scale));
 		shaderSingleColor.setMat4("model", model);
 		rendObject();
 
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(scale, scale, scale));
 		shaderSingleColor.setMat4("model", model);
@@ -205,7 +205,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void rendObject()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("a.jpg");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	if(objectVAO==0)
 	{
 		float cubeVertices[] = {
@@ -274,7 +274,7 @@ void rendObject()
 void rendFloor()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("b.jpg");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test1.jpg").c_str());
 	if(floorVAO==0)
 	{
 		float planeVertices[] = {
@@ -307,28 +307,27 @@ void rendFloor()
 }
 
 
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 unsigned int loadTexture(char const * path)

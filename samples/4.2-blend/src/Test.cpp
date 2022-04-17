@@ -1,13 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 #include<map>
 
 
@@ -89,7 +89,7 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// 建立着色器
-	Shader shader("blending.vs", "blending.fs");
+	Shader shader(getLocalPath("shader/4.2-blending.vs").c_str(), getLocalPath("shader/4.2-blending.fs").c_str());
 
 	shader.use();
 	shader.setInt("texture1", 0);
@@ -106,7 +106,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 调整速度
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -126,7 +126,7 @@ int main()
 
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
@@ -134,18 +134,18 @@ int main()
 		shader.setMat4("model", model);
 		rendObject();
 
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		rendObject();
 
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		shader.setMat4("model", model);
 		rendFloor();
 
 		for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 		{
-			model = glm::mat4();
+			model = glm::mat4(1.0f);
 			model = glm::translate(model, it->second);
 			shader.setMat4("model", model);
 			rendWindow();
@@ -195,7 +195,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void rendObject()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("a.jpg");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	if(objectVAO==0)
 	{
 		float cubeVertices[] = {
@@ -264,7 +264,7 @@ void rendObject()
 void rendWindow()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("窗户.png");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/窗户.png").c_str());
 	if(windowVAO==0)
 	{
 		float transparentVertices[] = {
@@ -299,7 +299,7 @@ void rendWindow()
 void rendFloor()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("b.jpg");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	if(floorVAO==0)
 	{
 		float planeVertices[] = {
@@ -335,23 +335,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 unsigned int loadTexture(char const * path)

@@ -1,7 +1,7 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
-#include<iostream>
+#include <iostream>
 #include <glad/glad.h> 
 #include <GLFW/glfw3.h>
 using namespace std;
@@ -13,13 +13,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char *argv[])
 {
-	//ÊµÀı»¯GLFW´°¿Ú
+	//åˆå§‹åŒ–glfw
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨´°¿Ú
+	//åˆ›å»ºçª—å£
 	GLFWwindow* window = glfwCreateWindow(800, 600, "FirstWindow", NULL, NULL);
 	if (window == NULL)
 	{
@@ -27,31 +27,31 @@ int main(int argc, char *argv[])
 		glfwTerminate();
 		return -1;
 	}
-	glfwMakeContextCurrent(window);	//»ñµÃ´°¿ÚÉÏÏÂÎÄ
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);	//×¢²á´°¿Ú»Øµ÷º¯Êı
+	glfwMakeContextCurrent(window);//åˆ›å»ºçª—å£ä¸Šä¸‹æ–‡
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);	//æ³¨å†Œçª—å£å›è°ƒå‡½æ•°
 
-	//¼ÓÔØOpenGLº¯ÊıÖ¸Õë
+	//åŠ è½½openglå‡½æ•°æŒ‡é’ˆ
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		cout << "Failed to initialize GLAD" <<endl;
 		return -1;
 	}   
 
-	
-	//äÖÈ¾Ñ­»·
-	while (!glfwWindowShouldClose(window))   //¼ì²éÊÇ·ñÒªÇóÍË³ö
+	//æ¸²æŸ“å¾ªç¯
+	while (!glfwWindowShouldClose(window))  
 	{
-		processInput(window);	//ÊäÈë·´Ó¦º¯Êı
-
-		//äÖÈ¾Ö¸Áî
-		glClearColor(0.2f, 0.5f, 0.3f, 1.0f);	//ÉèÖÃ±³¾°É«
-		glClear(GL_COLOR_BUFFER_BIT);			//Çå³ıÑÕÉ«»º´æ
+		//å¤„ç†è¾“å…¥
+		processInput(window);
 
 
-		glfwSwapBuffers(window);  //½»»»ÑÕÉ«»º³å
-		glfwPollEvents();		  //¼ì²é²¢µ÷ÓÃÊÂ¼ş
+		glClearColor(0.2f, 0.5f, 0.3f, 1.0f);	//è®¾ç½®èƒŒæ™¯è‰²
+		glClear(GL_COLOR_BUFFER_BIT);		//æ¸…é™¤é¢œè‰²ç¼“å­˜
+
+
+		glfwSwapBuffers(window);  //äº¤æ¢é¢œè‰²ç¼“å­˜
+		glfwPollEvents();		//æ£€æŸ¥å¹¶è°ƒç”¨äº‹ä»¶
 	}
-	glfwTerminate();			  //ÊÍ·Å×ÊÔ´
+	glfwTerminate();		//é‡Šæ”¾èµ„æº
 	return 0;
 }
 

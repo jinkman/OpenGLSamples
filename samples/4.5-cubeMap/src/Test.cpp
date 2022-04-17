@@ -2,13 +2,13 @@
 //
 
 #include <glad/glad.h>
-#include <glfw3.h>
-#include "stb_image.h"
-#include "shader_s.h"
-#include "camera.h"
-#include<math.h>
-#include"mesh.h"
-#include"Model.h"
+#include <glfw/glfw3.h>
+#include <stb_image.h>
+#include <shader_s.h>
+#include <camera.h>
+#include <math.h>
+#include <Model.h>
+#include <common.h>
 
 
 #define PI 3.1415926
@@ -77,8 +77,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// 建立着色器
-	Shader shader("cubemaps.vs", "cubemaps.fs");
-	Shader skyboxShader("skybox.vs", "skybox.fs");
+	Shader shader(getLocalPath("shader/4.5-cubemaps.vs").c_str(), getLocalPath("shader/4.5-cubemaps.fs").c_str());
+	Shader skyboxShader(getLocalPath("shader/4.5-skybox.vs").c_str(), getLocalPath("shader/4.5-skybox.fs").c_str());
 
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
@@ -89,12 +89,12 @@ int main()
 	Model ourModel("model/nanosuit.obj");
 
 	std::vector<std::string> faces;
-	faces.push_back("skybox/right.jpg");
-	faces.push_back("skybox/left.jpg");
-	faces.push_back("skybox/top.jpg");
-	faces.push_back("skybox/bottom.jpg");
-	faces.push_back("skybox/front.jpg");
-	faces.push_back("skybox/back.jpg");
+	faces.push_back(getLocalPath("skybox/right.jpg"));
+	faces.push_back(getLocalPath("skybox/left.jpg"));
+	faces.push_back(getLocalPath("skybox/top.jpg"));
+	faces.push_back(getLocalPath("skybox/bottom.jpg"));
+	faces.push_back(getLocalPath("skybox/front.jpg"));
+	faces.push_back(getLocalPath("skybox/back.jpg"));
 
 	unsigned int cubemapTexture = loadCubemap(faces);
 
@@ -103,7 +103,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{   
 		//每帧逻辑时间
-        float currentFrame = glfwGetTime();
+        float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -119,7 +119,7 @@ int main()
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glm::mat4 view = camera.GetViewMatrix(); // 移除位移
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::scale(model,glm::vec3(0.1f));
 		shader.use();
         shader.setMat4("model", model);
@@ -165,10 +165,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-	{
-		glfwTerminate();
-		exit(0);
-	}
+		glfwSetWindowShouldClose(window, true);
 }
 
 void rendObject()
@@ -245,24 +242,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 

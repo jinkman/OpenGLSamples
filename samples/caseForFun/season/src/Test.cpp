@@ -1,22 +1,23 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 //相机
-Camera camera(glm::vec3(0.0f, 0.0f, -1000.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, -1000.0f),glm::vec3(0.0,1.0,0.0),90.0f,0.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -82,14 +83,13 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader shader("object.vs","object.fs");
+	Shader shader(getLocalPath("shader/case9-object.vs").c_str(), getLocalPath("shader/case9-object.fs").c_str());
 	shader.use();
-	shader.setInt("moonMap",0);
-	shader.setInt("nightMap",1);
+	shader.setInt("Map",0);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -101,7 +101,7 @@ int main()
 
 		//设置着色器参数
 		shader.use();
-		shader.setFloat("time",glfwGetTime());
+		shader.setFloat("time",(float)glfwGetTime());
 		shader.setVec2("resolution",glm::vec2(SCR_WIDTH,SCR_HEIGHT));
 		shader.setVec3("cameraPosition",camera.Position);
 		shader.setVec3("cameraFront",camera.Front);
@@ -150,18 +150,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void rendObject()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	static unsigned int cubemapTexture=0;
-	static unsigned int cubemapTexture1=0;
 	if(objectVAO==0)
 	{
 		std::vector<std::string> faces;
-		faces.push_back("Moon/moon_cuberight.jpg");
-		faces.push_back("Moon/moon_cubeleft.jpg");
-		faces.push_back("Moon/moon_cubetop.jpg");
-		faces.push_back("Moon/moon_cubebottom.jpg");
-		faces.push_back("Moon/moon_cubefront.jpg");
-		faces.push_back("Moon/moon_cubeback.jpg");
+		faces.push_back(getLocalPath("skybox/moon_cuberight.jpg"));
+		faces.push_back(getLocalPath("skybox/moon_cubeleft.jpg"));
+		faces.push_back(getLocalPath("skybox/moon_cubetop.jpg"));
+		faces.push_back(getLocalPath("skybox/moon_cubebottom.jpg"));
+		faces.push_back(getLocalPath("skybox/moon_cubefront.jpg"));
+		faces.push_back(getLocalPath("skybox/moon_cubeback.jpg"));
 		cubemapTexture = loadCubemap(faces);
 		faces.clear();
 		std::vector<float> Arr;
@@ -183,9 +182,7 @@ void rendObject()
 	glBindVertexArray(objectVAO);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/4); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/4); // 绘制
 	glBindVertexArray(0);
 }
 
@@ -259,20 +256,21 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
+
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }

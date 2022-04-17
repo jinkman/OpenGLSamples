@@ -1,20 +1,19 @@
 // 光线追踪.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 //函数声明
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -70,7 +69,7 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader shader("object.vs","object.fs");
+	Shader shader(getLocalPath("shader/case7-object.vs").c_str(), getLocalPath("shader/case7-object.fs").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -80,7 +79,7 @@ int main()
 		static float deltaTime = 0.0f;
 		static float lastFrame = 0.0f;
 		//计算fps
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -100,7 +99,7 @@ int main()
 
 		//设置着色器参数
 		shader.use();
-		shader.setFloat("time",glfwGetTime());
+		shader.setFloat("time",(float)glfwGetTime());
 		//绘制物体
 		rendObject();
 
@@ -130,7 +129,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void rendObject()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(objectVAO==0)
 	{
 		std::vector<float> Arr;
@@ -150,7 +149,7 @@ void rendObject()
 		glBindVertexArray(0);
 	}
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/4); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/4); // 绘制
 	glBindVertexArray(0);
 }
 

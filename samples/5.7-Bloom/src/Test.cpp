@@ -1,16 +1,17 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
 #include <iostream>
-#include<math.h>
+#include <math.h>
+#include <common.h>
 
 
-#define PI 3.1415926
+#define PI 3.1415926f
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -79,13 +80,13 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// 建立着色器
-	Shader shader("bloom.vs", "bloom.fs");
-	Shader shaderLight("bloom.vs", "light_box.fs");
-	Shader shaderBlur("blur.vs", "blur.fs");
-	Shader shaderBloomFinal("bloom_final.vs", "bloom_final.fs");
+	Shader shader(getLocalPath("shader/5.7-bloom.vs").c_str(), getLocalPath("shader/5.7-bloom.fs").c_str());
+	Shader shaderLight(getLocalPath("shader/5.7-bloom.vs").c_str(), getLocalPath("shader/5.7-light_box.fs").c_str());
+	Shader shaderBlur(getLocalPath("shader/5.7-blur.vs").c_str(), getLocalPath("shader/5.7-blur.fs").c_str());
+	Shader shaderBloomFinal(getLocalPath("shader/5.7-bloom_final.vs").c_str(), getLocalPath("shader/5.7-bloom_final.fs").c_str());
 
 	// 加载纹理
-	unsigned int woodTexture      = loadTexture("b.jpg"); 
+	unsigned int woodTexture      = loadTexture(getLocalPath("texture/test.jpg").c_str());
 
 	// 配置帧缓冲
 	unsigned int hdrFBO;
@@ -165,7 +166,7 @@ int main()
 	// 渲染缓冲
 	while (!glfwWindowShouldClose(window))
 	{
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -444,24 +445,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
@@ -502,70 +502,70 @@ unsigned int loadTexture(char const * path)
 	return textureID;
 }
 
-void readVertext(std::vector<float> &Arr)//面表
+void readVertext(std::vector<float> &Arr)
 {
 	glm::vec3 cpt[4];
-	for(double Theta=0;Theta<180;Theta+=1.0)
+	for (float Theta = 0; Theta < 180.0f; Theta += 1.0f)
 	{
-		glm::vec3 p1(sin(Theta*PI/180.0),cos(Theta*PI/180.0),0);
-		glm::vec3 p2(sin((Theta+1.0)*PI/180.0),cos((Theta+1.0)*PI/180.0),0);
-		for(double Phi=0;Phi<360;Phi+=1.0)
+		glm::vec3 p1(sin(Theta*PI / 180.0f), cos(Theta*PI / 180.0f), 0.0f);
+		glm::vec3 p2(sin((Theta + 1.0f)*PI / 180.0f), cos((Theta + 1.0f)*PI / 180.0f), 0.0f);
+		for (float Phi = 0.0f; Phi < 360.0f; Phi += 1.0f)
 		{
-			cpt[0].x=p1.x;cpt[0].y=p1.y;cpt[0].z=p1.z;
-			Rotatez(p1,1.0);
-			cpt[1].x=p1.x;cpt[1].y=p1.y;cpt[1].z=p1.z;
-			cpt[2].x=p2.x;cpt[2].y=p2.y;cpt[2].z=p2.z;
-			Rotatez(p2,1.0);
-			cpt[3].x=p2.x;cpt[3].y=p2.y;cpt[3].z=p2.z;
+			cpt[0].x = p1.x; cpt[0].y = p1.y; cpt[0].z = p1.z;
+			Rotatez(p1, 1.0f);
+			cpt[1].x = p1.x; cpt[1].y = p1.y; cpt[1].z = p1.z;
+			cpt[2].x = p2.x; cpt[2].y = p2.y; cpt[2].z = p2.z;
+			Rotatez(p2, 1.0f);
+			cpt[3].x = p2.x; cpt[3].y = p2.y; cpt[3].z = p2.z;
 			//第一个三角形  132
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 			Arr.push_back(cpt[3].x);
 			Arr.push_back(cpt[3].y);
 			Arr.push_back(cpt[3].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
 			//第一个三角形  102
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
-			Arr.push_back(1.0-(Phi+1.0)/360.0);
-			Arr.push_back(Theta/180.0);
-			Arr.push_back(cpt[0].x);
-			Arr.push_back(cpt[0].y);
-			Arr.push_back(cpt[0].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back(Theta/180.0);
+			Arr.push_back(1.0f - (Phi + 1.0f) / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 			Arr.push_back(cpt[2].x);
 			Arr.push_back(cpt[2].y);
 			Arr.push_back(cpt[2].z);
-			Arr.push_back(1.0-Phi/360.0);
-			Arr.push_back((Theta+1.0)/180.0);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back((Theta + 1.0f) / 180.0f);
+			Arr.push_back(cpt[0].x);
+			Arr.push_back(cpt[0].y);
+			Arr.push_back(cpt[0].z);
+			Arr.push_back(1.0f - Phi / 360.0f);
+			Arr.push_back(Theta / 180.0f);
 		}
 	}
 }
 
 //绕y轴旋转
-void Rotatez(glm::vec3 &a,float Thta)									
+void Rotatez(glm::vec3 &a, float Thta)
 {
-	double a1=a.z;			
-	double b1=a.x;
-	a.x=b1*cos(Thta*PI/180.0)-a1*sin(Thta*PI/180.0);
-	a.z=b1*sin(Thta*PI/180.0)+a1*cos(Thta*PI/180.0);
+	float a1 = a.z;
+	float b1 = a.x;
+	a.x = b1 * cos(Thta*PI / 180.0f) - a1 * sin(Thta*PI / 180.0f);
+	a.z = b1 * sin(Thta*PI / 180.0f) + a1 * cos(Thta*PI / 180.0f);
 }
 
 
 void renderSphere()
 {
-	static int num = 0;
+	static size_t num = 0;
 	if (sphereVAO == 0)
 	{
 		std::vector<float> Arr;
@@ -587,6 +587,6 @@ void renderSphere()
 		Arr.clear();
 	}
 	glBindVertexArray(sphereVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, num/5.0);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)num/5.0);
 	glBindVertexArray(0);
 }

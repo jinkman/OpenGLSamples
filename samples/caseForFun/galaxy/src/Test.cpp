@@ -1,19 +1,18 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 //相机
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -81,11 +80,11 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader shader("object.vs","object.fs");
+	Shader shader(getLocalPath("shader/case3-object.vs").c_str(), getLocalPath("shader/case3-object.fs").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -97,7 +96,7 @@ int main()
 
 		//设置着色器参数
 		shader.use();
-		shader.setFloat("time",glfwGetTime());
+		shader.setFloat("time",(float)glfwGetTime());
 		shader.setVec2("resolution",glm::vec2(SCR_WIDTH,SCR_HEIGHT));
 		shader.setVec2("mouse",glm::vec2(0));
 		shader.setVec3("cameraPosition",camera.Position);
@@ -211,21 +210,21 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }

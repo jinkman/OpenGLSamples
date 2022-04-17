@@ -1,15 +1,15 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include "shader_s.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include "stb_image.h"
+#include <glfw/glfw3.h>
+#include <shader_s.h>
+#include <stb_image.h>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <common.h>
 
 
 
@@ -54,7 +54,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//使用着色器类
-	Shader ourShader("texture.vs", "texture.fs");
+	Shader ourShader(getLocalPath("shader/1.6-texture.vs").c_str(), getLocalPath("shader/1.6-texture.fs").c_str());
 
 	
 	// 世界坐标位置
@@ -88,7 +88,7 @@ int main()
 		
 		// 启动着色器
 		ourShader.use();
-		glm::mat4 view,projection;
+		glm::mat4 view(1.0f),projection(1.0f);
 		view = glm::translate(view, glm::vec3(worldx, worldy, worldz));		//从局部空间原点到任意世界坐标
 		projection = glm::perspective(glm::radians(worldangle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
 
@@ -96,7 +96,7 @@ int main()
 		ourShader.setMat4("projection",projection);
 		for (unsigned int i = 0; i < 10; i++)
 		{
-			glm::mat4 model;
+			glm::mat4 model(1.0f);
 			//初始世界坐标位置
 			model = glm::translate(model, cubePositions[i]);
 			//旋转矩阵
@@ -126,8 +126,8 @@ void DrawObject()
 	static unsigned int texture2 = 0;
 	if(objectVAO==0)
 	{
-		texture1 = loadTexture("a.jpg");
-		texture2 = loadTexture("b.jpg");
+		texture1 = loadTexture(getLocalPath("texture/test.jpg").c_str());
+		texture2 = loadTexture(getLocalPath("texture/test1.jpg").c_str());
 		// 顶点数据
 		float vertices[] = {
 			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -199,17 +199,17 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		worldz+=0.005;
+		worldz+=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		worldz-=0.005;
+		worldz-=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		worldx+=0.005;
+		worldx+=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		worldx-=0.005;
+		worldx-=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-		worldy+=0.005;
+		worldy+=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-		worldy-=0.005;
+		worldy-=0.005f;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		worldangle+=0.1f;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)

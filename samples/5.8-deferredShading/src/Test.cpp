@@ -1,24 +1,23 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include "shader_s.h"
-#include "stb_image.h"
-#include "camera.h"
-#include "Model.h"
+#include <glfw/glfw3.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <camera.h>
+#include <Model.h>
 #include <math.h>
 #include <iostream>
+#include <common.h>
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-GLuint loadTexture(GLchar* path);
 void RenderCube();
 void RenderQuad();
-float fmaxf(float a,float b);
+float maxf(float a,float b);
 
 
 // 屏幕
@@ -75,9 +74,9 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// 着色器
-	Shader shaderGeometryPass("g_buffer.vs", "g_buffer.fs");
-	Shader shaderLightingPass("deferred_shading.vs", "deferred_shading.fs");
-	Shader shaderLightBox("deferred_light_box.vs", "deferred_light_box.fs");
+	Shader shaderGeometryPass(getLocalPath("shader/5.8-g_buffer.vs").c_str(), getLocalPath("shader/5.8-g_buffer.fs").c_str());
+	Shader shaderLightingPass(getLocalPath("shader/5.8-deferred_shading.vs").c_str(), getLocalPath("shader/5.8-deferred_shading.fs").c_str());
+	Shader shaderLightBox(getLocalPath("shader/5.8-deferred_light_box.vs").c_str(), getLocalPath("shader/5.8-deferred_light_box.fs").c_str());
 
 	shaderLightingPass.use();
 	shaderLightingPass.setInt("gPosition",0);
@@ -86,7 +85,7 @@ int main()
 
 
 	// 加载模型
-	Model cyborg("model/nanosuit.obj");
+	Model cyborg(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
 	// 模型位置
 	std::vector<glm::vec3> objectPositions;
 	objectPositions.push_back(glm::vec3(-3.0, -3.0, -3.0));
@@ -106,14 +105,14 @@ int main()
 	for (GLuint i = 0; i < NR_LIGHTS; i++)
 	{
 		//随机位置
-		GLfloat xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
-		GLfloat yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
-		GLfloat zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+		GLfloat xPos = ((rand() % 100) / 100.0f) * 6.0f - 3.0f;
+		GLfloat yPos = ((rand() % 100) / 100.0f) * 6.0f - 4.0f;
+		GLfloat zPos = ((rand() % 100) / 100.0f) * 6.0f - 3.0f;
 		lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
 		// 随机颜色
-		GLfloat rColor = ((rand() % 100) / 200.0f) + 0.5; 
-		GLfloat gColor = ((rand() % 100) / 200.0f) + 0.5; 
-		GLfloat bColor = ((rand() % 100) / 200.0f) + 0.5; 
+		GLfloat rColor = ((rand() % 100) / 200.0f) + 0.5f; 
+		GLfloat gColor = ((rand() % 100) / 200.0f) + 0.5f; 
+		GLfloat bColor = ((rand() % 100) / 200.0f) + 0.5f; 
 		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
 	}
 
@@ -162,7 +161,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -175,14 +174,14 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)SCR_WIDTH / (GLfloat)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		shaderGeometryPass.use();
 		shaderGeometryPass.setMat4("projection",projection);
 		shaderGeometryPass.setMat4("view",view);
 		//绘制物体
 		for (GLuint i = 0; i < objectPositions.size(); i++)
 		{
-			model = glm::mat4();
+			model = glm::mat4(1.0f);
 			model = glm::translate(model, objectPositions[i]);
 			model = glm::scale(model, glm::vec3(0.25f));
 			shaderGeometryPass.setMat4("model",model);
@@ -205,14 +204,14 @@ int main()
 			shaderLightingPass.setVec3("lights[" + std::to_string(long long(i)) + "].Position",lightPositions[i]);
 			shaderLightingPass.setVec3("lights[" + std::to_string(long long(i)) + "].Color",lightColors[i]);
 			// 更新光照参数
-			const GLfloat constant = 1.0; 
-			const GLfloat linear = 0.7;
-			const GLfloat quadratic = 1.8;
+			const GLfloat constant = 1.0f; 
+			const GLfloat linear = 0.7f;
+			const GLfloat quadratic = 1.8f;
 			shaderLightingPass.setFloat("lights[" + std::to_string(long long(i)) + "].Linear",linear);
 			shaderLightingPass.setFloat("lights[" + std::to_string(long long(i)) + "].Quadratic",quadratic);
 			// 计算光体积半径
-			const GLfloat maxBrightness = fmaxf(fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
-			GLfloat radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * maxBrightness))) / (2 * quadratic);
+			const GLfloat maxBrightness = maxf(maxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
+			GLfloat radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2 * quadratic);
 			shaderLightingPass.setFloat("lights[" + std::to_string(long long(i)) + "].Radius",radius);
 		}
 		shaderLightingPass.setVec3("viewPos",camera.Position);
@@ -230,7 +229,7 @@ int main()
 
 		for (GLuint i = 0; i < lightPositions.size(); i++)
 		{
-			model = glm::mat4();
+			model = glm::mat4(1.0f);
 			model = glm::translate(model, lightPositions[i]);
 			model = glm::scale(model, glm::vec3(0.1f));
 			shaderLightBox.setMat4("model",model);
@@ -377,27 +376,26 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
-float fmaxf(float a,float b)
+float maxf(float a,float b)
 {
 	if (a>b)
 		return a;

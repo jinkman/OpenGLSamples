@@ -1,15 +1,15 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include "shader_s.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include "stb_image.h"
+#include <glfw/glfw3.h>
+#include <shader_s.h>
+#include <stb_image.h>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <common.h>
 
 
 
@@ -57,7 +57,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//使用着色器类
-	Shader ourShader("texture.vs", "texture.fs");
+	Shader ourShader(getLocalPath("shader/1.71-texture.vs").c_str(), getLocalPath("shader/1.71-texture.fs").c_str());
 
 	
 	// 世界坐标位置
@@ -91,7 +91,7 @@ int main()
 		
 		// 启动着色器
 		ourShader.use();
-		glm::mat4 view,projection;
+		glm::mat4 view(1.0f),projection(1.0f);
 		view = glm::lookAt(glm::vec3(camX, camY, camZ),	 //摄像机位置
 			glm::vec3(0.0f, 0.0f, 0.0f),	 //摄像机指向坐标原点
 			glm::vec3(0.0f, 1.0f, 0.0f));
@@ -101,7 +101,7 @@ int main()
 		ourShader.setMat4("projection",projection);
 		for (unsigned int i = 0; i < 10; i++)
 		{
-			glm::mat4 model;
+			glm::mat4 model(1.0f);
 			//初始世界坐标位置
 			model = glm::translate(model, cubePositions[i]);
 			//旋转矩阵
@@ -131,8 +131,8 @@ void DrawObject()
 	static unsigned int texture2 = 0;
 	if(objectVAO==0)
 	{
-		texture1 = loadTexture("a.jpg");
-		texture2 = loadTexture("b.jpg");
+		texture1 = loadTexture(getLocalPath("texture/test.jpg").c_str());
+		texture2 = loadTexture(getLocalPath("texture/test1.jpg").c_str());
 		// 顶点数据
 		float vertices[] = {
 			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -226,9 +226,12 @@ void processInput(GLFWwindow *window)
 	//还原
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		thta=0.0f;
-		phi=0.0f;
-		length=9.0f;
+		camX = 0.0f;
+		camZ = 10.0f;
+		camY = 0.0f;
+		thta = 90.0f;
+		phi = 0.0f;
+		length = 10.0f;
 	}
 	camZ = length*sin(glm::radians(thta))*cos(glm::radians(phi));
 	camX = length*sin(glm::radians(thta))*sin(glm::radians(phi));

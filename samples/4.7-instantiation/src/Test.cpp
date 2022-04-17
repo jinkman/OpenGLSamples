@@ -1,15 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"	
-#include <Windows.h>
-#include <GL/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
@@ -19,8 +17,8 @@ unsigned int SCR_HEIGHT = 600;
 
 
 // 时间
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+float deltaTime = 0.0;
+float lastFrame = 0.0;
 // 相机
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 5.0f, 0.0f));
@@ -58,8 +56,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -91,7 +89,7 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader grassShader("grass.vs","grass.fs","grass.gs");
+	Shader grassShader(getLocalPath("shader/4.7-grass.vs").c_str(), getLocalPath("shader/4.7-grass.fs").c_str(), getLocalPath("shader/4.7-grass.gs").c_str());
 	grassShader.use();
 	grassShader.setInt("diffuseMap",0);
 
@@ -100,7 +98,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//每帧相隔逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -113,7 +111,7 @@ int main()
 		//获取变换参数
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 
 		//渲染草
 		grassShader.use();
@@ -122,10 +120,9 @@ int main()
 		grassShader.setFloat("g",30.0f); //重力加速度
 		grassShader.setFloat("size",1.0f);
 		grassShader.setInt("pre",20); //精度
-		grassShader.setFloat("uTimes",glfwGetTime()*1.2f);				
-		grassShader.setVec4("grassColor",glm::vec4(0.0,0.7,0.0,0.0));				
+		grassShader.setFloat("uTimes",(float)glfwGetTime()*1.2f);				
+		grassShader.setVec4("grassColor",glm::vec4(0.0f,0.7f,0.0f,0.0f));				
 		//绘制物体
-		Sleep(60);
 		rendObject();
 
 		//交换缓冲与消息分配
@@ -169,30 +166,30 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
 void rendObject()
 {
-	static unsigned int grassMap = loadTexture("草.png");
-	static int vertextNum = 0;
+	static unsigned int grassMap = loadTexture(getLocalPath("texture/草.png").c_str());
+	static size_t vertextNum = 0;
 	static unsigned int amount = 10000;
 	if(objectVAO==0)
 	{
@@ -206,7 +203,7 @@ void rendObject()
 		float radius = 100.0f;
 		for (unsigned int i = 0; i < amount; i++)
 		{
-			glm::mat4 model;
+			glm::mat4 model(1.0f);
 			float x = rand()%(int(20*radius))/10.0f-radius;
 			float height = sqrt(pow(radius,2.0f)-pow(x,2.0f)); 
 			float z = rand()%(int(20*height)+1)/10.0f-height;
@@ -273,7 +270,7 @@ void rendObject()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, grassMap);
 	glBindVertexArray(objectVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, vertextNum/5, amount); // 绘制实例
+	glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)vertextNum/5, amount); // 绘制实例
 	glBindVertexArray(0);
 }
 
@@ -288,37 +285,37 @@ void readVertext(std::vector<float> &Arr)
 	//第一个三角形
 	Arr.push_back(-1.5f*times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(0.0f);
 	Arr.push_back(0.0f);
 
 	Arr.push_back(1.5f*times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
 	Arr.push_back(-1.5f*times);
 	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
 	//第二个三角形
 	Arr.push_back(1.5f*times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
 	Arr.push_back(1.5f*times);
 	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(1.0f);
 	Arr.push_back(1.0f);
 
 	Arr.push_back(-1.5f*times);
 	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5*space-1.5f)*times);
+	Arr.push_back((0.5f*space-1.5f)*times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
 }

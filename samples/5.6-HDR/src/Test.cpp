@@ -1,13 +1,12 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include "stb_image.h"
-#include<gl/glut.h>
-#include "shader_s.h"
-#include "camera.h"
+#include <glfw/glfw3.h>
+#include <stb_image.h>
+#include <shader_s.h>
+#include <camera.h>
 #include <iostream>
+#include <common.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -26,8 +25,8 @@ float exposure = 1.0f;
 
 // 相机参数
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)SCR_WIDTH / 2.0f;
+float lastY = (float)SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 // 时间
@@ -74,11 +73,11 @@ int main()
 	glEnable(GLFW_SAMPLES);
 
 	// 建立着色器
-	Shader shader("lighting.vs", "lighting.fs");
-	Shader hdrShader("hdr.vs", "hdr.fs");
+	Shader shader(getLocalPath("shader/5.6-lighting.vs").c_str(), getLocalPath("shader/5.6-lighting.fs").c_str());
+	Shader hdrShader(getLocalPath("shader/5.6-hdr.vs").c_str(), getLocalPath("shader/5.6-hdr.fs").c_str());
 
 	// 加载图片
-	unsigned int woodTexture = loadTexture("b.jpg",true); // 加载HDRI纹理
+	unsigned int woodTexture = loadTexture(getLocalPath("texture/test.jpg").c_str(),true); // 加载HDRI纹理
 
 	// 配置HDR帧缓冲
 	unsigned int hdrFBO;
@@ -127,7 +126,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -310,13 +309,13 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	{
 		if (exposure > 0.0f)
-			exposure -= 0.001f;
+			exposure -= 0.005f;
 		else
 			exposure = 0.0f;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
-		exposure += 0.001f;
+		exposure += 0.005f;
 	}
 }
 
@@ -330,24 +329,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 

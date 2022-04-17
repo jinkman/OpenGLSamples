@@ -1,13 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
@@ -81,8 +81,8 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 	//使用着色器
-	Shader shader("object.vs","object.fs");
-	Shader lampShader("lamp.vs","lamp.fs");
+	Shader shader(getLocalPath("shader/2.2-object.vs").c_str(), getLocalPath("shader/2.2-object.fs").c_str());
+	Shader lampShader(getLocalPath("shader/2.2-lamp.vs").c_str(), getLocalPath("shader/2.2-lamp.fs").c_str());
 
 	shader.use();
 	shader.setInt("diffuseMap",0);
@@ -96,7 +96,7 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		//处理外部输入
@@ -108,7 +108,7 @@ int main()
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::translate(model,objectPos);
 		//设置着色器参数
 		shader.use();
@@ -125,10 +125,10 @@ int main()
 		lampShader.use();
 		lampShader.setMat4("projection",projection);
 		lampShader.setMat4("view",view);
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		
 		model = glm::translate(model,lightPos);
-		model = glm::scale(model,glm::vec3(0.2));
+		model = glm::scale(model,glm::vec3(0.2f));
 		lampShader.setMat4("model",model);
 		lampShader.setVec3("lightColor",lightColor);
 		rendObject();
@@ -174,8 +174,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void rendObject()
 {
 	// 加载纹理
-	static unsigned int diffuseMap = loadTexture("a.png");
-	static unsigned int specularMap = loadTexture("b.jpg");
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.png").c_str());
+	static unsigned int specularMap = loadTexture(getLocalPath("texture/test2.jpg").c_str());
 	if(objectVAO==0)
 	{
 		float vertices[] = {
@@ -251,23 +251,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 unsigned int loadTexture(char const * path)

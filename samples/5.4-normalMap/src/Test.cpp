@@ -1,24 +1,23 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
-#include <GL/glad.h>
-#include <gl/glfw3.h>
-#include <gl/glut.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <math.h>
-#include "camera.h"
-#include "shader_s.h"
-#include "stb_image.h"
+#include <camera.h>
+#include <shader_s.h>
+#include <stb_image.h>
+#include <common.h>
 
 
 // 屏幕
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
-#define PI 3.1415926
+#define PI 3.1415926f
 
 
 // 时间
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+float deltaTime = 0.0;
+float lastFrame = 0.0;
 // 相机
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -33,7 +32,7 @@ void processInput(GLFWwindow *window);
 void rendObject();
 void readVertext(std::vector<float> &Arr);
 unsigned int loadTexture(char const * path);
-void Rotatez(glm::vec3 &a,double Thta);
+void Rotatez(glm::vec3 &a,float Thta);
 
 
 unsigned int objectVAO=0, objectVBO;
@@ -56,8 +55,8 @@ int main()
 		SCR_HEIGHT=vidmode->height;
 		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2;
-		lastY=SCR_HEIGHT/2;			  //屏幕正中心
+		lastX=SCR_WIDTH/2.0f;
+		lastY=SCR_HEIGHT/2.0f;			  //屏幕正中心
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -73,11 +72,11 @@ int main()
 	glfwMakeContextCurrent(window);
 	//注册回调函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	//设置输入模式
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //禁用鼠标
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //禁用鼠标
 
 	//加载函数指针
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -89,9 +88,9 @@ int main()
 	// 开启OpenGL状态
 	glEnable(GL_DEPTH_TEST);
 
-	Shader shader("normal_mapping.vs", "normal_mapping.fs");
-	GLuint diffuseMap = loadTexture("纹理.jpg");
-	GLuint normalMap = loadTexture("法线.jpg");
+	Shader shader(getLocalPath("shader/5.4-normal_mapping.vs").c_str(), getLocalPath("shader/5.4-normal_mapping.fs").c_str());
+	GLuint diffuseMap = loadTexture(getLocalPath("texture/纹理.jpg").c_str());
+	GLuint normalMap = loadTexture(getLocalPath("texture/法线.jpg").c_str());
 
 	shader.use();
 	shader.setInt("diffuseMap",0);
@@ -101,7 +100,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//每帧相隔逻辑时间
-		GLfloat currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -116,7 +115,7 @@ int main()
 		glm::mat4 projection = glm::perspective(camera.Zoom, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		shader.setMat4("view",view);
 		shader.setMat4("projection",projection);
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::rotate(model, 0.0f , glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // Rotates the quad to show normal mapping works in all directions
 		shader.setMat4("model",model);
 		shader.setVec3("lightPos",lightPos);
@@ -180,29 +179,29 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; 
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 
 void rendObject()
 {
-	static int vertextNum = 0;
+	static size_t vertextNum = 0;
 	if(objectVAO==0)
 	{
 		std::vector<float> Arr;
@@ -229,7 +228,7 @@ void rendObject()
 	}
 	//绑定纹理
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, vertextNum/11); // 绘制
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/11); // 绘制
 	glBindVertexArray(0);
 }
 
@@ -237,11 +236,11 @@ void rendObject()
 //读入顶点坐标
 void readVertext(std::vector<float> &Arr)
 {
-	for(double Theta=0;Theta<180;Theta+=1.0)
+	for(float Theta=0.0f;Theta<180.0f;Theta+=1.0f)
 	{
-		glm::vec3 p1(sin(Theta*PI/180.0),cos(Theta*PI/180.0),0);
-		glm::vec3 p2(sin((Theta+1.0)*PI/180.0),cos((Theta+1.0)*PI/180.0),0);
-		for(double Phi=0;Phi<360;Phi+=1.0)
+		glm::vec3 p1(sin(Theta*PI/180.0f),cos(Theta*PI/180.0f),0.0f);
+		glm::vec3 p2(sin((Theta+1.0f)*PI/180.0f),cos((Theta+1.0f)*PI/180.0f),0.0f);
+		for(float Phi=0.0f;Phi<360.0f;Phi+=1.0f)
 		{
 			glm::vec3 pos1;
 			glm::vec3 pos2;
@@ -252,19 +251,19 @@ void readVertext(std::vector<float> &Arr)
 			glm::vec2 uv3;
 			glm::vec2 uv4;
 			pos1.x=p1.x;pos1.y=p1.y;pos1.z=p1.z;
-			Rotatez(p1,1.0);
+			Rotatez(p1,1.0f);
 			pos4.x=p1.x;pos4.y=p1.y;pos4.z=p1.z;
 			pos2.x=p2.x;pos2.y=p2.y;pos2.z=p2.z;
-			Rotatez(p2,1.0);
+			Rotatez(p2,1.0f);
 			pos3.x=p2.x;pos3.y=p2.y;pos3.z=p2.z;
-			uv1.x=1.0-Phi/360.0;
-			uv1.y=Theta/180.0;
-			uv4.x=1-(Phi+1.0)/360.0;
-			uv4.y=Theta/180.0;
-			uv2.x=1.0-Phi/360.0;
-			uv2.y=(Theta+1.0)/180.0;
-			uv3.x=1.0-(Phi+1.0)/360.0;
-			uv3.y=(Theta+1.0)/180.0;
+			uv1.x=1.0f-Phi/360.0f;
+			uv1.y=Theta/180.0f;
+			uv4.x=1.0f-(Phi+1.0f)/360.0f;
+			uv4.y=Theta/180.0f;
+			uv2.x=1.0f-Phi/360.0f;
+			uv2.y=(Theta+1.0f)/180.0f;
+			uv3.x=1.0f-(Phi+1.0f)/360.0f;
+			uv3.y=(Theta+1.0f)/180.0f;
 			//计算
 			// calculate tangent/bitangent vectors of both triangles
 			glm::vec3 tangent1, bitangent1;
@@ -384,12 +383,12 @@ void readVertext(std::vector<float> &Arr)
 }
 
 //绕y轴旋转
-void Rotatez(glm::vec3 &a,double Thta)									
+void Rotatez(glm::vec3 &a,float Thta)									
 {
-	double a1=a.z;			
-	double b1=a.x;
-	a.x=b1*cos(Thta*PI/180.0)-a1*sin(Thta*PI/180.0);
-	a.z=b1*sin(Thta*PI/180.0)+a1*cos(Thta*PI/180.0);
+	float a1=a.z;			
+	float b1=a.x;
+	a.x=b1*cos(Thta*PI/180.0f)-a1*sin(Thta*PI/180.0f);
+	a.z=b1*sin(Thta*PI/180.0f)+a1*cos(Thta*PI/180.0f);
 }
 
 

@@ -1,15 +1,15 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include "shader_s.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
-#include <gl/stb_image.h>
+#include <glfw/glfw3.h>
+#include <shader_s.h>
+#include <stb_image.h>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <common.h>
 
 
 void processInput(GLFWwindow *window);
@@ -46,7 +46,7 @@ int main()
 	}
 
 	//使用着色器类
-	Shader ourShader("texture.vs", "texture.fs");
+	Shader ourShader(getLocalPath("shader/1.4-texture.vs").c_str(), getLocalPath("shader/1.4-texture.fs").c_str());
 
 	float vertices[] = {
 		// 位置              // 纹理坐标
@@ -89,7 +89,7 @@ int main()
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true);    //处理倒置
 	//加载纹理
-	unsigned char *data = stbi_load("a.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load(getLocalPath("texture/test.jpg").c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);

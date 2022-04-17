@@ -1,9 +1,8 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
+#include <glfw/glfw3.h>
 #include <iostream>
 #include <math.h>
 
@@ -126,7 +125,7 @@ int main()
 		glBindVertexArray(VAO);	   	//绑定顶点数组
 
 		// 更新着色器颜色
-		float timeValue = glfwGetTime();		 //返回运行时间（连续）
+		float timeValue = (float)glfwGetTime();		 //返回运行时间（连续）
 		float greenValue = sin(timeValue) / 2.0f + 0.5f;
 		float redValue = cos(timeValue) / 2.0f + 0.5f;
 		float blueValue = cos(timeValue) / 2.0f + 0.5f;

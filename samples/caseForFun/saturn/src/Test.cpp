@@ -1,14 +1,13 @@
 // 实例化渲染.cpp : 定义控制台应用程序的入口点。
 //
-
-#include "stdafx.h"
 #include <glad/glad.h>
-#include <GL/glfw3.h>
+#include <glfw/glfw3.h>
 #include<vector>
 #include <iostream>
-#include "stb_image.h"
-#include "camera.h"
-#include "model.h"
+#include <stb_image.h>
+#include <camera.h>
+#include <Model.h>
+#include <common.h>
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -35,7 +34,7 @@ bool firstMouse = true;
 // 时间
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-static double Speed=1.0;
+static float speed=1.0f;
 
 int main()
 {
@@ -114,24 +113,24 @@ int main()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 建立连接着色器
-	Shader asteroidShader("asteroids.vs", "asteroids.fs");
-	Shader shaderLightingPass("deferred_shading.vs", "deferred_shading.fs");
-	Shader planetShader("planet.vs", "planet.fs");
+	Shader asteroidShader(getLocalPath("shader/case8-asteroids.vs").c_str(), getLocalPath("shader/case8-asteroids.fs").c_str());
+	Shader shaderLightingPass(getLocalPath("shader/case8-deferred_shading.vs").c_str(), getLocalPath("shader/case8-deferred_shading.fs").c_str());
+	Shader planetShader(getLocalPath("shader/case8-planet.vs").c_str(), getLocalPath("shader/case8-planet.fs").c_str());
 
 	//加载模型
-	Model rock("rock/rock.obj");
-	Model planet("planet/planet.obj");
+	Model rock(getLocalPath("model/rock/rock.obj").c_str());
+	Model planet(getLocalPath("model/planet/planet.obj").c_str());
 
 	// 配置大数量的变换矩阵
 	unsigned int amount = 20000;
 	glm::mat4* modelMatrices;
 	modelMatrices = new glm::mat4[amount];
-	srand(glfwGetTime()); // 初始化随机种子
+	srand((unsigned int)glfwGetTime()); // 初始化随机种子
 	float radius = 150.0;
 	float offset = 25.0f;
 	for (unsigned int i = 0; i < amount; i++)
 	{
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		// 1. 位移：分布在半径为 'radius' 的圆形上，偏移的范围是 [-offset, offset]
 		float angle = (float)i / (float)amount * 360.0f;
 		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
@@ -143,11 +142,11 @@ int main()
 		model = glm::translate(model, glm::vec3(x, y, z));
 
 		// 2. 缩放大小在 0.05f 到 0.25f之间
-		float scale = (rand() % 50) / 100.0f + 0.05;
+		float scale = (rand() % 50) / 100.0f + 0.05f;
 		model = glm::scale(model, glm::vec3(scale,scale,scale));
 
 		// 3. 设置随机旋转角度
-		float rotAngle = (rand() % 360);
+		float rotAngle = float(rand() % 360);
 		model = glm::rotate(model, rotAngle, glm::vec3(rand()%1000/1000.0f, rand()%1000/1000.0f, rand()%1000/1000.0f));
 
 		// 4. 加入到矩阵列表
@@ -193,7 +192,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -209,17 +208,17 @@ int main()
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		//旋转变量
-		float Speed = glfwGetTime()/10;
+		float Speed = (float)glfwGetTime()/10.0f;
 		// 画陨星到g缓冲
 		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		asteroidShader.use();
 		asteroidShader.setMat4("projection", projection);
 		asteroidShader.setMat4("view", view);
 		model = glm::rotate(model,glm::radians(Speed),glm::vec3(0.0f,1.0f,0.0f));		  //公转
 		asteroidShader.setMat4("model", model);
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::rotate(model,glm::radians(Speed*20.0f),glm::vec3(0.0f,1.0f,0.0f));		  //自转
 		asteroidShader.setMat4("smodel", model);
 		//设置参数
@@ -228,7 +227,7 @@ int main()
 		for (unsigned int i = 0; i < rock.meshes.size(); i++)
 		{
 			glBindVertexArray(rock.meshes[i].VAO);
-			glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
+			glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
 			glBindVertexArray(0);
 		}
 
@@ -283,6 +282,7 @@ int main()
 
 void processInput(GLFWwindow *window)
 {
+	static float Speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -294,16 +294,15 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime*Speed);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		Speed+=0.1;
+		Speed+=0.1f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
-		if(Speed>0.0)
-			Speed-=0.1;
+		if(Speed>0.0f)
+			Speed-=0.1f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
-		glfwTerminate();
-		exit(0);
+		glfwSetWindowShouldClose(window, true);
 	}
 }
 
@@ -318,24 +317,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 

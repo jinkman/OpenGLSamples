@@ -1,13 +1,13 @@
 // Test.cpp : 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
-#include "shader_s.h"
-#include "camera.h"
-#include "model.h"
+#include <shader_s.h>
+#include <camera.h>
+#include <Model.h>
 #include <iostream>
 #include <random>
+#include <common.h>
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -25,8 +25,8 @@ const unsigned int SCR_HEIGHT = 720;
 
 // 相机
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)SCR_WIDTH / 2.0f;
+float lastY = (float)SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 // 时间
@@ -74,14 +74,14 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// 建立着色器
-	Shader shaderGeometryPass("ssao_geometry.vs", "ssao_geometry.fs");
-	Shader shaderLightingPass("ssao.vs", "ssao_lighting.fs");
-	Shader shaderSSAO("ssao.vs", "ssao.fs");
-	Shader shaderSSAOBlur("ssao.vs", "ssao_blur.fs");
+	Shader shaderGeometryPass(getLocalPath("shader/5.9-ssao_geometry.vs").c_str(), getLocalPath("shader/5.9-ssao_geometry.fs").c_str());
+	Shader shaderLightingPass(getLocalPath("shader/5.9-ssao.vs").c_str(), getLocalPath("shader/5.9-ssao_lighting.fs").c_str());
+	Shader shaderSSAO(getLocalPath("shader/5.9-ssao.vs").c_str(), getLocalPath("shader/5.9-ssao.fs").c_str());
+	Shader shaderSSAOBlur(getLocalPath("shader/5.9-ssao.vs").c_str(), getLocalPath("shader/5.9-ssao_blur.fs").c_str());
 
 	// 加载模型
-	Model nanosuit("model/nanosuit.obj");
-	unsigned int woodTexture = loadTexture("b.jpg");
+	Model nanosuit(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
+	unsigned int woodTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
 
 	// 配置g—缓冲
 	unsigned int gBuffer;
@@ -160,7 +160,7 @@ int main()
 		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));   //法线半球
 		sample = glm::normalize(sample);		 //单位化至半球
 		sample *= randomFloats(generator);
-		float scale = float(i) / 64.0;
+		float scale = float(i) / 64.0f;
 
 		// 尽量靠近原点
 		scale = lerp(0.1f, 1.0f, scale * scale);
@@ -206,7 +206,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 每帧逻辑时间
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -286,9 +286,9 @@ int main()
 		glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
 		shaderLightingPass.setVec3("light.Position", lightPosView);
 		shaderLightingPass.setVec3("light.Color", lightColor);
-		const float constant  = 1.0; // 假设一直为1
-		const float linear    = 0.09;
-		const float quadratic = 0.032;
+		const float constant  = 1.0f; // 假设一直为1
+		const float linear    = 0.09f;
+		const float quadratic = 0.032f;
 		shaderLightingPass.setFloat("light.Linear", linear);
 		shaderLightingPass.setFloat("light.Quadratic", quadratic);
 		glActiveTexture(GL_TEXTURE0);
@@ -443,24 +443,25 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
+
 
 unsigned int loadTexture(char const * path)
 {
