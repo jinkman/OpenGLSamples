@@ -1,10 +1,11 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform float time;
 uniform vec2 resolution;
 uniform samplerCube Map;
-//Ïà»ú²ÎÊı
+
 uniform vec3 cameraPosition;
 uniform vec3 cameraFront;
 uniform vec3 cameraRight;
@@ -86,7 +87,7 @@ vec3 normal(vec2 pos, float e, float depth){
                            normalize(a-vec3(pos.x, getwavesHI(pos.xy + ex.yx) * depth, pos.y + e))));
 }
 
-float rand2sTimex(vec2 co)   //²úÉúËæÊ±¼ä±ä»¯µÄÕıÏÒº¯Êı
+float rand2sTimex(vec2 co)   //äº§ç”Ÿéšæ—¶é—´å˜åŒ–çš„æ­£å¼¦å‡½æ•°
 {
     return fract(sin(dot(co.xy * iGlobalTime,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -109,14 +110,14 @@ float raymarchwater(vec3 camera, vec3 start, vec3 end, float depth)
     return -1.0;
 }
 
-//ÓëÆ½ÃæÏà½»²âÊÔ
+//ä¸å¹³é¢ç›¸äº¤æµ‹è¯•
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { 
     //N*p(t)+D=0  y=R0+Rd*t   t=-(D+N*R0)/(N*Ed); 
     return clamp(dot(point - origin, normal) / dot(normal ,direction), -1.0, 9991999.0); 
 }
 
-//¸ù¾İ¹âÏßyÖµ»ñµÃ´óÆø²ãÑÕÉ«
+//æ ¹æ®å…‰çº¿yå€¼è·å¾—å¤§æ°”å±‚é¢œè‰²
 vec3 getatm(vec3 ray)
 {
     //return vec3(0.0, 0.2, 0.5);
@@ -124,7 +125,7 @@ vec3 getatm(vec3 ray)
     return clamp(mix(vec3(0.5), vec3(0.0, 0.5, 1.0), sqrt(abs(ray.y))),0.0,1.0)/30.0;
 }
 
-//¹âÏßÓëÇòÇó½»
+//å…‰çº¿ä¸çƒæ±‚äº¤
 bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Normal)
 {
     vec3 oc = origin - center;
@@ -134,13 +135,13 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Nor
     float discriminant = B*B - A*C;
     if (discriminant > 1e-6) 
     {
-        float temp = (-B - sqrt(discriminant)) / A;  //½ÏĞ¡½â
+        float temp = (-B - sqrt(discriminant)) / A;  //è¾ƒå°è§£
         if (temp > 1e-6) 
         {
             Normal = (origin + temp * Dir - center) / Radius;
             return true;
         }
-        temp = (-B + sqrt(discriminant)) / A;      //½Ï´ó½â
+        temp = (-B + sqrt(discriminant)) / A;      //è¾ƒå¤§è§£
         if (temp > 1e-6)
         {
             Normal = (origin + temp * Dir - center) / Radius;
@@ -149,7 +150,7 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Nor
     }
     return false;
 }
-//»ñµÃÔÂÁÁÑÕÉ«
+
 vec3 moon(vec3 orig,vec3 ray)
 {
 //    vec3 sd = normalize(vec3(0.0,0.05,1.0)); 
@@ -171,24 +172,24 @@ vec3 moon(vec3 orig,vec3 ray)
 
 vec3 getColor(vec2 uv)
 {
-    float waterdepth = 2.7;  //Ë®²¨¸ß¶È
+    float waterdepth = 2.7;  //æ°´æ³¢é«˜åº¦
     vec3 wfloor = vec3(0.0, -waterdepth, 0.0);
     vec3 wceil = vec3(0.0, 0.0, 0.0);
-    //¹âÏßÍ¶Éä
+    //å…‰çº¿æŠ•å°„
     vec3 orig = cameraPosition;
     vec3 ray = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);
-    //Ìì¿ÕÑÕÉ«
+    //å¤©ç©ºé¢œè‰²
     if(ray.y >= -0.01)
     {
-        vec3 C = getatm(ray) * 2.0 + moon(orig,ray);  //Ìì¿ÕÓëÔÂÁÁÑÕÉ«
-        C = normalize(C) * sqrt(length(C));   //gammaĞ£Õı
+        vec3 C = getatm(ray) * 2.0 + moon(orig,ray); //å¤©ç©ºä¸æœˆäº®é¢œè‰²
+        C = normalize(C) * sqrt(length(C));   //gammaæ ¡æ­£
         return C; 
     }
-    //º£ÃæÑÕÉ«
+    //æµ·é¢é¢œè‰²
     float hihit = intersectPlane(orig, ray, wceil, vec3(0.0, 1.0, 0.0));  
     float lohit = intersectPlane(orig, ray, wfloor, vec3(0.0, 1.0, 0.0));
-    vec3 hipos = orig + ray * hihit;   //ÉÏÆ½Ãæ½»µã
-    vec3 lopos = orig + ray * lohit;   //ÏÂÆ½Ãæ½»µã
+    vec3 hipos = orig + ray * hihit;   //ä¸Šå¹³é¢äº¤ç‚¹
+    vec3 lopos = orig + ray * lohit;   //ä¸‹å¹³é¢äº¤ç‚¹
     float dist = raymarchwater(orig, hipos, lopos, waterdepth);
     vec3 pos = orig + ray * dist;
 
@@ -199,31 +200,32 @@ vec3 getColor(vec2 uv)
     float fresnel = (0.04 + (1.0-0.04)*(pow(1.0 - max(0.0, dot(-N, ray)), 5.0)));
 	
     vec3 C = fresnel * getatm(R) * 2.0 + fresnel * moon(orig,R);
-    C = normalize(C) * sqrt(length(C)); //gammaĞ£Õı
+    C = normalize(C) * sqrt(length(C)); //gamma
     
 	return C;
 }
 
 void mainImage( inout vec4 fragColor, in vec2 fragCoord )
 {
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 xy = gl_FragCoord.xy / resolution.xy;
     vec2 uv = (-1.0 + 2.0 * xy) * vec2(resolution.x/resolution.y,1.0);
-    //¼ÆËãÑÕÉ«
+    //è®¡ç®—é¢œè‰²
     vec3 C = vec3(0.0);
     float W = 0.0;
-    //²ÉÑù´ÎÊı
+    //é‡‡æ ·æ¬¡æ•°
     for(int i=0;i<AA_SAMPLES;i++){
-        C += getColor(uv + vec2(rand2sTimex(uv), rand2sTimex(uv + 100.0)) / iResolution.xy);  //Ëæ»úÈÅ¶¯   
+        C += getColor(uv + vec2(rand2sTimex(uv), rand2sTimex(uv + 100.0)) / iResolution.xy);  //ï¿½ï¿½ï¿½ï¿½Å¶ï¿½   
         uv += 200.0;
         W += 1.0;
     }
     C /= W;
-    fragColor = vec4(C,1.0);   //×îÖÕÑÕÉ«
+    fragColor = vec4(C,1.0); 
 }
+
 void main( void ) 
 {
     vec4 color = vec4(0.0);
     mainImage(color, gl_FragCoord.xy);
-    gl_FragColor = color;
+    FragColor = color;
 }

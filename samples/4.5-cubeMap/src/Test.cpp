@@ -1,8 +1,8 @@
-// Test.cpp : ∂®“Âøÿ÷∆Ã®”¶”√≥Ã–Úµƒ»Îø⁄µ„°£
+// Test.cpp : ÂÆö‰πâÊéßÂà∂Âè∞Â∫îÁî®Á®ãÂ∫èÁöÑÂÖ•Âè£ÁÇπ„ÄÇ
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include <shader_s.h>
 #include <camera.h>
@@ -10,32 +10,26 @@
 #include <Model.h>
 #include <common.h>
 
-
 #define PI 3.1415926
 std::vector<float> Arr;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
-
 
 unsigned int loadTexture(const char *path);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
+int SCR_WIDTH = 1280;
+int SCR_HEIGHT = 720;
 
-// ∆¡ƒª¥Û–°
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
-
-// œ‡ª˙
-Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
+Camera camera(glm::vec3(0.0f, 1.0f, 2.0f));
 float lastX = (float)SCR_WIDTH / 2.0;
 float lastY = (float)SCR_HEIGHT / 2.0;
 bool firstMouse = true;
 
-//  ±º‰
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -43,40 +37,35 @@ unsigned int objectVAO = 0, objectVBO;
 
 int main()
 {
-	// ≥ı ºªØglfw
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-	// ¥¥Ω®¥∞ø⁄
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
+	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	// ≤∂ªÒ Û±Í
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// º”‘ÿgladø‚
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ∆Ù”√…Ó∂»≤‚ ‘
 	glEnable(GL_DEPTH_TEST);
 
-	// Ω®¡¢◊≈…´∆˜
 	Shader shader(getLocalPath("shader/4.5-cubemaps.vs").c_str(), getLocalPath("shader/4.5-cubemaps.fs").c_str());
 	Shader skyboxShader(getLocalPath("shader/4.5-skybox.vs").c_str(), getLocalPath("shader/4.5-skybox.fs").c_str());
 
@@ -85,8 +74,7 @@ int main()
 	shader.use();
 	shader.setInt("skybox", 0);
 
-	//º”‘ÿƒ£–Õ
-	Model ourModel("model/nanosuit.obj");
+	Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
 
 	std::vector<std::string> faces;
 	faces.push_back(getLocalPath("skybox/right.jpg"));
@@ -98,59 +86,51 @@ int main()
 
 	unsigned int cubemapTexture = loadCubemap(faces);
 
-	
-	// ‰÷»æ—≠ª∑
 	while (!glfwWindowShouldClose(window))
-	{   
-		//√ø÷°¬ﬂº≠ ±º‰
-        float currentFrame = (float)glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+	{
+		float currentFrame = (float)glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
-        // º¸»Î
-        processInput(window);
+		processInput(window);
 
-        // ‰÷»æ
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // ◊≈…´∆˜±‰¡ø
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glm::mat4 view = camera.GetViewMatrix(); // “∆≥˝Œª“∆
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 model(1.0f);
-		model = glm::scale(model,glm::vec3(0.1f));
+		model = glm::scale(model, glm::vec3(0.1f));
 		shader.use();
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-        shader.setVec3("cameraPos", camera.Position);
-		shader.setInt("halfWidth",SCR_WIDTH/2);
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		shader.setVec3("cameraPos", camera.Position);
+		shader.setInt("halfWidth", SCR_WIDTH / 2);
 		ourModel.Draw(shader);
-        
-        // ª≠ÃÏø’∫–
-        glDepthFunc(GL_LEQUAL);  // –°”⁄ªÚ’ﬂµ»”⁄ ±ªÊ÷∆
-        // ÃÏø’∫–
+
+		// skybox optimize
+		glDepthFunc(GL_LEQUAL);
+
 		skyboxShader.use();
-		view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // “∆≥˝Œª“∆
+		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 		skyboxShader.setMat4("view", view);
 		skyboxShader.setMat4("projection", projection);
-        rendObject();
-        glDepthFunc(GL_LESS); // …Ë÷√…Ó∂»ª∫≥Â÷µŒ™ƒ¨»œ÷µ
+		rendObject();
+		glDepthFunc(GL_LESS);
 
-        glfwSwapBuffers(window);   //Ωªªª—’…´ª∫≥Â
-        glfwPollEvents();	 //∑÷≈‰œ˚œ¢
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
-	//  Õ∑≈◊ ‘¥
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 
 	glfwTerminate();
 	return 0;
 }
-
 
 void processInput(GLFWwindow *window)
 {
@@ -170,75 +150,71 @@ void processInput(GLFWwindow *window)
 
 void rendObject()
 {
-	if(objectVAO==0)
+	if (objectVAO == 0)
 	{
-		// ∂•µ„ ˝æ›
 		float skyboxVertices[] = {
-			// positions          
-			-1.0f,  1.0f, -1.0f,
+			// positions
+			-1.0f, 1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
-			1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
 
-			-1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f, 1.0f,
 			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f,
 
 			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f,  1.0f,
-			1.0f,  1.0f,  1.0f,
-			1.0f,  1.0f,  1.0f,
-			1.0f,  1.0f, -1.0f,
+			1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
 
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			1.0f,  1.0f,  1.0f,
-			1.0f,  1.0f,  1.0f,
-			1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f,
 
-			-1.0f,  1.0f, -1.0f,
-			1.0f,  1.0f, -1.0f,
-			1.0f,  1.0f,  1.0f,
-			1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f,
 
 			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f, 1.0f,
 			1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			1.0f, -1.0f,  1.0f
-		};
+			-1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f};
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
 		glBindVertexArray(objectVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 		glBindVertexArray(0);
 	}
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36); // ªÊ÷∆
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -256,17 +232,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }
-
 
 // +X (right)
 // -X (left)
 // +Y (top)
 // -Y (bottom)
-// +Z (front) 
+// +Z (front)
 // -Z (back)
 // -------------------------------------------------------
 unsigned int loadCubemap(std::vector<std::string> faces)
@@ -298,4 +273,3 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 	return textureID;
 }
-

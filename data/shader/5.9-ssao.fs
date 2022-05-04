@@ -5,16 +5,16 @@ in vec2 TexCoords;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2D texNoise; //Ëæ»úĞı×ªÎÆÀí
+uniform sampler2D texNoise;
 
 uniform vec3 samples[64];
 
-// ²ÎÊı
+// å‚æ•°
 int kernelSize = 64;
 float radius = 0.5;
 float bias = 0.025;
 
-// ¶ÔÓ¦Æ½ÆÌ
+// å¯¹åº”å¹³é“º
 const vec2 noiseScale = vec2(1280.0/4.0, 720.0/4.0); 
 
 uniform mat4 projection;
@@ -22,33 +22,33 @@ uniform bool useSSAO;
 
 void main()
 {
-    // »ñµÃÊäÈë
+    // è·å¾—è¾“å…¥
     if(useSSAO)
     {
         vec3 fragPos = texture(gPosition, TexCoords).xyz;
         vec3 normal = normalize(texture(gNormal, TexCoords).rgb);
         vec3 randomVec = normalize(texture(texNoise, TexCoords * noiseScale).xyz);
-        // Gramm-SchmidtÕı½»»¯
+        // Gramm-Schmidtæ­£äº¤åŒ–
         vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
         vec3 bitangent = cross(normal, tangent);
         mat3 TBN = mat3(tangent, bitangent, normal);
-        // ¼ÆËãÕÚµ²ÂÊ
+        // è®¡ç®—é®æŒ¡ç‡
         float occlusion = 0.0;
         for(int i = 0; i < kernelSize; ++i)
         {
-            // »ñÈ¡Ñù±¾Î»ÖÃ
-            vec3 sample = TBN * samples[i]; // ×ª»»µ½TBN¿Õ¼ä
+            // è·å–æ ·æœ¬ä½ç½®
+            vec3 sample = TBN * samples[i]; // è½¬æ¢åˆ°TBNç©ºé—´
             sample = fragPos + sample * radius; 
        
             vec4 offset = vec4(sample, 1.0);
-            offset = projection * offset; // ×ª»»µ½²Ã¼ô¿Õ¼ä
-            offset.xyz /= offset.w; // Í¸ÊÓ³ı·¨
-            offset.xyz = offset.xyz * 0.5 + 0.5; // ×ª»»µ½ 0.0 - 1.0
+            offset = projection * offset; // è½¬æ¢åˆ°è£å‰ªç©ºé—´
+            offset.xyz /= offset.w; // é€è§†é™¤æ³•
+            offset.xyz = offset.xyz * 0.5 + 0.5; // è½¬æ¢åˆ° 0.0 - 1.0
         
-            // »ñµÃÑù±¾Éî¶È
+            // è·å¾—æ ·æœ¬æ·±åº¦
             float sampleDepth = texture(gPosition, offset.xy).z; 
         
-            // ±£Ö¤Ö»ÔÚ°ë¾¶·¶Î§ÄÚÓĞĞ§
+            // ä¿è¯åªåœ¨åŠå¾„èŒƒå›´å†…æœ‰æ•ˆ
             float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
             occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;           
         }

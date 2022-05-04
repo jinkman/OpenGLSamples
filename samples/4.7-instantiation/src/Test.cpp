@@ -1,43 +1,36 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <math.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
 
-
-// ÆÁÄ»
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 #define PI 3.1415926
 
-
-// Ê±¼ä
 float deltaTime = 0.0;
 float lastFrame = 0.0;
-// Ïà»ú
+
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 5.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-//º¯ÊıÉùÃ÷
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
 void readVertext(std::vector<float> &Arr);
-unsigned int loadTexture(char const * path);
-void Rotatez(glm::vec3 &a,double Thta);
+unsigned int loadTexture(char const *path);
+void Rotatez(glm::vec3 &a, double Thta);
 
-
-unsigned int objectVAO=0, objectVBO;
-
+unsigned int objectVAO = 0, objectVBO;
 
 int main()
 {
@@ -46,18 +39,17 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨È«ÆÁ
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//»ñÈ¡µ±Ç°Éè±¸µÄÒ»Ğ©ÊôĞÔ
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2.0f;
-		lastY=SCR_HEIGHT/2.0f;			  //ÆÁÄ»ÕıÖĞĞÄ
+		lastX = SCR_WIDTH / 2.0f;
+		lastY = SCR_HEIGHT / 2.0f;
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -69,67 +61,57 @@ int main()
 		return -1;
 	}
 
-	//»ñÈ¡Éè±¸ÉÏÏÂÎÄ
 	glfwMakeContextCurrent(window);
-	//×¢²á»Øµ÷º¯Êı
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	//ÉèÖÃÊäÈëÄ£Ê½
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //½ûÓÃÊó±ê
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//¼ÓÔØº¯ÊıÖ¸Õë
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ¿ªÆôOpenGL×´Ì¬
 	glEnable(GL_DEPTH_TEST);
-	//Ê¹ÓÃ×ÅÉ«Æ÷
+
 	Shader grassShader(getLocalPath("shader/4.7-grass.vs").c_str(), getLocalPath("shader/4.7-grass.fs").c_str(), getLocalPath("shader/4.7-grass.gs").c_str());
 	grassShader.use();
-	grassShader.setInt("diffuseMap",0);
+	grassShader.setInt("diffuseMap", 0);
 
-	
-	//äÖÈ¾Ñ­»·
 	while (!glfwWindowShouldClose(window))
 	{
-		//Ã¿Ö¡Ïà¸ôÂß¼­Ê±¼ä
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		//´¦ÀíÍâ²¿ÊäÈë
-		processInput(window); 
-		//Çå³ı»º´æ
+		processInput(window);
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//»ñÈ¡±ä»»²ÎÊı
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model(1.0f);
 
-		//äÖÈ¾²İ
 		grassShader.use();
 		grassShader.setMat4("projection", projection);
 		grassShader.setMat4("view", view);
-		grassShader.setFloat("g",30.0f); //ÖØÁ¦¼ÓËÙ¶È
-		grassShader.setFloat("size",1.0f);
-		grassShader.setInt("pre",20); //¾«¶È
-		grassShader.setFloat("uTimes",(float)glfwGetTime()*1.2f);				
-		grassShader.setVec4("grassColor",glm::vec4(0.0f,0.7f,0.0f,0.0f));				
-		//»æÖÆÎïÌå
+		grassShader.setFloat("g", 30.0f);
+
+		grassShader.setFloat("size", 1.0f);
+		grassShader.setInt("pre", 20);
+		grassShader.setFloat("uTimes", (float)glfwGetTime() * 1.2f);
+		grassShader.setVec4("grassColor", glm::vec4(0.0f, 0.7f, 0.0f, 0.0f));
+
 		rendObject();
 
-		//½»»»»º³åÓëÏûÏ¢·ÖÅä
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//É¾³ı¶ÔÏó¼°ÊÍ·Å×ÊÔ´
+
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 	glfwTerminate();
@@ -138,31 +120,30 @@ int main()
 
 void processInput(GLFWwindow *window)
 {
-	static float speed=1.0f;
+	static float speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime*speed);
+		camera.ProcessKeyboard(FORWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime*speed);
+		camera.ProcessKeyboard(BACKWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime*speed);
+		camera.ProcessKeyboard(LEFT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime*speed);
+		camera.ProcessKeyboard(RIGHT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		speed+=0.01f;
+		speed += 0.01f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		speed-=0.01f;
+		speed -= 0.01f;
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 
 	glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -180,60 +161,56 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }
 
-
 void rendObject()
 {
-	static unsigned int grassMap = loadTexture(getLocalPath("texture/²İ.png").c_str());
+	static unsigned int grassMap = loadTexture(getLocalPath("texture/è‰.png").c_str());
 	static size_t vertextNum = 0;
 	static unsigned int amount = 10000;
-	if(objectVAO==0)
+	if (objectVAO == 0)
 	{
 		std::vector<float> vArr;
 		readVertext(vArr);
 		vertextNum = vArr.size();
 		if (vertextNum == 0)
-			return ;
-		// ÅäÖÃ´óÊıÁ¿µÄ±ä»»¾ØÕó
+			return;
+
 		glm::mat4 *modelMatrices = new glm::mat4[amount];
 		float radius = 100.0f;
 		for (unsigned int i = 0; i < amount; i++)
 		{
 			glm::mat4 model(1.0f);
-			float x = rand()%(int(20*radius))/10.0f-radius;
-			float height = sqrt(pow(radius,2.0f)-pow(x,2.0f)); 
-			float z = rand()%(int(20*height)+1)/10.0f-height;
-			model=glm::translate(model,glm::vec3(x,0.0f,z));
-			model=glm::rotate(model,glm::radians(float(rand()%3600/10.0f)),glm::vec3(0.0f,1.0f,0.0f));
-			modelMatrices[i]=model;
+			float x = rand() % (int(20 * radius)) / 10.0f - radius;
+			float height = sqrt(pow(radius, 2.0f) - pow(x, 2.0f));
+			float z = rand() % (int(20 * height) + 1) / 10.0f - height;
+			model = glm::translate(model, glm::vec3(x, 0.0f, z));
+			model = glm::rotate(model, glm::radians(float(rand() % 3600 / 10.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMatrices[i] = model;
 		}
 
-		// ÅäÖÃÊı×é
 		unsigned int modelBuffer;
 		glGenBuffers(1, &modelBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
 		glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER,0);
-		delete []modelMatrices;
-		modelMatrices=NULL;
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		delete[] modelMatrices;
+		modelMatrices = NULL;
 
-		//ÅäÖÃËÙ¶ÈÊı×é
-		glm::vec3* speedMatrices;
+		glm::vec3 *speedMatrices;
 		speedMatrices = new glm::vec3[amount];
 		for (unsigned int i = 0; i < amount; i++)
-			speedMatrices[i]=glm::vec3(20.0f+rand()%3000/1000.0f,3.5+rand()%300/100.0f,rand()%1000/100.0f+100.0f);
-		// ÅäÖÃÊı×é
+			speedMatrices[i] = glm::vec3(20.0f + rand() % 3000 / 1000.0f, 3.5 + rand() % 300 / 100.0f, rand() % 1000 / 100.0f + 100.0f);
 		unsigned int speedBuffer;
 		glGenBuffers(1, &speedBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, speedBuffer);
 		glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::vec3), &speedMatrices[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER,0);
-		delete []speedMatrices;
-		speedMatrices=NULL;
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		delete[] speedMatrices;
+		speedMatrices = NULL;
 
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
@@ -241,90 +218,82 @@ void rendObject()
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &vArr[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 
 		glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)0);
 		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(sizeof(glm::vec4)));
 		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(2 * sizeof(glm::vec4)));
 		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(3 * sizeof(glm::vec4)));
 
-		glVertexAttribDivisor(2, 1);			  //ÊµÀıÒ»´Î¸Ä±äÒ»´Î
+		glVertexAttribDivisor(2, 1);
 		glVertexAttribDivisor(3, 1);
 		glVertexAttribDivisor(4, 1);
 		glVertexAttribDivisor(5, 1);
 
 		glBindBuffer(GL_ARRAY_BUFFER, speedBuffer);
 		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glVertexAttribDivisor(6, 1);			  //ÊµÀıÒ»´Î¸Ä±äÒ»´Î
+		glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+		glVertexAttribDivisor(6, 1);
 		glBindVertexArray(0);
 		vArr.clear();
 	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, grassMap);
 	glBindVertexArray(objectVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)vertextNum/5, amount); // »æÖÆÊµÀı
+	glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5, amount); // ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½
 	glBindVertexArray(0);
 }
 
-
-//¶ÁÈë¶¥µã×ø±ê
 void readVertext(std::vector<float> &Arr)
 {
 	float times = 10.0f;
-	float heightTimes =5.0f;
-	float space = 3.0f/2;
-	//ºáÏòx:-1.5 1.5
-	//µÚÒ»¸öÈı½ÇĞÎ
-	Arr.push_back(-1.5f*times);
+	float heightTimes = 5.0f;
+	float space = 3.0f / 2;
+	Arr.push_back(-1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(1.5f*times);
+	Arr.push_back(1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(-1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(-1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
-	//µÚ¶ş¸öÈı½ÇĞÎ
-	Arr.push_back(1.5f*times);
+
+	Arr.push_back(1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(1.0f);
 
-	Arr.push_back(-1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(-1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
 }
 
-
-
-
-//¼ÓÔØÎÆÀí
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -360,4 +329,3 @@ unsigned int loadTexture(char const * path)
 
 	return textureID;
 }
-

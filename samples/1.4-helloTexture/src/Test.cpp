@@ -1,8 +1,8 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <iostream>
@@ -11,24 +11,23 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <common.h>
 
-
 void processInput(GLFWwindow *window);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
-// ÆÁÄ»´óĞ¡
+// å±å¹•å¤§å°
 const unsigned int SCR_WIDTH = 600;
 const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
-	//³õÊ¼»¯´°¿Ú
+	//åˆå§‹åŒ–çª—å£
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨´°¿Ú
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	//åˆ›å»ºçª—å£
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -38,57 +37,56 @@ int main()
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	//¼ÓÔØº¯ÊıÖ¸Õë
+	//åŠ è½½å‡½æ•°æŒ‡é’ˆ
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	//Ê¹ÓÃ×ÅÉ«Æ÷Àà
+	//ä½¿ç”¨ç€è‰²å™¨ç±»
 	Shader ourShader(getLocalPath("shader/1.4-texture.vs").c_str(), getLocalPath("shader/1.4-texture.fs").c_str());
 
 	float vertices[] = {
-		// Î»ÖÃ              // ÎÆÀí×ø±ê
-		0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // ÓÒÉÏ
-		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // ÓÒÏÂ
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // ×óÏÂ
-		-0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // ×óÉÏ 
+		// ä½ç½®              // çº¹ç†åæ ‡
+		0.5f, 0.5f, 0.0f, 1.0f, 1.0f,	// å³ä¸Š
+		0.5f, -0.5f, 0.0f, 1.0f, 0.0f,	// å³ä¸‹
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // å·¦ä¸‹
+		-0.5f, 0.5f, 0.0f, 0.0f, 1.0f	// å·¦ä¸Š
 	};
 	unsigned int indices[] = {
-		0, 1, 3, 
-		1, 2, 3 
-	};
+		0, 1, 3,
+		1, 2, 3};
 	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);		//Éú³É¶¥µãÊı×é
-	glGenBuffers(1, &VBO);	 //Éú³É¶¥µã»º³å
-	glGenBuffers(1, &EBO);	 //Éú³É¶¥µãË÷Òı
+	glGenVertexArrays(1, &VAO); //ç”Ÿæˆé¡¶ç‚¹æ•°ç»„
+	glGenBuffers(1, &VBO);		//ç”Ÿæˆé¡¶ç‚¹ç¼“å†²
+	glGenBuffers(1, &EBO);		//ç”Ÿæˆé¡¶ç‚¹ç´¢å¼•
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	//¶¥µãÎ»ÖÃ
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	//é¡¶ç‚¹ä½ç½®
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
-	// ÎÆÀíÎ»ÖÃ
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	// çº¹ç†ä½ç½®
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	//ÉèÖÃÎÆÀí
+	//è®¾ç½®çº¹ç†
 	unsigned int texture1;
-	glGenTextures(1, &texture1);   //Éú³ÉÎÆÀí
-	glBindTexture(GL_TEXTURE_2D, texture1);    //°ó¶¨ÎÆÀí
-	//ÉèÖÃÎÆÀíÊôĞÔ
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+	glGenTextures(1, &texture1);			//ç”Ÿæˆçº¹ç†
+	glBindTexture(GL_TEXTURE_2D, texture1); //ç»‘å®šçº¹ç†
+	//è®¾ç½®çº¹ç†å±æ€§
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true);    //´¦Àíµ¹ÖÃ
-	//¼ÓÔØÎÆÀí
+	stbi_set_flip_vertically_on_load(true); //å¤„ç†å€’ç½®
+	//åŠ è½½çº¹ç†
 	unsigned char *data = stbi_load(getLocalPath("texture/test.jpg").c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
@@ -99,35 +97,32 @@ int main()
 	{
 		std::cout << "Failed to load texture" << std::endl;
 	}
-	stbi_image_free(data);	 //ÊÍ·Å»º´æ
+	stbi_image_free(data); //é‡Šæ”¾ç¼“å­˜
 
-	//¼¤»î×ÅÉ«Æ÷
-	ourShader.use(); 
-	//×ÅÉ«Æ÷²ÉÑùÆ÷ÊôÓÚÄÄ¸öÎÆÀíµ¥Ôª
+	//æ¿€æ´»ç€è‰²å™¨
+	ourShader.use();
+	//ç€è‰²å™¨é‡‡æ ·å™¨å±äºå“ªä¸ªçº¹ç†å•å…ƒ
 	ourShader.setInt("texture1", 0);
 
-	// äÖÈ¾Ñ­»·
+	// æ¸²æŸ“å¾ªç¯
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
 
-		//Çå³ıÑÕÉ«»º´æ
+		//æ¸…é™¤é¢œè‰²ç¼“å­˜
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
 
 		ourShader.use();
-		//»æÖÆ
-		glActiveTexture(GL_TEXTURE0);	//¼¤»îÎÆÀíÍ¨µÀ
-		glBindTexture(GL_TEXTURE_2D, texture1);	 //°ó¶¨ÎÆÀí
+		//ç»˜åˆ¶
+		glActiveTexture(GL_TEXTURE0);			//æ¿€æ´»çº¹ç†é€šé“
+		glBindTexture(GL_TEXTURE_2D, texture1); //ç»‘å®šçº¹ç†
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
 
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
@@ -137,16 +132,13 @@ int main()
 	return 0;
 }
 
-
-
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
-

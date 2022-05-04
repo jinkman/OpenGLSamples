@@ -1,25 +1,26 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform float time;
 
-const int ITETARION = 300; // µü´úÉÏÏß
+const int ITETARION = 300; // è¿­ä»£ä¸Šé™
 
 float bits = 6.0;
 uniform float size;
 uniform vec2 offset;
 
 
-// ¸´ÊıÆ½·½
+// å¤æ•°å¹³æ–¹
 vec2 ComplexSquare(in vec2 val)
 {
     return vec2(val.x*val.x-val.y*val.y, 2.0*val.x*val.y);
 }
 
-// ¸ù¾İµü´ú´ÎÊı»ñÈ¡ÑÕÉ«
+// æ ¹æ®è¿­ä»£æ¬¡æ•°è·å–é¢œè‰²
 vec4 getRgb(in float itr) 
 {
-    //×î´óµü´ú´ÎÊı
+    //æœ€å¤§è¿­ä»£æ¬¡æ•°
     if(itr == ITETARION) 
         return vec4(0, 0, 0, 0);
     float r = floor(itr/(bits*bits));
@@ -30,7 +31,7 @@ vec4 getRgb(in float itr)
     return vec4(r, g, b, 1.0);
 }
 
-// ·µ»Øµü´ú´ÎÊı
+// è¿”å›è¿­ä»£æ¬¡æ•°
 float fractal(vec2 z)
 {
     vec2 c = vec2(cos(time), sin(time))*0.7;
@@ -50,5 +51,5 @@ void main()
     position *= size;
     position += offset;
     vec2 z     = position.xy;   
-    gl_FragColor = vec4(getRgb(fractal(position))/bits);
+    FragColor = vec4(getRgb(fractal(position))/bits);
 }

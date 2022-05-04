@@ -1,43 +1,41 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <math.h>
 
 void processInput(GLFWwindow *window);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
+//é¡¶ç‚¹ç€è‰²å™¨
+const char *vertexShaderCode = "#version 330 core\n"
+							   "layout (location = 0) in vec3 aPos;\n"
+							   "void main()\n"
+							   "{\n"
+							   "   gl_Position = vec4(aPos, 1.0);\n"
+							   "}\0";
 
-//¶¥µã×ÅÉ«Æ÷
-const char *vertexShaderCode ="#version 330 core\n"
-	"layout (location = 0) in vec3 aPos;\n"
-	"void main()\n"
-	"{\n"
-	"   gl_Position = vec4(aPos, 1.0);\n"
-	"}\0";
-
-//Æ¬¶Î×ÅÉ«Æ÷
+//ç‰‡æ®µç€è‰²å™¨
 const char *fragmentShaderCode = "#version 330 core\n"
-	"out vec4 FragColor;\n"
-	"uniform vec4 ourColor;\n"			 //È«¾Ö±äÁ¿ÑÕÉ«
-	"void main()\n"
-	"{\n"
-	"   FragColor = ourColor;\n"		 //Êä³öÎªourColor
-	"}\n\0";
-
+								 "out vec4 FragColor;\n"
+								 "uniform vec4 ourColor;\n" //å…¨å±€å˜é‡é¢œè‰²
+								 "void main()\n"
+								 "{\n"
+								 "   FragColor = ourColor;\n" //è¾“å‡ºä¸ºourColor
+								 "}\n\0";
 
 int main()
 {
-	//³õÊ¼»¯´°¿Ú
+	//åˆå§‹åŒ–çª—å£
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨Èı½ÇĞÎ
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	//åˆ›å»ºä¸‰è§’å½¢
+	GLFWwindow *window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -53,7 +51,7 @@ int main()
 		return -1;
 	}
 
-	// ¶¥µã×ÅÉ«Æ÷
+	// é¡¶ç‚¹ç€è‰²å™¨
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderCode, NULL);
 	glCompileShader(vertexShader);
@@ -63,9 +61,10 @@ int main()
 	if (!success)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
 	}
-	// Æ¬¶Î×ÅÉ«Æ÷
+	// ç‰‡æ®µç€è‰²å™¨
 	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderCode, NULL);
 	glCompileShader(fragmentShader);
@@ -73,79 +72,81 @@ int main()
 	if (!success)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
 	}
-	// Á´½Ó×ÅÉ«Æ÷³ÌĞò
+	// é“¾æ¥ç€è‰²å™¨ç¨‹åº
 	int shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
-	// ¼ì²é³É¹¦Óë´íÎó
+	// æ£€æŸ¥æˆåŠŸä¸é”™è¯¯
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
+	if (!success)
+	{
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+				  << infoLog << std::endl;
 	}
-	glDeleteShader(vertexShader);		//É¾³ı×ÅÉ«Æ÷
-	glDeleteShader(fragmentShader);		//É¾³ı×ÅÉ«Æ÷
+	glDeleteShader(vertexShader);	//åˆ é™¤ç€è‰²å™¨
+	glDeleteShader(fragmentShader); //åˆ é™¤ç€è‰²å™¨
 
-	// ÉèÖÃ¶¥µã
+	// è®¾ç½®é¡¶ç‚¹
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f,   // ÓÒÏÂ
-		-0.5f, 0.5f, 0.0f,  // ×óÏÂ
-		0.0f,  -0.5f, 0.0f  // ÉÏ 
+		0.5f, 0.5f, 0.0f,  // å³ä¸‹
+		-0.5f, 0.5f, 0.0f, // å·¦ä¸‹
+		0.0f, -0.5f, 0.0f  // ä¸Š
 	};
 
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	// °ó¶¨¶¥µã¶ÔÏóÊı×é
+	// ç»‘å®šé¡¶ç‚¹å¯¹è±¡æ•°ç»„
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);	  
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
-	//°²È«½â³ı°ó¶¨
-	glBindBuffer(GL_ARRAY_BUFFER, 0); 
-	glBindVertexArray(0); 
+	//å®‰å…¨è§£é™¤ç»‘å®š
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
-
-	//äÖÈ¾Ñ­»·
+	//æ¸²æŸ“å¾ªç¯
 	while (!glfwWindowShouldClose(window))
 	{
-		// ÊäÈë
+		// è¾“å…¥
 		processInput(window);
 
-		// Çå³ıÑÕÉ«»º´æ
+		// æ¸…é™¤é¢œè‰²ç¼“å­˜
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Ê¹ÓÃ×ÅÉ«Æ÷
+		// ä½¿ç”¨ç€è‰²å™¨
 		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);	   	//°ó¶¨¶¥µãÊı×é
+		glBindVertexArray(VAO); //ç»‘å®šé¡¶ç‚¹æ•°ç»„
 
-		// ¸üĞÂ×ÅÉ«Æ÷ÑÕÉ«
-		float timeValue = (float)glfwGetTime();		 //·µ»ØÔËĞĞÊ±¼ä£¨Á¬Ğø£©
+		// æ›´æ–°ç€è‰²å™¨é¢œè‰²
+		float timeValue = (float)glfwGetTime(); //è¿”å›è¿è¡Œæ—¶é—´ï¼ˆè¿ç»­ï¼‰
 		float greenValue = sin(timeValue) / 2.0f + 0.5f;
 		float redValue = cos(timeValue) / 2.0f + 0.5f;
 		float blueValue = cos(timeValue) / 2.0f + 0.5f;
-		// ´«ËÍÊı¾İ
+		// ä¼ é€æ•°æ®
 		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
 
-		// »­³öÍ¼ĞÎ
+		// ç”»å‡ºå›¾å½¢
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		// Ë«»º³å¼°ÏûÏ¢´¦Àí
+		// åŒç¼“å†²åŠæ¶ˆæ¯å¤„ç†
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	// °²È«½â³ı°ó¶¨¶ÔÏó
+	// å®‰å…¨è§£é™¤ç»‘å®šå¯¹è±¡
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 
-	// ÊÍ·Åglfw×ÊÔ´
+	// é‡Šæ”¾glfwèµ„æº
 	glfwTerminate();
 	return 0;
 }
@@ -156,12 +157,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
-
-
-
-

@@ -1,11 +1,12 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform float time;
 uniform vec2 resolution;
 uniform samplerCube moonMap;
 uniform samplerCube nightMap;
-//Ïà»ú²ÎÊı
+//ç›¸æœºå‚æ•°
 uniform vec3 cameraPosition;
 uniform vec3 cameraFront;
 uniform vec3 cameraRight;
@@ -55,19 +56,19 @@ float getwaves(vec2 position)
     return w / ws;
 }
 
-float rand2sTimex(vec2 co)   //²úÉúËæÊ±¼ä±ä»¯µÄÕıÏÒº¯Êı
+float rand2sTimex(vec2 co)   //äº§ç”Ÿéšæ—¶é—´å˜åŒ–çš„æ­£å¼¦å‡½æ•°
 {
     return fract(sin(dot(co.xy * iGlobalTime,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 
-//¸ù¾İ¹âÏßyÖµ»ñµÃ´óÆø²ãÑÕÉ«
+//æ ¹æ®å…‰çº¿yå€¼è·å¾—å¤§æ°”å±‚é¢œè‰²
 vec3 getatm(vec3 ray)
 {
     return clamp(mix(vec3(0.5), vec3(0.0, 0.5, 1.0), sqrt(abs(ray.y))),0.0,1.0)/30.0;
 }
 
-//¹âÏßÓëÇòÇó½»
+//å…‰çº¿ä¸çƒæ±‚äº¤
 bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,out vec3 Normal)
 {
     vec3 oc = origin - center;
@@ -77,13 +78,13 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,out vec3 Norma
     float discriminant = B*B - A*C;
     if (discriminant > 1e-6) 
     {
-        float temp = (-B - sqrt(discriminant)) / A;  //½ÏĞ¡½â
+        float temp = (-B - sqrt(discriminant)) / A;  //è¾ƒå°è§£
         if (temp > 1e-6) 
         {
             Normal = (origin + temp * Dir - center) / Radius;
             return true;
         }
-        temp = (-B + sqrt(discriminant)) / A;      //½Ï´ó½â
+        temp = (-B + sqrt(discriminant)) / A;      //è¾ƒå¤§è§£
         if (temp > 1e-6)
         {
             Normal = (origin + temp * Dir - center) / Radius;
@@ -94,7 +95,7 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,out vec3 Norma
     return false;
 }
 
-//»ñµÃÌ«ÑôÑÕÉ«
+//è·å¾—å¤ªé˜³é¢œè‰²
 vec3 sun(vec3 orig,vec3 ray)
 {
     vec3 Normal;
@@ -118,7 +119,7 @@ float Map(in vec3 p)
 }
 
 //--------------------------------------------------------------------------
-// ¶ş·Ö·¨±Æ½üÕıÈ·µÄµã
+// äºŒåˆ†æ³•é€¼è¿‘æ­£ç¡®çš„ç‚¹
 float BinarySubdivision(in vec3 rO, in vec3 rD, float t, float oldT)
 {
     float halfwayT = 0.0;
@@ -134,7 +135,7 @@ float BinarySubdivision(in vec3 rO, in vec3 rD, float t, float oldT)
 }
 
 //--------------------------------------------------------------------------
-//Í¶Éä³¡¾°
+//æŠ•å°„åœºæ™¯
 bool Scene(in vec3 rO, in vec3 rD, out float resT )
 {
     float t = 0.0;
@@ -147,19 +148,19 @@ bool Scene(in vec3 rO, in vec3 rD, out float resT )
         vec3 p = rO + t*rD;
         if (!hit)
         {
-            h = Map(p); // »ñµÃµ±Ç°µãÓëµØĞÎµÄ¸ß¶È²î
+            h = Map(p); // è·å¾—å½“å‰ç‚¹ä¸åœ°å½¢çš„é«˜åº¦å·®
     
-            // Èç¹û¸ß¶ÈÖµÏà²îĞ¡ÓÚãĞÖµ Ôò´ú±í»÷ÖĞ
+            // å¦‚æœé«˜åº¦å€¼ç›¸å·®å°äºé˜ˆå€¼ åˆ™ä»£è¡¨å‡»ä¸­
             if( h < 0.05)
             {
-                // ±Æ½üÕıÈ·µã
+                // é€¼è¿‘æ­£ç¡®ç‚¹
                 resT = BinarySubdivision(rO, rD, t, oldT);
                 hit = true;
                 return hit;
             }
             else
             {
-                delta = max(0.04, 0.35*h) + (t*0.04);  //¿ØÖÆÇ°½øËÙ¶È ÔÚËÙ¶ÈÓë×¼È·ĞÔÖ®¼äÈ¨ºâ Ô½Ô¶×¼È·ĞÔÔ½µÍ
+                delta = max(0.04, 0.35*h) + (t*0.04);  //æ§åˆ¶å‰è¿›é€Ÿåº¦ åœ¨é€Ÿåº¦ä¸å‡†ç¡®æ€§ä¹‹é—´æƒè¡¡ è¶Šè¿œå‡†ç¡®æ€§è¶Šä½
                 oldT = t;
                 t += delta;
             }
@@ -172,24 +173,24 @@ bool Scene(in vec3 rO, in vec3 rD, out float resT )
 //--------------------------------------------------------------------------
 void main(void)
 {
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 xy = gl_FragCoord.xy / resolution.xy;
     vec2 uv = (-1.0 + 2.0 * xy) * vec2(resolution.x/resolution.y,1.0);
-    //¼ÆËãÊÓÏß·½Ïò
+    //è®¡ç®—è§†çº¿æ–¹å‘
     vec3 dir = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);
 
     vec3 col;
     float distance;
-    if( !Scene(cameraPosition, dir, distance) )  //»æÖÆÌì¿Õ
+    if( !Scene(cameraPosition, dir, distance) )  //ç»˜åˆ¶å¤©ç©º
     {
-        col = getatm(dir) * 2.0 + sun(cameraPosition,dir);  //Ìì¿ÕÓëÌ«ÑôÑÕÉ«
-        col = normalize(col) * sqrt(length(col));   //gammaĞ£Õı
+        col = getatm(dir) * 2.0 + sun(cameraPosition,dir);  //å¤©ç©ºä¸å¤ªé˜³é¢œè‰²
+        col = normalize(col) * sqrt(length(col));   //gammaæ ¡æ­£
     }
-    else                                               //»æÖÆ²İÔ­
+    else                                               //ç»˜åˆ¶è‰åŸ
     {
-        // »ñÈ¡µãµÄÎ»ÖÃ
+        // è·å–ç‚¹çš„ä½ç½®
         vec3 pos = cameraPosition + distance * dir;
-        // »ñÈ¡µãµÄ·¨ÏòÁ¿
+        // è·å–ç‚¹çš„æ³•å‘é‡
         vec2 p = vec2(0.01, 0.0);
         vec3 nor = vec3(0.0, getwaves(pos.xz), 0.0);
         vec3 v2 = nor-vec3(p.x, getwaves(pos.xz+p), 0.0);
@@ -197,11 +198,11 @@ void main(void)
         nor = cross(v2, v3);
         nor = normalize(nor);
 
-           //·´Éä
+           //åå°„
         vec3 R = reflect(dir, nor);
         float fresnel = (0.04 + (1.0-0.04)*(pow(1.0 - max(0.0, dot(-nor, dir)), 5.0)));
         col = fresnel * getatm(R) * 2.0 + fresnel * sun(cameraPosition,R);
-        col = normalize(col) * sqrt(length(col)); //gammaĞ£Õı
+        col = normalize(col) * sqrt(length(col)); //gammaæ ¡æ­£
     }
-    gl_FragColor=vec4(col,1.0);
+    FragColor=vec4(col,1.0);
 }

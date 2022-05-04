@@ -1,21 +1,18 @@
-// Test.cpp : ∂®“Âøÿ÷∆Ã®”¶”√≥Ã–Úµƒ»Îø⁄µ„°£
+// Test.cpp : ÂÆö‰πâÊéßÂà∂Âè∞Â∫îÁî®Á®ãÂ∫èÁöÑÂÖ•Âè£ÁÇπ„ÄÇ
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <math.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
 
-
-// ∆¡ƒª
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 #define PI 3.1415926f
 
-//œ‡ª˙
 Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -24,19 +21,18 @@ bool firstMouse = true;
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
 
-//∫Ø ˝…˘√˜
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
 void readVertext(std::vector<float> &Arr);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
-unsigned int objectVAO=0, objectVBO;
-static float yAngle=0.0f;
-static float xAngle=0.0f;
-static float aPos=5.0f;
+unsigned int objectVAO = 0, objectVBO;
+static float yAngle = 0.0f;
+static float xAngle = 0.0f;
+static float aPos = 5.0f;
 
 int main()
 {
@@ -45,15 +41,14 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//¥¥Ω®»´∆¡
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//ªÒ»°µ±«∞…Ë±∏µƒ“ª–© Ù–‘
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
 	}
 	else
@@ -66,59 +61,52 @@ int main()
 		return -1;
 	}
 
-	//ªÒ»°…Ë±∏…œœ¬Œƒ
+	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+	lastX = SCR_WIDTH / 2.0f;
+	lastY = SCR_HEIGHT / 2.0f;
+
 	glfwMakeContextCurrent(window);
-	//◊¢≤·ªÿµ˜∫Ø ˝
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //Ω˚”√ Û±Í
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//º”‘ÿ∫Ø ˝÷∏’Î
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ø™∆ÙOpenGL◊¥Ã¨
 	glEnable(GL_DEPTH_TEST);
-	// π”√◊≈…´∆˜
 	Shader shader(getLocalPath("shader/6.1-object.vs").c_str(), getLocalPath("shader/6.1-object.fs").c_str());
 	shader.use();
-	shader.setInt("cubeMap",0);
+	shader.setInt("cubeMap", 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//¥¶¿ÌÕ‚≤ø ‰»Î
 		processInput(window);
-		// ¬ﬂº≠ ±º‰±‰¡ø
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		//«Â≥˝ª∫¥Ê
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//…Ë÷√◊≈…´∆˜≤Œ ˝
 		shader.use();
-		shader.setFloat("time",(float)glfwGetTime());
-		shader.setVec2("resolution",glm::vec2(SCR_WIDTH,SCR_HEIGHT));
-		shader.setVec2("mouse",glm::vec2(0.0f));
-		shader.setVec3("cameraPosition",camera.Position);
-		shader.setVec3("cameraFront",camera.Front);
-		shader.setVec3("cameraRight",camera.Right);
-		shader.setVec3("cameraUp",camera.Up);
-		//ªÊ÷∆ŒÔÃÂ
+		shader.setFloat("time", (float)glfwGetTime());
+		shader.setVec2("resolution", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
+		shader.setVec2("mouse", glm::vec2(0.0f));
+		shader.setVec3("cameraPosition", camera.Position);
+		shader.setVec3("cameraFront", camera.Front);
+		shader.setVec3("cameraRight", camera.Right);
+		shader.setVec3("cameraUp", camera.Up);
 		rendObject();
 
-		//Ωªªªª∫≥Â”Îœ˚œ¢∑÷≈‰
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//…æ≥˝∂‘œÛº∞ Õ∑≈◊ ‘¥
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 	glfwTerminate();
@@ -127,21 +115,20 @@ int main()
 
 void processInput(GLFWwindow *window)
 {
-	static float speed=1.0f;
+	static float speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime*speed);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS )
-		camera.ProcessKeyboard(BACKWARD, deltaTime*speed);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS )
-		camera.ProcessKeyboard(LEFT, deltaTime*speed);
+		camera.ProcessKeyboard(FORWARD, deltaTime * speed);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime * speed);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime*speed);
+		camera.ProcessKeyboard(RIGHT, deltaTime * speed);
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 
 	glViewport(0, 0, width, height);
@@ -150,8 +137,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void rendObject()
 {
 	static size_t vertextNum = 0;
-	static unsigned int cubemapTexture=0; 
-	if(objectVAO==0)
+	static unsigned int cubemapTexture = 0;
+	if (objectVAO == 0)
 	{
 		std::vector<std::string> faces;
 		faces.push_back(getLocalPath("skybox/right.jpg"));
@@ -165,27 +152,25 @@ void rendObject()
 		readVertext(Arr);
 		vertextNum = Arr.size();
 		if (vertextNum == 0)
-			return ;
+			return;
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
 		glBindVertexArray(objectVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 		glBindVertexArray(0);
 	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/4); // ªÊ÷∆
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
 	glBindVertexArray(0);
 }
 
-
-//∂¡»Î∂•µ„◊¯±Í
 void readVertext(std::vector<float> &Arr)
 {
 	Arr.push_back(-1.0f);
@@ -219,9 +204,7 @@ void readVertext(std::vector<float> &Arr)
 	Arr.push_back(1.0f);
 }
 
-
-//º”‘ÿŒ∆¿Ì
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -288,8 +271,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 	return textureID;
 }
 
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -307,8 +289,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }
-

@@ -1,53 +1,44 @@
-// Test.cpp : ∂®“Âøÿ÷∆Ã®”¶”√≥Ã–Úµƒ»Îø⁄µ„°£
+// Test.cpp : ÂÆö‰πâÊéßÂà∂Âè∞Â∫îÁî®Á®ãÂ∫èÁöÑÂÖ•Âè£ÁÇπ„ÄÇ
 //
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <math.h>
 #include <common.h>
 
-// ∆¡ƒª
 #define PI 3.1415926f
-const unsigned int  SCR_WIDTH = 800, SCR_HEIGHT = 600;
+int SCR_WIDTH = 800, SCR_HEIGHT = 600;
 
-// ∫Ø ˝…˘√˜
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void processInput(GLFWwindow *window);
 void readVertext(std::vector<float> &Arr);
-void Rotatez(glm::vec3 &a,float Thta);
-unsigned int loadTexture(char const * path);
+void Rotatez(glm::vec3 &a, float Thta);
+unsigned int loadTexture(char const *path);
 void RenderScene(Shader &shader);
 void RenderSphere();
 void RenderCube();
 
-
-// œ‡ª˙
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-//  ±º‰
 float deltaTime = 0.0;
 float lastFrame = 0.0;
 
-// —°œÓ
 bool shadows = true;
 bool change = true;
 
-// »´æ÷±‰¡ø
 unsigned int woodTexture;
-unsigned int  sphereVAO = 0, sphereVBO;
-unsigned int  cubeVAO = 0, cubeVBO;
-
+unsigned int sphereVAO = 0, sphereVBO;
+unsigned int cubeVAO = 0, cubeVBO;
 
 int main()
 {
-	// ≥ı ºªØglfw
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -55,57 +46,48 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	//¥¥Ω®¥∞ø⁄-
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
-	//◊¢≤·ªÿµ˜∫Ø ˝
+	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	// ≤∂ªÒ Û±Í
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// º”‘ÿgladø‚
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// …Ë÷√ ”µ„
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-	// ø™∆Ù…Ó∂»≤‚ ‘
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 
-	// Ω®¡¢◊≈…´∆˜
 	Shader shader(getLocalPath("shader/5.3.2-point_shadows.vs").c_str(), getLocalPath("shader/5.3.2-point_shadows.fs").c_str());
 	Shader simpleDepthShader(getLocalPath("shader/5.3.2-point_shadows_depth.vs").c_str(), getLocalPath("shader/5.3.2-point_shadows_depth.fs").c_str(), getLocalPath("shader/5.3.2-point_shadows_depth.gs").c_str());
 	Shader sphereShader(getLocalPath("shader/5.3.2-sphere.vs").c_str(), getLocalPath("shader/5.3.2-sphere.fs").c_str());
 
-
-	// …Ë÷√Œ∆¿Ì—˘±æ
 	sphereShader.use();
-	sphereShader.setInt("SphereMap",0);
+	sphereShader.setInt("SphereMap", 0);
 	shader.use();
-	shader.setInt("diffuseTexture",0);
-	shader.setInt("shadowMap",1);
+	shader.setInt("diffuseTexture", 0);
+	shader.setInt("shadowMap", 1);
 
-	// º”‘ÿŒ∆¿Ì
 	woodTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
 
-	// c≈‰÷√…Ó∂»Ã˘Õº÷°ª∫≥Â
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	// depth frame use cube map
 	unsigned int depthMapFBO;
 	glGenFramebuffers(1, &depthMapFBO);
-	// ¥¥Ω®…Ó∂»¡¢∑ΩÃÂÃ˘ÕºŒ∆¿Ì
 	unsigned int depthCubemap;
 	glGenTextures(1, &depthCubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
@@ -116,44 +98,36 @@ int main()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	// ∞—Œ∆¿ÌÃÌº”µΩ÷°ª∫≥Â
+
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// ◊≈…´∆˜≈‰÷√
 	shader.use();
 	shader.setInt("diffuseTexture", 0);
 	shader.setInt("depthMap", 1);
 	sphereShader.use();
-	sphereShader.setInt("SphereMap",0);
+	sphereShader.setInt("SphereMap", 0);
 
-	// lπ‚’’Œª÷√
 	glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
 
-
-	// —≠ª∑
 	while (!glfwWindowShouldClose(window))
 	{
-		// √ø÷°¬ﬂº≠ ±º‰
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// º¸»Î
 		processInput(window);
 
-		// “∆∂Øπ‚’’
 		if (change)
 			lightPos.z = sin((float)glfwGetTime() * 0.5f) * 3.0f;
 
-		// ‰÷»æ
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// ¥¥Ω®…Ó∂»Ã˘Õº±‰ªªæÿ’Û
+		// render depth cubemap
 		float near_plane = 1.0f;
 		float far_plane = 25.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
@@ -165,19 +139,18 @@ int main()
 		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 
-		// ‰÷»æ…Ó∂»¡¢∑ΩÃÂ
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		simpleDepthShader.use();
 		for (unsigned int i = 0; i < 6; ++i)
-			simpleDepthShader.setMat4("shadowMatrices[" + std::to_string(long long(i)) + "]", shadowTransforms[i]);
+			simpleDepthShader.setMat4("shadowMatrices[" + std::to_string(long(i)) + "]", shadowTransforms[i]);
 		simpleDepthShader.setFloat("far_plane", far_plane);
 		simpleDepthShader.setVec3("lightPos", lightPos);
 		RenderScene(simpleDepthShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		// ‰÷»æƒ¨»œ÷°
+		// render scene
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.use();
@@ -185,36 +158,32 @@ int main()
 		glm::mat4 view = camera.GetViewMatrix();
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
-		// s…Ë÷√π‚’’–≈œ¢
+
 		shader.setVec3("lightPos", lightPos);
 		shader.setVec3("viewPos", camera.Position);
-		shader.setInt("shadows", shadows); 
+		shader.setInt("shadows", shadows);
 		shader.setFloat("far_plane", far_plane);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		RenderScene(shader); 
+		RenderScene(shader);
 
-
-		//‰÷»æπ‚‘¥
+		// render light
 		sphereShader.use();
 		glm::mat4 model(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model,glm::vec3(0.2,0.2,0.2));
-		sphereShader.setMat4("model",model);
-		sphereShader.setMat4("projection",projection);
-		sphereShader.setMat4("view",view);
+		model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
+		sphereShader.setMat4("model", model);
+		sphereShader.setMat4("projection", projection);
+		sphereShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
 		RenderSphere();
 
-
-		// Ωªªªª∫≥Â”Îœ˚œ¢∑÷≈‰
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//◊ ‘¥ Õ∑≈
 	glDeleteVertexArrays(1, &sphereVAO);
 	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteBuffers(1, &sphereVBO);
@@ -225,16 +194,14 @@ int main()
 
 void RenderScene(Shader &shader)
 {
-	// ‰÷»æ∑ø◊”  ’’¡¡Œ™±≥√Ê Ãÿ ‚¥¶¿Ì£®πÿ±’±≥√ÊÃﬁ≥˝£©
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, glm::vec3(5.0f));
 	shader.setMat4("model", model);
-	glDisable(GL_CULL_FACE); 
-	shader.setInt("reverse_normals", 1); 
+	glDisable(GL_CULL_FACE);
+	shader.setInt("reverse_normals", 1);
 	RenderCube();
-	shader.setInt("reverse_normals", 0); 
+	shader.setInt("reverse_normals", 0);
 	glEnable(GL_CULL_FACE);
-	// –°¡¢∑ΩÃÂ
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(4.0f, -3.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
@@ -263,68 +230,66 @@ void RenderScene(Shader &shader)
 	RenderCube();
 }
 
-
 void RenderCube()
 {
 	if (cubeVAO == 0)
 	{
 		float vertices[] = {
 			// back face
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, 
-			1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,         
-			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, 
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+			-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
 			// front face
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-			1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, 
-			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, 
-			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, 
-			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+			-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 			// left face
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			-1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 			// right face
-			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
-			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-			1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,      
-			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
-			1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,    
+			1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			// bottom face
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-			1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, 
-			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, 
-			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, 
-			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			-1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			-1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
 			// top face
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-			1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, 
-			1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,  
-			1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, 
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f        
-		};
+			-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f};
 		glGenVertexArrays(1, &cubeVAO);
 		glGenBuffers(1, &cubeVBO);
-		// ÃÓ≥‰ª∫≥Â
+
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		// ¡¨Ω”∂•µ„ Ù–‘
+
 		glBindVertexArray(cubeVAO);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
@@ -337,29 +302,28 @@ void RenderCube()
 void RenderSphere()
 {
 	static size_t vertextNum = 0;
-	if(sphereVAO == 0)
+	if (sphereVAO == 0)
 	{
 		std::vector<float> Arr;
 		readVertext(Arr);
 		vertextNum = Arr.size();
 		if (vertextNum == 0)
-			return ;
+			return;
 		glGenVertexArrays(1, &sphereVAO);
 		glGenBuffers(1, &sphereVBO);
 		glBindVertexArray(sphereVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
 		glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 		glBindVertexArray(0);
 	}
-	//∞Û∂®Œ∆¿Ì
 	glBindVertexArray(sphereVAO);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/5); // ªÊ÷∆
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5);
 	glBindVertexArray(0);
 }
 
@@ -368,17 +332,25 @@ void readVertext(std::vector<float> &Arr)
 	glm::vec3 cpt[4];
 	for (float Theta = 0; Theta < 180.0f; Theta += 1.0f)
 	{
-		glm::vec3 p1(sin(Theta*PI / 180.0f), cos(Theta*PI / 180.0f), 0.0f);
-		glm::vec3 p2(sin((Theta + 1.0f)*PI / 180.0f), cos((Theta + 1.0f)*PI / 180.0f), 0.0f);
+		glm::vec3 p1(sin(Theta * PI / 180.0f), cos(Theta * PI / 180.0f), 0.0f);
+		glm::vec3 p2(sin((Theta + 1.0f) * PI / 180.0f), cos((Theta + 1.0f) * PI / 180.0f), 0.0f);
 		for (float Phi = 0.0f; Phi < 360.0f; Phi += 1.0f)
 		{
-			cpt[0].x = p1.x; cpt[0].y = p1.y; cpt[0].z = p1.z;
+			cpt[0].x = p1.x;
+			cpt[0].y = p1.y;
+			cpt[0].z = p1.z;
 			Rotatez(p1, 1.0f);
-			cpt[1].x = p1.x; cpt[1].y = p1.y; cpt[1].z = p1.z;
-			cpt[2].x = p2.x; cpt[2].y = p2.y; cpt[2].z = p2.z;
+			cpt[1].x = p1.x;
+			cpt[1].y = p1.y;
+			cpt[1].z = p1.z;
+			cpt[2].x = p2.x;
+			cpt[2].y = p2.y;
+			cpt[2].z = p2.z;
 			Rotatez(p2, 1.0f);
-			cpt[3].x = p2.x; cpt[3].y = p2.y; cpt[3].z = p2.z;
-			//µ⁄“ª∏ˆ»˝Ω«–Œ  132
+			cpt[3].x = p2.x;
+			cpt[3].y = p2.y;
+			cpt[3].z = p2.z;
+
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
@@ -394,7 +366,7 @@ void readVertext(std::vector<float> &Arr)
 			Arr.push_back(cpt[2].z);
 			Arr.push_back(1.0f - Phi / 360.0f);
 			Arr.push_back((Theta + 1.0f) / 180.0f);
-			//µ⁄“ª∏ˆ»˝Ω«–Œ  102
+
 			Arr.push_back(cpt[1].x);
 			Arr.push_back(cpt[1].y);
 			Arr.push_back(cpt[1].z);
@@ -414,17 +386,15 @@ void readVertext(std::vector<float> &Arr)
 	}
 }
 
-//»∆y÷·–˝◊™
 void Rotatez(glm::vec3 &a, float Thta)
 {
 	float a1 = a.z;
 	float b1 = a.x;
-	a.x = b1 * cos(Thta*PI / 180.0f) - a1 * sin(Thta*PI / 180.0f);
-	a.z = b1 * sin(Thta*PI / 180.0f) + a1 * cos(Thta*PI / 180.0f);
+	a.x = b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
+	a.z = b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
 }
 
-
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -446,7 +416,7 @@ unsigned int loadTexture(char const * path)
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -462,26 +432,25 @@ unsigned int loadTexture(char const * path)
 	return textureID;
 }
 
-
 void processInput(GLFWwindow *window)
 {
 	static bool shadowSwitch = false;
 	static bool moveSwitch = false;
-	static float speed=1.0f;
+	static float speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime*speed);
+		camera.ProcessKeyboard(FORWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime*speed);
+		camera.ProcessKeyboard(BACKWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime*speed);
+		camera.ProcessKeyboard(LEFT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime*speed);
+		camera.ProcessKeyboard(RIGHT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		speed+=0.01f;
+		speed += 0.01f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		speed-=0.01f;
+		speed -= 0.01f;
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && shadowSwitch == false)
 	{
 		shadowSwitch = true;
@@ -498,8 +467,7 @@ void processInput(GLFWwindow *window)
 		moveSwitch = false;
 }
 
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -517,7 +485,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }

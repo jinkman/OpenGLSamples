@@ -23,7 +23,7 @@ float noise(vec2 n)
 
 void main()
 {    
-    // 柏林噪声
+    // 鍣０
     float total = 0.0;
     vec2 pos = TexCoords * uCloudSize;
     total += noise(pos * 1.0 + vec2(uTime * 2.0, 0.0));
@@ -32,9 +32,7 @@ void main()
     total += noise(pos * 8.0 + vec2(0.0, uTime * 5.0)) * 0.125;
     vec3 color = mix(uSkyColor, uCloudColor, total);
     
-    // 越边缘越透明
-    vec2 alpha = 1.0 - abs(TexCoords - vec2(0.5)) * 2.0;
-    gl_FragColor = vec4(color, alpha.x * alpha.y);
+    FragColor = vec4(color, 1.0);
 }
 
 

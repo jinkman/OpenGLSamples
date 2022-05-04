@@ -1,22 +1,19 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <math.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
-#include<map>
+#include <map>
 
-
-// ÆÁÄ»
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 #define PI 3.1415926
 
-//Ïà»ú
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -25,18 +22,17 @@ bool firstMouse = true;
 static float deltaTime = 0.0;
 static float lastFrame = 0.0;
 
-//º¯ÊıÉùÃ÷
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendFloor();
 void rendTree();
-unsigned int loadTexture(char const * path);
+unsigned int loadTexture(char const *path);
 
-unsigned int objectVAO=0, objectVBO;
-unsigned int floorVAO=0, floorVBO;
-unsigned int treeVAO=0, treeVBO;
+unsigned int objectVAO = 0, objectVBO;
+unsigned int floorVAO = 0, floorVBO;
+unsigned int treeVAO = 0, treeVBO;
 
 int main()
 {
@@ -45,15 +41,14 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨È«ÆÁ
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//»ñÈ¡µ±Ç°Éè±¸µÄÒ»Ğ©ÊôĞÔ
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
 	}
 	else
@@ -66,51 +61,42 @@ int main()
 		return -1;
 	}
 
-	//»ñÈ¡Éè±¸ÉÏÏÂÎÄ
 	glfwMakeContextCurrent(window);
-	//×¢²á»Øµ÷º¯Êı
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //½ûÓÃÊó±ê
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//¼ÓÔØº¯ÊıÖ¸Õë
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ÅäÖÃÈ«¾ÖOpenGL×´Ì¬
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// ½¨Á¢×ÅÉ«Æ÷
 	Shader shader(getLocalPath("shader/4.3-blending.vs").c_str(), getLocalPath("shader/4.3-blending.fs").c_str());
 
 	shader.use();
 	shader.setInt("texture1", 0);
-	// ²İ´ÔÎ»ÖÃ ÖĞĞÄ¶Ô³Æ
 	glm::vec3 vegetation[5];
-	vegetation[0]=glm::vec3(-1.5f, 0.0f, -0.48f);
-	vegetation[1]=glm::vec3( 1.5f, 0.0f, 0.51f);
-	vegetation[2]=glm::vec3( 0.0f, 0.0f, 0.7f);
-	vegetation[3]=glm::vec3(-0.3f, 0.0f, -2.3f);
-	vegetation[4]=glm::vec3 (0.5f, 0.0f, -0.6f);
-
+	vegetation[0] = glm::vec3(-1.5f, 0.0f, -0.48f);
+	vegetation[1] = glm::vec3(1.5f, 0.0f, 0.51f);
+	vegetation[2] = glm::vec3(0.0f, 0.0f, 0.7f);
+	vegetation[3] = glm::vec3(-0.3f, 0.0f, -2.3f);
+	vegetation[4] = glm::vec3(0.5f, 0.0f, -0.6f);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		// µ÷ÕûËÙ¶È
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// ¼ì²âÊäÈë
 		processInput(window);
-		// äÖÈ¾±³¾°É«
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
 
@@ -118,11 +104,11 @@ int main()
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 model(1.0f);
 		shader.use();
-		shader.setMat4("projection",projection);
-		shader.setMat4("view",view);
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
 		rendFloor();
 
-		for (int i=0;i<5;i++)
+		for (int i = 0; i < 5; i++)
 		{
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, vegetation[i]);
@@ -130,11 +116,9 @@ int main()
 			rendTree();
 		}
 
-		//½»»»»º³åÓëÏûÏ¢·ÖÅä
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//É¾³ı¶ÔÏó¼°ÊÍ·Å×ÊÔ´
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 	glDeleteVertexArrays(1, &floorVAO);
@@ -148,100 +132,95 @@ int main()
 
 void processInput(GLFWwindow *window)
 {
-	static float speed=1.0f;
+	static float speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime*speed);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS )
-		camera.ProcessKeyboard(BACKWARD, deltaTime*speed);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS )
-		camera.ProcessKeyboard(LEFT, deltaTime*speed);
+		camera.ProcessKeyboard(FORWARD, deltaTime * speed);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime * speed);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime*speed);
+		camera.ProcessKeyboard(RIGHT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		speed+=1.0f;
+		speed += 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		speed-=1.0f;
+		speed -= 1.0f;
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
 void rendTree()
 {
-	// ¼ÓÔØÎÆÀí
-	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/Ê÷.png").c_str());
-	if(treeVAO==0)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/æ ‘.png").c_str());
+	if (treeVAO == 0)
 	{
 		float transparentVertices[] = {
-			// Î»ÖÃ               //  ÎÆÀí
-			-0.5f,  0.5f, 0.0f,   0.0f, 1.0f,
-			0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 
-			0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 
+			// Î»ï¿½ï¿½               //  ï¿½ï¿½ï¿½ï¿½
+			-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
 
-			-0.5f, -0.5f, 0.0f,   0.0f, 0.0f,
-			-0.5f,  0.5f, 0.0f,   0.0f, 1.0f,
-			0.5f, -0.5f, 0.0f,   1.0f, 0.0f 
-		};
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+			0.5f, -0.5f, 0.0f, 1.0f, 0.0f};
 		glGenVertexArrays(1, &treeVAO);
 		glGenBuffers(1, &treeVBO);
 		glBindVertexArray(treeVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, treeVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 		glBindVertexArray(0);
 	}
-	//¼¤»îÎÆÀí
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glBindVertexArray(treeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6); // »æÖÆ
+	glDrawArrays(GL_TRIANGLES, 0, 6); // ï¿½ï¿½ï¿½ï¿½
 	glBindVertexArray(0);
 }
 
 void rendFloor()
 {
-	// ¼ÓÔØÎÆÀí
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.jpg").c_str());
-	if(floorVAO==0)
+	if (floorVAO == 0)
 	{
 		float planeVertices[] = {
-			// Î»ÖÃ          // ÎÆÀí
-			5.0f, -1.0f,  5.0f,  1.0f, 0.0f,
-			-5.0f, -1.0f,  5.0f,  0.0f, 0.0f,
-			-5.0f, -1.0f, -5.0f,  0.0f, 1.0f,
+			// Î»ï¿½ï¿½          // ï¿½ï¿½ï¿½ï¿½
+			5.0f, -1.0f, 5.0f, 1.0f, 0.0f,
+			-5.0f, -1.0f, 5.0f, 0.0f, 0.0f,
+			-5.0f, -1.0f, -5.0f, 0.0f, 1.0f,
 
-			5.0f, -1.0f,  5.0f,  1.0f, 0.0f,
-			-5.0f, -1.0f, -5.0f,  0.0f, 1.0f,
-			5.0f, -1.0f, -5.0f,  1.0f, 1.0f
-		};
+			5.0f, -1.0f, 5.0f, 1.0f, 0.0f,
+			-5.0f, -1.0f, -5.0f, 0.0f, 1.0f,
+			5.0f, -1.0f, -5.0f, 1.0f, 1.0f};
 		glGenVertexArrays(1, &floorVAO);
 		glGenBuffers(1, &floorVBO);
 		glBindVertexArray(floorVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 		glBindVertexArray(0);
 	}
-	//¼¤»îÎÆÀí
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glBindVertexArray(floorVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6); // »æÖÆ
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -259,12 +238,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }
 
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -300,4 +279,3 @@ unsigned int loadTexture(char const * path)
 
 	return textureID;
 }
-

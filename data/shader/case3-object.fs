@@ -1,4 +1,5 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform float time;
@@ -8,10 +9,10 @@ uniform vec2 resolution;
 
 void main()
 {  
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 uv = (gl_FragCoord.xy/resolution.xy)-0.5;
     //uv*=0.01;
-    //ÀëÔ¶µãÔ½Ô¶ ×ªµÄ½Ç¶ÈÔ½´ó
+    //ç¦»è¿œç‚¹è¶Šè¿œ è½¬çš„è§’åº¦è¶Šå¤§
     float time = time * 0.1 + ((0.25+0.05*sin(time*0.1))/(length(uv.xy)*2+0.07))* 2.2; 
     float si = sin(time);
     float co = cos(time);
@@ -44,5 +45,5 @@ void main()
     float gr = clamp((v1+c)*.25, 0.0, 1.0);
     float bl = clamp(v2, 0.0, 1.0);
     vec3 col = vec3(re, gr, bl) + smoothstep(0.15, .0, len) * .9;
-    gl_FragColor=vec4(col, 1.0);
+    FragColor=vec4(col, 1.0);
 }

@@ -16,21 +16,21 @@ void main()
 {
     vec3 diffuseColor = texture(diffuseMap, TexCoord).rgb;
     vec3 specularColor = texture(specularMap, TexCoord).rgb;
-    // »·¾³¹âÕÕ
+    // ç¯å¢ƒå…‰
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor * diffuseColor;
   	
-    // Âş·´Éä
+    // æ¼«åå°„
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor * diffuseColor;
     
-    // ¾µÃæ¹âÕÕ
+    // é«˜å…‰
     float specularStrength = 0.5;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);  //shininess´ÎÃİ  ¸ß¹â·´¹â¶È
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);  //shininess
     vec3 specular = specularStrength * spec * lightColor * specularColor;  
         
     vec3 result = ambient + diffuse + specular;

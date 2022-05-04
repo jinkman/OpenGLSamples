@@ -15,9 +15,9 @@ void main()
     {
         // reinhard
         // vec3 result = hdrColor / (hdrColor + vec3(1.0));
-        // 曝光
+        // 鏇濆厜
         vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-        // gamma校正       
+        // gamma校锟斤拷       
         result = pow(result, vec3(1.0 / gamma));
         FragColor = vec4(result, 1.0);
     }

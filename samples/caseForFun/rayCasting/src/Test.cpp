@@ -1,30 +1,27 @@
-// ¹âÏß×·×Ù.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <math.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
 
-
-// ÆÁÄ»
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 #define PI 3.1415926f
 
-//º¯ÊıÉùÃ÷
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
 void readVertext(std::vector<float> &Arr);
-unsigned int loadTexture(char const * path);
+unsigned int loadTexture(char const *path);
 
-unsigned int objectVAO=0, objectVBO;
+unsigned int objectVAO = 0, objectVBO;
 
 int main()
 {
@@ -33,15 +30,14 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´´½¨È«ÆÁ
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//»ñÈ¡µ±Ç°Éè±¸µÄÒ»Ğ©ÊôĞÔ
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
 	}
 	else
@@ -53,61 +49,53 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 
-	//»ñÈ¡Éè±¸ÉÏÏÂÎÄ
 	glfwMakeContextCurrent(window);
-	//×¢²á»Øµ÷º¯Êı
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	//¼ÓÔØº¯ÊıÖ¸Õë
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ¿ªÆôOpenGL×´Ì¬
 	glEnable(GL_DEPTH_TEST);
-	//Ê¹ÓÃ×ÅÉ«Æ÷
 	Shader shader(getLocalPath("shader/case7-object.vs").c_str(), getLocalPath("shader/case7-object.fs").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//´¦ÀíÍâ²¿ÊäÈë
 		processInput(window);
-		// Âß¼­Ê±¼ä±äÁ¿
+
 		static float deltaTime = 0.0f;
 		static float lastFrame = 0.0f;
-		//¼ÆËãfps
+
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		static int fps =0;
-		static float totalTime=0.0f;
-		totalTime+=deltaTime;
-		if((fps++)==7)
+		static int fps = 0;
+		static float totalTime = 0.0f;
+		totalTime += deltaTime;
+		if ((fps++) == 7)
 		{
-			std::cout<<7/totalTime<<std::endl;
-			totalTime=0.0f;
-			fps=0;
+			std::cout << 7 / totalTime << std::endl;
+			totalTime = 0.0f;
+			fps = 0;
 		}
 
-		//Çå³ı»º´æ
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//ÉèÖÃ×ÅÉ«Æ÷²ÎÊı
 		shader.use();
-		shader.setFloat("time",(float)glfwGetTime());
-		//»æÖÆÎïÌå
+		shader.setFloat("time", (float)glfwGetTime());
+		shader.setVec2("resolution", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
 		rendObject();
 
-		//½»»»»º³åÓëÏûÏ¢·ÖÅä
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//É¾³ı¶ÔÏó¼°ÊÍ·Å×ÊÔ´
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 	glfwTerminate();
@@ -120,8 +108,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 
 	glViewport(0, 0, width, height);
@@ -130,31 +117,29 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void rendObject()
 {
 	static size_t vertextNum = 0;
-	if(objectVAO==0)
+	if (objectVAO == 0)
 	{
 		std::vector<float> Arr;
 		readVertext(Arr);
 		vertextNum = Arr.size();
 		if (vertextNum == 0)
-			return ;
+			return;
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
 		glBindVertexArray(objectVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 		glBindVertexArray(0);
 	}
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/4); // »æÖÆ
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
 	glBindVertexArray(0);
 }
 
-
-//¶ÁÈë¶¥µã×ø±ê
 void readVertext(std::vector<float> &Arr)
 {
 	Arr.push_back(-1.0f);
@@ -188,9 +173,7 @@ void readVertext(std::vector<float> &Arr)
 	Arr.push_back(1.0f);
 }
 
-
-//¼ÓÔØÎÆÀí
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -226,4 +209,3 @@ unsigned int loadTexture(char const * path)
 
 	return textureID;
 }
-

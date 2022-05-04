@@ -1,44 +1,38 @@
-// Test.cpp : ∂®“Âøÿ÷∆Ã®”¶”√≥Ã–Úµƒ»Îø⁄µ„°£
+// Test.cpp : ÂÆö‰πâÊéßÂà∂Âè∞Â∫îÁî®Á®ãÂ∫èÁöÑÂÖ•Âè£ÁÇπ„ÄÇ
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <math.h>
 #include <camera.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
 
-// ∆¡ƒª
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 #define PI 3.1415926
 
-
-//  ±º‰
 float deltaTime = 0.0;
 float lastFrame = 0.0;
-// œ‡ª˙
 bool firstMouse = true;
-Camera camera(glm::vec3(0.0f, 5.0f, 0.0f));
+Camera camera(glm::vec3(0.0f, 10.0f, 20.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-//∫Ø ˝…˘√˜
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void rendObject();
 void readVertext(std::vector<float> &Arr);
-unsigned int loadTexture(char const * path);
-void Rotatez(glm::vec3 &a,double Thta);
+unsigned int loadTexture(char const *path);
+void Rotatez(glm::vec3 &a, double Thta);
 
-
-unsigned int objectVAO=0, objectVBO;
+unsigned int objectVAO = 0, objectVBO;
 glm::mat4 *modelMatrices;
-glm::vec3* speedMatrices;
-int amount = 10000;
+glm::vec3 *speedMatrices;
+int amount = 50;
 
 int main()
 {
@@ -47,18 +41,17 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//¥¥Ω®»´∆¡
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//ªÒ»°µ±«∞…Ë±∏µƒ“ª–© Ù–‘
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2.0f;
-		lastY=SCR_HEIGHT/2.0f;			  //∆¡ƒª’˝÷––ƒ
+		lastX = SCR_WIDTH / 2.0f;
+		lastY = SCR_HEIGHT / 2.0f;
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -70,124 +63,109 @@ int main()
 		return -1;
 	}
 
-	//ªÒ»°…Ë±∏…œœ¬Œƒ
 	glfwMakeContextCurrent(window);
-	//◊¢≤·ªÿµ˜∫Ø ˝
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	//…Ë÷√ ‰»Îƒ£ Ω
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //Ω˚”√ Û±Í
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//º”‘ÿ∫Ø ˝÷∏’Î
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ø™∆ÙOpenGL◊¥Ã¨
 	glEnable(GL_DEPTH_TEST);
-	// π”√◊≈…´∆˜
 	Shader grassShader(getLocalPath("shader/4.6-grass.vs").c_str(), getLocalPath("shader/4.6-grass.fs").c_str(), getLocalPath("shader/4.6-grass.gs").c_str());
 	grassShader.use();
-	grassShader.setInt("diffuseMap",0);
+	grassShader.setInt("diffuseMap", 0);
 
-	// ≈‰÷√¥Û ˝¡øµƒ±‰ªªæÿ’Û
 	modelMatrices = new glm::mat4[amount];
-	float radius = 100.0f;
+	float radius = 10.0f;
 	for (int i = 0; i < amount; i++)
 	{
 		glm::mat4 model(1.0f);
-		float x = rand()%(int(20*radius))/10.0f-radius;
-		float height = sqrt(pow(radius,2.0f)-pow(x,2.0f)); 
-		float z = rand()%(int(20*height)+1)/10.0f-height;
-		model=glm::translate(model,glm::vec3(x,0.0f,z));
-		model=glm::rotate(model,glm::radians(float(rand()%3600/10.0f)),glm::vec3(0.0f,1.0f,0.0f));
-		modelMatrices[i]=model;
+		float x = rand() % (int(20 * radius)) / 10.0f - radius;
+		float height = sqrt(pow(radius, 2.0f) - pow(x, 2.0f));
+		float z = rand() % (int(20 * height) + 1) / 10.0f - height;
+		model = glm::translate(model, glm::vec3(x, 0.0f, z));
+		model = glm::rotate(model, glm::radians(float(rand() % 3600 / 10.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrices[i] = model;
 	}
 
-	//≈‰÷√ÀŸ∂» ˝◊È
 	speedMatrices = new glm::vec3[amount];
 	for (int i = 0; i < amount; i++)
-		speedMatrices[i]=glm::vec3(20.0f+rand()%3000/1000.0f,3.5+rand()%300/100.0f,rand()%1000/100.0f+100.0f);
+		speedMatrices[i] = glm::vec3(20.0f + rand() % 3000 / 1000.0f, 3.5 + rand() % 300 / 100.0f, rand() % 1000 / 100.0f + 100.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//√ø÷°œ‡∏Ù¬ﬂº≠ ±º‰
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		//¥¶¿ÌÕ‚≤ø ‰»Î
-		processInput(window); 
-		//«Â≥˝ª∫¥Ê
+		processInput(window);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//ªÒ»°±‰ªª≤Œ ˝
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model(1.0f);
 
-		//‰÷»æ≤›
 		grassShader.use();
 		grassShader.setMat4("projection", projection);
 		grassShader.setMat4("view", view);
-		grassShader.setFloat("g",50.0f); //÷ÿ¡¶º”ÀŸ∂»
-		grassShader.setFloat("size",1.0f);
-		grassShader.setInt("pre",20); //æ´∂»
-		grassShader.setFloat("uTimes",(float)glfwGetTime()*1.2f);				
-		grassShader.setVec4("grassColor",glm::vec4(0.0f,0.7f,0.0f,0.0f));				
-		//ªÊ÷∆ŒÔÃÂ
-		for (int i=0;i<amount;i++)
+		grassShader.setFloat("g", 20.0f); // gravity
+		grassShader.setFloat("size", 1.0f);
+		grassShader.setInt("pre", 20); // precision
+		grassShader.setFloat("uTimes", (float)glfwGetTime() * 1.2f);
+		grassShader.setVec4("grassColor", glm::vec4(0.0f, 0.7f, 0.0f, 0.0f));
+
+		for (int i = 0; i < amount; i++)
 		{
-			grassShader.setMat4("model",modelMatrices[i]);
-			grassShader.setVec3("speed",speedMatrices[i]);
+			grassShader.setMat4("model", modelMatrices[i]);
+			grassShader.setVec3("speed", speedMatrices[i]);
 			rendObject();
 		}
 
-		//Ωªªªª∫≥Â”Îœ˚œ¢∑÷≈‰
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//…æ≥˝∂‘œÛº∞ Õ∑≈◊ ‘¥
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
-	delete []modelMatrices;
-	delete []speedMatrices;
+	delete[] modelMatrices;
+	delete[] speedMatrices;
 	glfwTerminate();
 	return 0;
 }
 
 void processInput(GLFWwindow *window)
 {
-	static float speed=1.0f;
+	static float speed = 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime*speed);
+		camera.ProcessKeyboard(FORWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime*speed);
+		camera.ProcessKeyboard(BACKWARD, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime*speed);
+		camera.ProcessKeyboard(LEFT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime*speed);
+		camera.ProcessKeyboard(RIGHT, deltaTime * speed);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		speed+=0.01f;
+		speed += 0.01f;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		speed-=0.01f;
+		speed -= 0.01f;
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 
 	glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -205,93 +183,83 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }
 
-
 void rendObject()
 {
-	static unsigned int grassMap = loadTexture(getLocalPath("texture/≤›.png").c_str());
+	static unsigned int grassMap = loadTexture(getLocalPath("texture/Ëçâ.png").c_str());
 	static size_t vertextNum = 0;
-	if(objectVAO==0)
+	if (objectVAO == 0)
 	{
 		std::vector<float> vArr;
 		readVertext(vArr);
 		vertextNum = vArr.size();
 		if (vertextNum == 0)
-			return ;
+			return;
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
 		glBindVertexArray(objectVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &vArr[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 		glBindVertexArray(0);
 		vArr.clear();
 	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, grassMap);
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum/5);
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5);
 	glBindVertexArray(0);
 }
 
-
-//∂¡»Î∂•µ„◊¯±Í
 void readVertext(std::vector<float> &Arr)
 {
 	float times = 10.0f;
-	float heightTimes =5.0f;
-	float space = 3.0f/2;
-	//∫·œÚx:-1.5 1.5
-	//µ⁄“ª∏ˆ»˝Ω«–Œ
-	Arr.push_back(-1.5f*times);
+	float heightTimes = 5.0f;
+	float space = 3.0f / 2;
+	Arr.push_back(-1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(1.5f*times);
+	Arr.push_back(1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(-1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(-1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
-	//µ⁄∂˛∏ˆ»˝Ω«–Œ
-	Arr.push_back(1.5f*times);
+	Arr.push_back(1.5f * times);
 	Arr.push_back(0.0f);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
-	Arr.push_back(1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(1.0f);
 	Arr.push_back(1.0f);
 
-	Arr.push_back(-1.5f*times);
-	Arr.push_back(3.0f*heightTimes);
-	Arr.push_back((0.5f*space-1.5f)*times);
+	Arr.push_back(-1.5f * times);
+	Arr.push_back(3.0f * heightTimes);
+	Arr.push_back((0.5f * space - 1.5f) * times);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
 }
 
-
-
-
-//º”‘ÿŒ∆¿Ì
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -327,4 +295,3 @@ unsigned int loadTexture(char const * path)
 
 	return textureID;
 }
-

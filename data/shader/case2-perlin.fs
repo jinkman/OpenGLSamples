@@ -2,11 +2,11 @@
 out float FragColor;
 
 in vec2 TexCoords;
-uniform int octaves;				 //±¶Æµ
-uniform float persistence;		 //Õñ·ù
-uniform float delta;			 //Æ½»¬¶È
+uniform int octaves;				 //å€é¢‘
+uniform float persistence;		 //æŒ¯å¹…
+uniform float delta;			 //å¹³æ»‘åº¦
 
-//¶şÎ¬perlinÔëÉù
+
 float PI=3.1415926f;
 
 float easeCurveInterpolate(float z1,float z2,float delta);
@@ -15,7 +15,7 @@ float Noise(int x,int y);
 float InterpolatedNoise(float x,float y);
 float PerlinNoise(float x,float y);
 
-float easeCurveInterpolate(float z1,float z2,float delta)//»º¶¯ÇúÏß²åÖµ£¬³£ÓÃ
+float easeCurveInterpolate(float z1,float z2,float delta)//ç¼“åŠ¨æ›²çº¿æ’å€¼ï¼Œå¸¸ç”¨
 {
 	float percent=(1- cos(delta * PI))*0.5;
 	return z1*(1-percent)+z2*percent;
@@ -40,31 +40,31 @@ float Noise(int x,int y)
 
 float InterpolatedNoise(float x,float y)
 {
-	//×óÉÏ½Çµã×ø±ê(X0,Y0)
+	//å·¦ä¸Šè§’ç‚¹åæ ‡(X0,Y0)
 	int X0=int(x);
 	int Y0=int(y);
-	//ÄÚ²¿Æ«ÒÆÁ¿
+	//å†…éƒ¨åç§»é‡
 	float dX=x-X0;
 	float dY=y-Y0;
-	//4¸öµã½øĞĞÆ½»¬
-	float z1=smoothPoint(X0,Y0);//×óÉÏ
-	float z2=smoothPoint(X0+1,Y0);//ÓÒÉÏ
-	float z3=smoothPoint(X0,Y0+1);//×óÏÂ
-	float z4=smoothPoint(X0+1,Y0+1);//ÓÒÏÂ
-	//Á½´Î²åÖµ£¬ÆäÖĞeaseCurveInterpolate¿ÉÒÔ»»³ÉÆäËû²åÖµº¯Êı
-	float _z1=easeCurveInterpolate(z1,z2,dX);//ÉÏÁ½µã²åÖµ
-	float _z2=easeCurveInterpolate(z3,z4,dX);//ÏÂÁ½µã²åÖµ
-	return easeCurveInterpolate(_z1,_z2,dY);//×îÖÕ²åÖµ
+	//4ä¸ªç‚¹è¿›è¡Œå¹³æ»‘
+	float z1=smoothPoint(X0,Y0);//å·¦ä¸Š
+	float z2=smoothPoint(X0+1,Y0);//å³ä¸Š
+	float z3=smoothPoint(X0,Y0+1);//å·¦ä¸‹
+	float z4=smoothPoint(X0+1,Y0+1);//å³ä¸‹
+	//ä¸¤æ¬¡æ’å€¼ï¼Œå…¶ä¸­easeCurveInterpolateå¯ä»¥æ¢æˆå…¶ä»–æ’å€¼å‡½æ•°
+	float _z1=easeCurveInterpolate(z1,z2,dX);//ä¸Šä¸¤ç‚¹æ’å€¼
+	float _z2=easeCurveInterpolate(z3,z4,dX);//ä¸‹ä¸¤ç‚¹æ’å€¼
+	return easeCurveInterpolate(_z1,_z2,dY);//æœ€ç»ˆæ’å€¼
 }
 
 
 float PerlinNoise(float x,float y)
 {
-    float total=0.0;//Í³¼Æ¾­¹ı±¶Æµ´¦ÀíºóµÄÔëÉùÖµ
-	for(int i=0;i<octaves;++i)//±¶ÆµÑ­»·
+    float total=0.0;//ç»Ÿè®¡ç»è¿‡å€é¢‘å¤„ç†åçš„å™ªå£°å€¼
+	for(int i=0;i<octaves;++i)//å€é¢‘å¾ªç¯
 	{
-		float frequency=pow(2.0,i);//¼ÆËãÆµÂÊ£¬ÆµÂÊÔ½´ó£¬ÔëÉùÔ½²»¹æÔò
-		float amplitude=pow(persistence,i);//¼ÆËãÕñ·ù£¬Õñ·ùÔ½´ó£¬ÔëÉù²¨¶¯Ô½´ó
+		float frequency=pow(2.0,i);//è®¡ç®—é¢‘ç‡ï¼Œé¢‘ç‡è¶Šå¤§ï¼Œå™ªå£°è¶Šä¸è§„åˆ™
+		float amplitude=pow(persistence,i);//è®¡ç®—æŒ¯å¹…ï¼ŒæŒ¯å¹…è¶Šå¤§ï¼Œå™ªå£°æ³¢åŠ¨è¶Šå¤§
 		total=total+InterpolatedNoise(x*frequency*delta,y*frequency*delta)*amplitude;
 	}
 	return total;

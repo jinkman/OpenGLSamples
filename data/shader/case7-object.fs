@@ -1,10 +1,11 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform sampler2D diffuse;
 uniform float time;
 
-vec2 resolution=vec2(800,600);
+uniform vec2 resolution;
 
 // shadertoy emulation
 #define iTime time
@@ -13,21 +14,21 @@ vec2 resolution=vec2(800,600);
 // --------[ Original ShaderToy begins here ]---------- //
 const float pi = 3.14159;
 
-mat3 xrot(float t)    //ÈÆxÖáĞı×ª
+mat3 xrot(float t)    //ç»•xè½´æ—‹è½¬
 {
     return mat3(1.0, 0.0, 0.0,
                 0.0, cos(t), -sin(t),
                 0.0, sin(t), cos(t));
 }
 
-mat3 yrot(float t)    //ÈÆyÖáĞı×ª
+mat3 yrot(float t)    //ç»•yè½´æ—‹è½¬
 {
     return mat3(cos(t), 0.0, -sin(t),
                 0.0, 1.0, 0.0,
                 sin(t), 0.0, cos(t));
 }
 
-mat3 zrot(float t)    //ÈÆzÖáĞı×ª
+mat3 zrot(float t)    //ç»•zè½´æ—‹è½¬
 {
     return mat3(cos(t), -sin(t), 0.0,
                 sin(t), cos(t), 0.0,
@@ -39,7 +40,7 @@ float udBox( vec3 p, vec3 b )
   return length(max(abs(p)-b,0.0));
 }
 
-//µãµ½Á¢·½Ìå×î¶Ì¾àÀë  ÔÚÄÚ²¿Ôò·µ»Ø¸ºÖµ
+//ç‚¹åˆ°ç«‹æ–¹ä½“æœ€çŸ­è·ç¦»  åœ¨å†…éƒ¨åˆ™è¿”å›è´Ÿå€¼
 float sdBox( vec3 p, vec3 b )
 {
   vec3 d = abs(p) - b;
@@ -65,13 +66,13 @@ vec2 map(vec3 p)
 {   
 	float d = -room(p);
     float m = 0.0;
-    float pe = sdBox(p+vec3(-1.0,8.0,0.0), vec3(1.0, 2.0, 1.0));  //Î»ÖÃ¼°±ÈÀı
+    float pe = sdBox(p+vec3(-1.0,8.0,0.0), vec3(1.0, 2.0, 1.0));   //ä½ç½®åŠæ¯”ä¾‹
     if (pe < d)
     {
         d = pe;
         m = 1.0;
     }
-    //Ôö¼ÓµÄµ××ù1
+    //å¢åŠ çš„åº•åº§1
     float pe1 = sdBox(p+vec3(1.0,8.0,0.0), vec3(1.0, 2.0, 1.0));
     if (pe1 < d)
     {
@@ -81,13 +82,13 @@ vec2 map(vec3 p)
     
     if (alpha) 
     {
-        float c = sdBox(p+vec3(-1.0,5.0,0.0), vec3(1.0));      //Î»ÖÃ¼°±ÈÀı
+        float c = sdBox(p+vec3(-1.0,5.0,0.0), vec3(1.0));      //ä½ç½®åŠæ¯”ä¾‹
         if (c < d)
         {
             d = c;
             m = 2.0;
         }
-        //Ôö¼ÓÍ¸Ã÷²£Á§1
+        //å¢åŠ é€æ˜ç»ç’ƒ1
         float c1 = sdBox(p+vec3(1.0,5.0,0.0), vec3(1.0));
         if (c1 < d)
         {
@@ -103,8 +104,8 @@ vec2 map(vec3 p)
             d = c;
             m = 3.0;
         }
-        //Ôö¼ÓÇò1
-        float c1 = length(p+vec3(1.0,5.3,0.0)) - 0.7;  //Î»ÖÃ¼°°ë¾¶
+        //å¢åŠ çƒ1
+        float c1 = length(p+vec3(1.0,5.3,0.0)) - 0.7;  //ä½ç½®åŠåŠå¾„
         if (c1 < d)
         {
             d = c1;
@@ -112,10 +113,10 @@ vec2 map(vec3 p)
         }
     }
     
-    return vec2(d, m);   //mÎª²ÄÖÊ
+    return vec2(d, m);    //mä¸ºæè´¨
 }
 
-//¼ÆËãµãµÄ·¨ÏòÁ¿  Í¨ÓÃ¹«Ê½  ÇÉÃî
+//è®¡ç®—ç‚¹çš„æ³•å‘é‡  é€šç”¨å…¬å¼  å·§å¦™
 vec3 normal(vec3 p)
 {
     vec3 o = vec3(0.01, 0.0, 0.0);
@@ -126,14 +127,14 @@ vec3 normal(vec3 p)
 
 vec3 trace(vec3 o, vec3 r)
 {
-    //±Æ½ü×î½üµã
+    //é€¼è¿‘æœ€è¿‘ç‚¹
     float t = 0.0;
     vec2 d;
     for (int i = 0; i < 32; ++i) 
     {
         vec3 p = o + r * t;
         d = map(p);
-        //Ä¬ÈÏ»÷ÖĞ
+        //é»˜è®¤å‡»ä¸­
         if(abs(d.x)<0.01) 
             break;
         t += d.x;
@@ -143,16 +144,16 @@ vec3 trace(vec3 o, vec3 r)
 
 float mapl(vec3 p)
 {
-    p *= yrot(pi*0.05);  //ÉäÏß·½Ïò
-    float r = 0.01;  //¹âÏß°ë¾¶
-    vec3 q = fract(p) * 2.0 - 1.0;   //È¡Ğ¡Êı  ²úÉú¶àÌõ
-    float a = sdTube(vec3(q.z,q.y,q.x), r);   //×ª»»×ø±êÏµ ºá×İ·½Ïò  ÉäÏßÔÚzÖá
+    p *= yrot(pi*0.05);  //å°„çº¿æ–¹å‘
+    float r = 0.01;  //å…‰çº¿åŠå¾„
+    vec3 q = fract(p) * 2.0 - 1.0;   //å–å°æ•°  äº§ç”Ÿå¤šæ¡
+    float a = sdTube(vec3(q.z,q.y,q.x), r);   //è½¬æ¢åæ ‡ç³» æ¨ªçºµæ–¹å‘  å°„çº¿åœ¨zè½´
     float b = sdTube(vec3(q.x,q.y,q.z), r);
     return min(a,b);
 }
 
 
-//²âÊÔÊÇ·ñ»÷ÖĞÉäÏß
+//æµ‹è¯•æ˜¯å¦å‡»ä¸­å°„çº¿
 float tracel(vec3 o, vec3 r)
 {
     float t = 0.0;
@@ -165,7 +166,6 @@ float tracel(vec3 o, vec3 r)
     return t;
 }
 
-//¼ÓÔØÎÆÀí
 vec3 _texture(vec3 p)
 {
     vec3 ta = texture(diffuse, vec2(p.y,p.z)).xyz;
@@ -174,46 +174,46 @@ vec3 _texture(vec3 p)
     return (ta + tb + tc) / 3.0;
 }
 
-//Î»ÖÃ ·½Ïò ·¨Ïò 
+//ä½ç½® æ–¹å‘ æ³•å‘ 
 vec4 diffcol(vec3 w, vec3 r, vec3 sn, vec2 fd, float t)
 {
     vec3 mdiff = vec3(0.0); 
     float gloss = 0.0;
     float light = 1.0;
-    if (fd.y == 1.0)    //µ××ùÎª°×É«
+    if (fd.y == 1.0)    //åº•åº§ä¸ºç™½è‰²
     {
         mdiff = vec3(1.0);
         gloss = 1.0;
     } 
-    else if (fd.y == 2.0)   //Í¸Ã÷²£Á§
+    else if (fd.y == 2.0)   //é€æ˜ç»ç’ƒ
     {
         mdiff = vec3(1.0);
     } 
-    else if (fd.y == 3.0)   //Çò
+    else if (fd.y == 3.0)   //çƒ
     {
         mdiff = vec3(1.0);
         gloss = 1.0;
     } 
-    else                //ÆäËüÎª»÷ÖĞ·¿¼ä
+    else                //å…¶å®ƒä¸ºå‡»ä¸­æˆ¿é—´
     {
-        if (sn.y > 0.9)  //µØÃæ
+        if (sn.y > 0.9)  //åœ°é¢
         {
             mdiff = vec3(1.0) * vec3(0.2,0.5,0.2);
             gloss = 0.1;
         } 
-        else if (sn.y < -0.9)  //¶¥²¿ 
+        else if (sn.y < -0.9)  //é¡¶éƒ¨ 
         {
             mdiff = vec3(5.0);
             gloss = 0.1;
             light = 0.0;
         } 
-        else   //ËÄÖÜÇ½±Ú
+        else   //å››å‘¨å¢™å£
         {
             mdiff = _texture(w*0.1) * vec3(0.0, 1.0, 1.0);
             gloss = 1.0;
         }
     }
-    float fog = 1.0 / (1.0 + t * t * 0.05);  //Îí»¯Ğ§¹û
+    float fog = 1.0 / (1.0 + t * t * 0.05);  //é›¾åŒ–æ•ˆæœ
     mdiff = mix(mdiff, vec3(1.0), abs(w.y) / 8.0 * light);
     return vec4(mdiff*fog, gloss);
 }
@@ -227,43 +227,43 @@ vec3 laser(vec3 o, vec3 r)
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;
-    //Ğı×ª
+    //æ—‹è½¬
     mat3 xfm = xrot(sin(-iTime*0.25)*0.25) * yrot(iTime);
-    //Ğı×ª¹âÏß·½Ïò
+    //æ—‹è½¬å…‰çº¿æ–¹å‘
     vec3 r = normalize(vec3(uv, 1.0));
     r *= xrot(pi * 0.25) * xfm;
-    //Ğı×ª¹âÏßÎ»ÖÃ
+    //æ—‹è½¬å…‰çº¿ä½ç½®
     vec3 o = vec3(0.0, 0.0, -3.0);
     o *= xfm;
     o.y -= 3.0;
     alpha = true;
     vec3 t = trace(o, r);   
-    vec3 w = o + r * t.x;  //»ñµÃ¹âÏß»÷ÖĞµÄ×î½üµÄµã
+    vec3 w = o + r * t.x;  //è·å¾—å…‰çº¿å‡»ä¸­çš„æœ€è¿‘çš„ç‚¹
     vec2 fd = t.yz;
-    vec3 sn = normal(w);  //»÷ÖĞµãµÄ·¨ÏòÁ¿
+    vec3 sn = normal(w);  //å‡»ä¸­ç‚¹çš„æ³•å‘é‡
 
-    //Ä¬ÈÏ´òÖĞ·¿¼ä
+    //é»˜è®¤æ‰“ä¸­æˆ¿é—´
     vec4 mdiff;
     
-    //Èç¹û´òÖĞ²£Á§
+    //å¦‚æœæ‰“ä¸­ç»ç’ƒ
     if (fd.y == 2.0) 
     {
         alpha = false;
-        vec3 rr = refract(r, sn, 0.9);      //ÕÛÉäÏòÁ¿  ÕÛÉäÏµÊı
-        //ÔÙ´Î·¢Éä
+        vec3 rr = refract(r, sn, 0.9);      //æŠ˜å°„å‘é‡  æŠ˜å°„ç³»æ•°
+        //å†æ¬¡å‘å°„
         vec3 art = trace(w, rr);
-        vec3 aw = w + rr * art.x;     //ÔÙ´Îµ½´ïµÄµã
+        vec3 aw = w + rr * art.x;     //å†æ¬¡åˆ°è¾¾çš„ç‚¹
         vec2 afd = art.yz;
         vec3 asn = normal(aw);
     
-        if (afd.y == 3.0)    //ÕÛÉä»÷ÖĞÇò
+        if (afd.y == 3.0)    //æŠ˜å°„å‡»ä¸­çƒ
          {
-            alpha = false;   //²»»áÔÙÓë²£Á§¼ì²â
-            vec3 brf = reflect(rr, asn);     //·´ÉäÏòÁ¿
+            alpha = false;   //ä¸ä¼šå†ä¸ç»ç’ƒæ£€æµ‹
+            vec3 brf = reflect(rr, asn);     //åå°„å‘é‡
             vec3 brt = trace(aw + asn * 0.1, brf);
             vec3 bw = aw + brf * brt.x;
             vec2 bfd = brt.yz;
@@ -272,17 +272,17 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             float prod = max(dot(rr, -asn), 0.0);
             mdiff.xyz = bdiff.xyz * prod + laser(aw, t.x+art.x+brf);
         }
-        else                 //ÕÛÉä»÷ÖĞ·¿¼ä
+        else                 //æŠ˜å°„å‡»ä¸­æˆ¿é—´
         {
-            mdiff = diffcol(aw, rr, asn, afd, t.x+art.x);  //Îí»¯Ê±Ê±¼äÎªËùÓĞ×ö¹ıµÄÂ·¾¶
+            mdiff = diffcol(aw, rr, asn, afd, t.x+art.x);  //é›¾åŒ–æ—¶æ—¶é—´ä¸ºæ‰€æœ‰åšè¿‡çš„è·¯å¾„
             mdiff.xyz += laser(w, rr);
             mdiff.w = 1.0;
         }
     }
-    //»÷ÖĞ·¿¼ä»òÕßµ××ù
+    //å‡»ä¸­æˆ¿é—´æˆ–è€…åº•åº§
     else
         mdiff = diffcol(w, r, sn, fd, t.x);
-    //Í¸Ã÷²£Á§»áÓĞÒ»¶¨·´Éä Âş·´Éä¶¨ÂÉ
+    //é€æ˜ç»ç’ƒä¼šæœ‰ä¸€å®šåå°„ æ¼«åå°„å®šå¾‹
     alpha = true;
     vec3 rf = reflect(r, sn);
     vec3 tr = trace(w + sn * 0.01, rf);
@@ -294,12 +294,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 fdiff = mix(mdiff.xyz, rdiff.xyz, mdiff.w*(1.0-prod));
     vec3 fc = fdiff + laser(o, r);
     
-    //gammaĞ£Õı
+    //gammaæ ¡æ­£
     fragColor = vec4(sqrt(fc), 1.0);
 }
 // --------[ Original ShaderToy ends here ]---------- //
 
 void main(void)
 {
-    mainImage(gl_FragColor, gl_FragCoord.xy);
+    mainImage(FragColor, gl_FragCoord.xy);
 }

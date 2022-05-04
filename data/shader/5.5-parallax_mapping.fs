@@ -17,41 +17,41 @@ uniform float heightScale;
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 { 
-    // Éî¶È²ãÊı
+    // æ·±åº¦å±‚æ•°
     const float minLayers = 8;
     const float maxLayers = 32;
-    // ¼Ğ½ÇĞ¡²ãÊı¶à
+    // å¤¹è§’å°å±‚æ•°å¤š
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
-    // Ã¿²ãÉî¶È
+    // æ¯å±‚æ·±åº¦
     float layerDepth = 1.0 / numLayers;
-    // ´Ó×îÉÏ²ã¿ªÊ¼±éÀú
+    // ä»æœ€ä¸Šå±‚å¼€å§‹éå†
     float currentLayerDepth = 0.0;
-    // Ã¿²ãÓ¦ÒÆ¶¯µÄÎÆÀí×ø±ê
-    vec2 P = viewDir.xy / viewDir.z * heightScale; //ÒÆ¶¯±ÈÀı
+    // æ¯å±‚åº”ç§»åŠ¨çš„çº¹ç†åæ ‡
+    vec2 P = viewDir.xy / viewDir.z * heightScale; //ç§»åŠ¨æ¯”ä¾‹
     vec2 deltaTexCoords = P / numLayers;
   
-    // ³õÊ¼Öµ
+    // åˆå§‹å€¼
     vec2  currentTexCoords     = texCoords;
     float currentDepthMapValue = texture(depthMap, currentTexCoords).r;
       
     while(currentLayerDepth < currentDepthMapValue)
     {
-        // ÒÆ¶¯ÎÆÀí
+        // ç§»åŠ¨çº¹ç†
         currentTexCoords -= deltaTexCoords;
-        // ÒÆ¶¯ºó×ø±êÎÆÀíÉî¶ÈÖµ
+        // ç§»åŠ¨ååæ ‡çº¹ç†æ·±åº¦å€¼
         currentDepthMapValue = texture(depthMap, currentTexCoords).r;  
-        // µ±Ç°Éî¶È
+        // å½“å‰æ·±åº¦
         currentLayerDepth += layerDepth;  
     }
     
-    // Ç°Ò»²ãÉî¶ÈµÄÎÆÀí×ø±ê
+    // å‰ä¸€å±‚æ·±åº¦çš„çº¹ç†åæ ‡
     vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
 
-    // ¼ÆËã²åÖµ³£Á¿
+    // è®¡ç®—æ’å€¼å¸¸é‡
     float afterDepth  = currentDepthMapValue - currentLayerDepth;
     float beforeDepth = texture(depthMap, prevTexCoords).r - currentLayerDepth + layerDepth;
  
-    // ÏßĞÔ²åÖµ
+    // çº¿æ€§æ’å€¼
     float weight = afterDepth / (afterDepth - beforeDepth);
     vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
@@ -60,25 +60,25 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 
 void main()
 {           
-    // »ñµÃÊÓ²îÌùÍ¼µÄÎÆÀí×ø±êÒÔ¼°±ß½çÍâ¶ªÆú
+    // è·å¾—è§†å·®è´´å›¾çš„çº¹ç†åæ ‡ä»¥åŠè¾¹ç•Œå¤–ä¸¢å¼ƒ
     vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
     vec2 texCoords = ParallaxMapping(fs_in.TexCoords,  viewDir);       
     /*if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
         discard;*/
 
-    // ´Ó·¢ÏÖÌùÍ¼»ñµÃ·¨ÏßÊı¾İ
+    // ä»å‘ç°è´´å›¾è·å¾—æ³•çº¿æ•°æ®
     vec3 normal = texture(normalMap, texCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);   
    
-    // »ñµÃµ±Ç°ÎÆÀí×ø±êÌùÍ¼ÑÕÉ«
+    // è·å¾—å½“å‰çº¹ç†åæ ‡è´´å›¾é¢œè‰²
     vec3 color = texture(diffuseMap, texCoords).rgb;
-    // »·¾³¹â
+    // ç¯å¢ƒå…‰
     vec3 ambient = 0.1 * color;
-    // Âş·´Éä
+    // æ¼«åå°„
     vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
-    // ¸ß¹â    
+    // é«˜å…‰    
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);

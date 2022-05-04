@@ -18,23 +18,23 @@ uniform bool shadows;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
-    // Ö´ĞĞÍ¸ÊÓ±ä»»
+    // æ‰§è¡Œé€è§†å˜æ¢
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // ×ª»»µ½ [0,1] ·¶Î§ ½øĞĞÉî¶È±È½Ï
+    // è½¬æ¢åˆ° [0,1] èŒƒå›´ è¿›è¡Œæ·±åº¦æ¯”è¾ƒ
     projCoords = projCoords * 0.5 + 0.5;
-    // »ñµÃÉî¶ÈÌùÍ¼Àë¹âÔ´×î½üµÄÉî¶È
+    // è·å¾—æ·±åº¦è´´å›¾ç¦»å…‰æºæœ€è¿‘çš„æ·±åº¦
     float closestDepth = texture(shadowMap, projCoords.xy).r; 
-    // »ñµÃµ±Ç°Éî¶È
+    // è·å¾—å½“å‰æ·±åº¦
     float currentDepth = projCoords.z;
-    // ´¦ÀíÒõÓ°Ê§Õæ
+    // å¤„ç†é˜´å½±å¤±çœŸ
     vec3 normal = normalize(fs_in.Normal);
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    // ¼ÆËãÒõÓ°ÂÊ
+    // è®¡ç®—é˜´å½±ç‡
     // PCF
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    //È¡ÖÜÎ§Æ½¾ùÖµ
+    //å–å‘¨å›´å¹³å‡å€¼
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
@@ -45,7 +45,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     }
     shadow /= 9.0;
     
-    // ´óÓÚÔ¶Æ½ÃæµÄÃ»ÓĞÒõÓ°
+    // å¤§äºè¿œå¹³é¢çš„æ²¡æœ‰é˜´å½±
     if(projCoords.z > 1.0)
         shadow = 0.0;
         
@@ -57,21 +57,21 @@ void main()
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
     vec3 normal = normalize(fs_in.Normal);
     vec3 lightColor = vec3(0.4);
-    // »·¾³¹â
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     vec3 ambient = 0.2 * color;
-    // Âş·´Éä
-    vec3 lightDir = normalize(lightPos); //Õı½»Í¶Ó°
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    vec3 lightDir = normalize(lightPos); //ï¿½ï¿½ï¿½ï¿½Í¶Ó°
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
-    // ¾µÃæ·´Éä
+    // ï¿½ï¿½ï¿½æ·´ï¿½ï¿½
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     float spec = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;    
-    // ¼ÆËãÒõÓ°
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°
     float shadow = shadows ? ShadowCalculation(fs_in.FragPosLightSpace) : 0.0;                      
-    shadow = min(shadow, 0.75); // ¼õÉÙÒ»µãÒõÓ°Ç¿¶È£ºÔÚÒõÓ°ÇøÓòÔÊĞíÒ»Ğ©À©É¢/·´¹â
+    shadow = min(shadow, 0.75); // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ó°Ç¿ï¿½È£ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ğ©ï¿½ï¿½É¢/ï¿½ï¿½ï¿½ï¿½
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
     FragColor = vec4(lighting, 1.0f);

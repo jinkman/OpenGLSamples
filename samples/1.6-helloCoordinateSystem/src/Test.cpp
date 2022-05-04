@@ -1,8 +1,8 @@
-// Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <shader_s.h>
 #include <stb_image.h>
 #include <iostream>
@@ -11,29 +11,27 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <common.h>
 
-
-
 void processInput(GLFWwindow *window);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-unsigned int loadTexture(char const * path);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+unsigned int loadTexture(char const *path);
 void DrawObject();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-unsigned int objectVAO=0, objectVBO;
-float worldx=0.0f,worldy=0.0f,worldz=-4.0f,worldangle=45.0f,rect_angle=0.0f;
+unsigned int objectVAO = 0, objectVBO;
+float worldx = 0.0f, worldy = 0.0f, worldz = -4.0f, worldangle = 45.0f, rect_angle = 0.0f;
 
 int main()
 {
-	//³õÊ¼»¯´°¿Ú
+	//åˆå§‹åŒ–çª—å£
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	//´°¿Ú´°¿Ú
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	//çª—å£çª—å£
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -43,40 +41,38 @@ int main()
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	//¼ÓÔØº¯ÊıÖ¸Õë
+	//åŠ è½½å‡½æ•°æŒ‡é’ˆ
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	//¿ªÆôÉî¶È»º³å
+	//å¼€å¯æ·±åº¦ç¼“å†²
 	glEnable(GL_DEPTH_TEST);
 
-	//Ê¹ÓÃ×ÅÉ«Æ÷Àà
+	//ä½¿ç”¨ç€è‰²å™¨ç±»
 	Shader ourShader(getLocalPath("shader/1.6-texture.vs").c_str(), getLocalPath("shader/1.6-texture.fs").c_str());
 
-	
-	// ÊÀ½ç×ø±êÎ»ÖÃ
+	// ä¸–ç•Œåæ ‡ä½ç½®
 	glm::vec3 cubePositions[] = {
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(2.0f, 5.0f, -15.0f),
 		glm::vec3(-1.5f, -2.2f, -2.5f),
 		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f, 3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f, 2.0f, -2.5f),
+		glm::vec3(1.5f, 0.2f, -1.5f),
+		glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-	// ÊôÓÚÄÄ¸öÎÆÀíµ¥Ôª
+	// å±äºå“ªä¸ªçº¹ç†å•å…ƒ
 	ourShader.use();
 	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
 
-	//äÖÈ¾Ñ­»·
+	//æ¸²æŸ“å¾ªç¯
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -85,24 +81,23 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		
-		// Æô¶¯×ÅÉ«Æ÷
+		// å¯åŠ¨ç€è‰²å™¨
 		ourShader.use();
-		glm::mat4 view(1.0f),projection(1.0f);
-		view = glm::translate(view, glm::vec3(worldx, worldy, worldz));		//´Ó¾Ö²¿¿Õ¼äÔ­µãµ½ÈÎÒâÊÀ½ç×ø±ê
+		glm::mat4 view(1.0f), projection(1.0f);
+		view = glm::translate(view, glm::vec3(worldx, worldy, worldz)); //ä»å±€éƒ¨ç©ºé—´åŸç‚¹åˆ°ä»»æ„ä¸–ç•Œåæ ‡
 		projection = glm::perspective(glm::radians(worldangle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
 
-		ourShader.setMat4("view",view);
-		ourShader.setMat4("projection",projection);
+		ourShader.setMat4("view", view);
+		ourShader.setMat4("projection", projection);
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 model(1.0f);
-			//³õÊ¼ÊÀ½ç×ø±êÎ»ÖÃ
+			//åˆå§‹ä¸–ç•Œåæ ‡ä½ç½®
 			model = glm::translate(model, cubePositions[i]);
-			//Ğı×ª¾ØÕó
+			//æ—‹è½¬çŸ©é˜µ
 			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-			//ÉèÖÃ³õÊ¼½Ç¶È
-			//float angle = 20.0f * i;
+			//è®¾ç½®åˆå§‹è§’åº¦
+			// float angle = 20.0f * i;
 			model = glm::rotate(model, glm::radians(rect_angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			ourShader.setMat4("model", model);
 			DrawObject();
@@ -121,113 +116,110 @@ int main()
 
 void DrawObject()
 {
-	// ¼ÓÔØÎÆÀí
-	static unsigned int texture1 = 0; 
+	// åŠ è½½çº¹ç†
+	static unsigned int texture1 = 0;
 	static unsigned int texture2 = 0;
-	if(objectVAO==0)
+	if (objectVAO == 0)
 	{
 		texture1 = loadTexture(getLocalPath("texture/test.jpg").c_str());
 		texture2 = loadTexture(getLocalPath("texture/test1.jpg").c_str());
-		// ¶¥µãÊı¾İ
+		// é¡¶ç‚¹æ•°æ®
 		float vertices[] = {
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-			0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-			0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+			0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-			0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-			0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-		};
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
 		glGenVertexArrays(1, &objectVAO);
 		glGenBuffers(1, &objectVBO);
 		glBindVertexArray(objectVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 		glBindVertexArray(0);
 	}
-	//°ó¶¨ÎÆÀí
+	//ç»‘å®šçº¹ç†
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36); // »æÖÆ
+	glDrawArrays(GL_TRIANGLES, 0, 36); // ç»˜åˆ¶
 	glBindVertexArray(0);
 }
-
 
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		worldz+=0.005f;
+		worldz += 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		worldz-=0.005f;
+		worldz -= 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		worldx+=0.005f;
+		worldx += 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		worldx-=0.005f;
+		worldx -= 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-		worldy+=0.005f;
+		worldy += 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-		worldy-=0.005f;
+		worldy -= 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		worldangle+=0.1f;
+		worldangle += 0.1f;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		worldangle-=0.1f;
+		worldangle -= 0.1f;
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		rect_angle+=1.0f;
+		rect_angle += 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		rect_angle-=1.0f;
+		rect_angle -= 1.0f;
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-//¼ÓÔØÎÆÀí
-unsigned int loadTexture(char const * path)
+//åŠ è½½çº¹ç†
+unsigned int loadTexture(char const *path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -263,5 +255,3 @@ unsigned int loadTexture(char const * path)
 
 	return textureID;
 }
-
-

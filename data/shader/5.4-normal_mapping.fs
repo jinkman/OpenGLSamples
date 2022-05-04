@@ -25,7 +25,7 @@ void main()
     vec3 lightDir; 
     vec3 viewDir; 
     vec3 color = texture(diffuseMap, fs_in.TexCoords).rgb; 
-    //»·¾³¹â
+    //  ç¯å¢ƒå…‰
     vec3 ambient = 0.1 * color;
     
      
@@ -44,11 +44,9 @@ void main()
         viewDir = normalize(viewPos - FragPos);
     }
 	 
-    //Âş·´Éä
+    // æ¼«åå°„
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
-    
-    //¸ß¹â
     
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  

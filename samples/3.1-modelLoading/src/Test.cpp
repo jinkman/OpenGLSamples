@@ -1,75 +1,61 @@
-// Test.cpp : ∂®“Âøÿ÷∆Ã®”¶”√≥Ã–Úµƒ»Îø⁄µ„°£
+// Test.cpp : ÂÆö‰πâÊéßÂà∂Âè∞Â∫îÁî®Á®ãÂ∫èÁöÑÂÖ•Âè£ÁÇπ„ÄÇ
 //
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <shader_s.h>
 #include <camera.h>
 #include <Model.h>
 #include <iostream>
 #include <common.h>
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
-// œ‘ æ¥Û–°
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// œ‡ª˙≥ı ºªØ
 Camera camera(glm::vec3(0.0f, 2.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-//  ±º‰
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 int main()
 {
-	//≥ı ºªØ¥∞ø⁄
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
-	//ªÿµ˜∫Ø ˝
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	//◊•◊° Û±Í
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//º”‘ÿ∫Ø ˝÷∏’Î
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	//…Ó∂»ª∫≥Â
 	glEnable(GL_DEPTH_TEST);
-	//º”‘ÿ◊≈…´∆˜
 	Shader ourShader(getLocalPath("shader/3.1-model_loading.vs").c_str(), getLocalPath("shader/3.1-model_loading.fs").c_str());
 
-	//ƒ£–Õµº»Î
-	Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());		//¥À¥¶±ÿ–Î”√°Æ/°Ø   ∫Û–¯Œ∆¿Ì”– π”√	œ‡∂‘ ‰»Î∂•µ„ ˝æ›  ÷ª‘ˆº”¥À¥¶
+	Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
 
-
-	//‰÷»æ—≠ª∑
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = (float)glfwGetTime();
@@ -78,7 +64,6 @@ int main()
 
 		processInput(window);
 
-		//±≥æ∞—’…´
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -88,11 +73,9 @@ int main()
 		ourShader.setMat4("projection", projection);
 		ourShader.setMat4("view", view);
 
-
-		// ‰÷»æº”‘ÿµƒƒ£–Õ
 		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // ∑≈÷√‘⁄∆¡ƒª÷–—Î
-		model = glm::scale(model, glm::vec3(0.2f));	// Àı–°À˚   Ã´¥Û¡À
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.2f));
 		ourShader.setMat4("model", model);
 
 		ourModel.Draw(ourShader);
@@ -101,11 +84,9 @@ int main()
 		glfwPollEvents();
 	}
 
-
 	glfwTerminate();
 	return 0;
 }
-
 
 void processInput(GLFWwindow *window)
 {
@@ -121,13 +102,12 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -145,7 +125,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }

@@ -15,9 +15,9 @@ void main()
     {
         // reinhard
         // vec3 result = hdrColor / (hdrColor + vec3(1.0));
-        // ÆØ¹â
+        // æ›å…‰
         vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-        // gammaĞ£Õı       
+        // gamma     
         result = pow(result, vec3(1.0 / gamma));
         FragColor = vec4(result, 1.0);
     }

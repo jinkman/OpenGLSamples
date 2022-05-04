@@ -1,8 +1,8 @@
-// Text.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <map>
 #include <math.h>
 #include <camera.h>
@@ -12,10 +12,9 @@
 #include FT_FREETYPE_H
 #include <common.h>
 
-
 // settings
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 
 bool firstMouse = true;
 
@@ -27,23 +26,23 @@ Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
-struct Character {
-	GLuint     TextureID;  // ×ÖĞÎÎÆÀíµÄID
-	glm::ivec2 Size;       // ×ÖĞÎ´óĞ¡
-	glm::ivec2 Bearing;    // ´Ó»ù×¼Ïßµ½×ÖĞÎ×ó²¿/¶¥²¿µÄÆ«ÒÆÖµ
-	GLuint     Advance;    // Ô­µã¾àÏÂÒ»¸ö×ÖĞÎÔ­µãµÄ¾àÀë
+struct Character
+{
+	GLuint TextureID;	// å­—å½¢çº¹ç†çš„ID
+	glm::ivec2 Size;	// å­—å½¢å¤§å°
+	glm::ivec2 Bearing; // ä»åŸºå‡†çº¿åˆ°å­—å½¢å·¦éƒ¨/é¡¶éƒ¨çš„åç§»å€¼
+	GLuint Advance;		// åŸç‚¹è·ä¸‹ä¸€ä¸ªå­—å½¢åŸç‚¹çš„è·ç¦»
 };
 
 std::map<wchar_t, Character> Characters;
 FT_Face face;
 GLuint VAO = 0, VBO;
 
-void RenderText(Shader &shader, wchar_t* text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
-
+void RenderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
 
 int main()
 {
@@ -53,18 +52,17 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	//´´½¨È«ÆÁ
 	bool isFullScreen = false;
-	GLFWwindow* window = NULL;
+	GLFWwindow *window = NULL;
 	if (isFullScreen)
 	{
-		const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());//»ñÈ¡µ±Ç°Éè±¸µÄÒ»Ğ©ÊôĞÔ
-		SCR_WIDTH=vidmode->width;
-		SCR_HEIGHT=vidmode->height;
-		GLFWmonitor* pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
+		const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		SCR_WIDTH = vidmode->width;
+		SCR_HEIGHT = vidmode->height;
+		GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-		lastX=SCR_WIDTH/2.0f;
-		lastY=SCR_HEIGHT/2.0f;			  //ÆÁÄ»ÕıÖĞĞÄ
+		lastX = SCR_WIDTH / 2.0f;
+		lastY = SCR_HEIGHT / 2.0f;
 	}
 	else
 		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -75,69 +73,65 @@ int main()
 		return -1;
 	}
 
+	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+	lastX = SCR_WIDTH / 2.0f;
+	lastY = SCR_HEIGHT / 2.0f;
+
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	   //½ûÓÃÊó±ê
-	//¼ÓÔØº¯ÊıÖ¸Õë
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// ÉèÖÃÊÓ¿Ú
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// ÅäÖÃ×ÅÉ«Æ÷
 	Shader shader(getLocalPath("shader/7.1-object.vs").c_str(), getLocalPath("shader/7.1-object.fs").c_str());
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCR_WIDTH), 0.0f, static_cast<GLfloat>(SCR_HEIGHT));
 	shader.use();
-	shader.setMat4("projection",projection);
+	shader.setMat4("projection", projection);
 
 	// FreeType
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
 		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-	if (FT_New_Face(ft, getLocalPath("font/×ÖÌå.ttf").c_str(), 0, &face))
+	if (FT_New_Face(ft, getLocalPath("font/å­—ä½“.ttf").c_str(), 0, &face))
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 	FT_Set_Pixel_Sizes(face, 0, 500);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // ½ûÓÃ×Ö½Ú¶ÔÆëÏŞÖÆ; 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-
-
-	// äÖÈ¾Ñ­»·
 	while (!glfwWindowShouldClose(window))
 	{
 		GLfloat currentFrame = (GLfloat)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-
 		processInput(window);
-		// Çå³ıÑÕÉ«»º³å
+
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model(1.0f);
-		shader.setMat4("projection",projection);
-		shader.setMat4("view",view);
-		shader.setMat4("model",model);
-		//»æÖÆ×ÖÌå
-		RenderText(shader, L"Ìì¿ÕÖĞÃ»ÓĞÄñµÄºÛ¼£", -2.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
-		RenderText(shader, L"µ«ÎÒÒÑ·É¹ı", -2.0f, 0.0f, 0.001f, glm::vec3(0.3, 0.7f, 0.9f));
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+		shader.setMat4("model", model);
 
-		// ½»»»»º³å
+		RenderText(shader, L"å¤©ç©ºæ²¡æœ‰å°é¸Ÿçš„ç—•è¿¹", -2.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
+		RenderText(shader, L"ä½†å®ƒç¡®å®æ¥è¿‡", -2.0f, 0.0f, 0.001f, glm::vec3(0.3, 0.7f, 0.9f));
+
 		glfwSwapBuffers(window);
-		// ·ÖÅäÏûÏ¢
 		glfwPollEvents();
 	}
-	// ÊÍ·Åfreetype
+
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 	glDeleteVertexArrays(1, &VAO);
@@ -146,37 +140,33 @@ int main()
 	return 0;
 }
 
-void RenderText(Shader &shader, wchar_t* text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+void RenderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
 	if (VAO == 0)
 	{
-		// ÅäÖÃVAO/VBO£»
-		float quadVertices[] = { // Ìî³äÕû¸öÆÁÄ»µÄÎÆÀí
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			-1.0f, -1.0f,  0.0f, 0.0f,
-			1.0f, -1.0f,  1.0f, 0.0f,
+		float quadVertices[] = {
+			-1.0f, 1.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 1.0f, 0.0f,
 
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			1.0f, -1.0f,  1.0f, 0.0f,
-			1.0f,  1.0f,  1.0f, 1.0f
-		};
+			-1.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f};
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 		glBindVertexArray(0);
 	}
-	// ÉèÖÃ×ÅÉ«Æ÷²ÎÊı
 	shader.use();
-	shader.setVec3("textColor",color);
+	shader.setVec3("textColor", color);
 
-	// µü´úÃ¿Ò»¸ö×Ö·û
-	for (int n = 0; n <wcslen(text); n++) 
+	for (int n = 0; n < wcslen(text); n++)
 	{
 		if (Characters.count(text[n]) == 0)
 		{
@@ -195,7 +185,7 @@ void RenderText(Shader &shader, wchar_t* text, GLfloat x, GLfloat y, GLfloat sca
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			Character character = {texture, glm::ivec2((GLuint)face->glyph->bitmap.width, (GLuint)face->glyph->bitmap.rows), glm::ivec2((GLuint)face->glyph->bitmap_left, (GLuint)face->glyph->bitmap_top), (GLuint)face->glyph->advance.x};
 			Characters.insert(std::pair<wchar_t, Character>(text[n], character));
-		} 
+		}
 		Character ch = Characters[text[n]];
 
 		GLfloat xpos = x + ch.Bearing.x * scale;
@@ -205,39 +195,34 @@ void RenderText(Shader &shader, wchar_t* text, GLfloat x, GLfloat y, GLfloat sca
 		GLfloat h = ch.Size.y * scale;
 		// Update VBO for each character
 		GLfloat vertices[6][4] = {
-			{ xpos,     ypos + h,   0.0, 0.0 },            
-			{ xpos,     ypos,       0.0, 1.0 },
-			{ xpos + w, ypos,       1.0, 1.0 },
+			{xpos, ypos + h, 0.0, 0.0},
+			{xpos, ypos, 0.0, 1.0},
+			{xpos + w, ypos, 1.0, 1.0},
 
-			{ xpos,     ypos + h,   0.0, 0.0 },
-			{ xpos + w, ypos,       1.0, 1.0 },
-			{ xpos + w, ypos + h,   1.0, 0.0 }           
-		};
-		// °ó¶¨ÎÆÀí
+			{xpos, ypos + h, 0.0, 0.0},
+			{xpos + w, ypos, 1.0, 1.0},
+			{xpos + w, ypos + h, 1.0, 0.0}};
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-		// ¸üĞÂVBOµÄÖµ
+
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
 
-		//»æÖÆËÄ±ßĞÎ
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		// ¸üĞÂÎ»ÖÃµ½ÏÂÒ»¸ö×ÖĞÎµÄÔ­µã£¬×¢Òâµ¥Î»ÊÇ1/64ÏñËØ
-		x += (ch.Advance >> 6) * scale; // Î»Æ«ÒÆ6¸öµ¥Î»À´»ñÈ¡µ¥Î»ÎªÏñËØµÄÖµ (2^6 = 64)
+		x += (ch.Advance >> 6) * scale;
 	}
 	glBindVertexArray(0);
 }
-
 
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS )
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS )
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
@@ -245,8 +230,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -264,7 +248,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
 }

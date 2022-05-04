@@ -1,27 +1,28 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform samplerCube cubeMap;
 uniform float time;
-//Ïà»ú²ÎÊı
+
 uniform vec3 cameraPosition;
 uniform vec3 cameraFront;
 uniform vec3 cameraRight;
 uniform vec3 cameraUp;
 
-vec2 resolution=vec2(800,600);
+uniform vec2 resolution;
 
 #define iTime time
 #define iResolution resolution
 const float pi = 3.14159;
 
-struct ray     //¹âÏß
+struct ray     //å…‰çº¿
 {
     vec3 origin;
     vec3 dir;
 };
 
-struct cube    //Î¨Ò»È·¶¨Ò»¸öÁ¢·½Ìå
+struct cube    //å”¯ä¸€ç¡®å®šä¸€ä¸ªç«‹æ–¹ä½“
 {
     vec3 Up;
     vec3 Front;
@@ -32,7 +33,7 @@ struct cube    //Î¨Ò»È·¶¨Ò»¸öÁ¢·½Ìå
     vec3 color;
 };
 
-struct sphere  //ÇòÌå
+struct sphere  //çƒä½“
 {
     vec3 center;
     float radius;
@@ -40,7 +41,7 @@ struct sphere  //ÇòÌå
     vec3 color;
 };
 
-struct hit_record  //»÷ÖĞ·µ»ØÖµ
+struct hit_record  //å‡»ä¸­è¿”å›å€¼
 {
     float  t;  
     vec3 p;
@@ -65,13 +66,13 @@ vec4 ffmin(vec4 a,vec4 b)
     else
         return b;
 }
-//¹âÏßÓëÁ¢·½ÌåÇó½»
+//å…‰çº¿ä¸ç«‹æ–¹ä½“æ±‚äº¤
 bool sdBox( ray r, cube c,inout hit_record record)
 { 
     hit_record rec;
     vec4 tx0,tx1,ty0,ty1,tz0,tz1;
     bool tx=false,ty=false,tz=false;
-    //x·½Ïò
+    //xæ–¹å‘
     if(abs(dot(c.Left,r.dir))>1e-6)
     {
         tx=true;
@@ -82,7 +83,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
         tx1.x = -1.0f*(c.Scale.x+dot(left,r.origin))/dot(left,r.dir);
         tx0.yzw=left;
     }
-    //y·½Ïò
+    //yæ–¹å‘
     if(abs(dot(c.Up,r.dir))>1e-6)
     {
         ty=true;
@@ -93,7 +94,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
         ty1.x = -1.0f*(c.Scale.y+dot(up,r.origin))/dot(up,r.dir);
         ty0.yzw=up;
     }
-    //z·½Ïò
+    //zæ–¹å‘
     if(abs(dot(c.Front,r.dir))>1e-6)
     {
         tz=true;
@@ -120,8 +121,8 @@ bool sdBox( ray r, cube c,inout hit_record record)
         Maxz=ffmax(tz0,tz1);
         Minz=ffmin(tz0,tz1);
     }
-    vec4 Max_min=(ffmin(ffmin(Maxx,Maxy),Maxz));  //Éä³ö½»µã
-    vec4 Min_max=(ffmax(ffmax(Minx,Miny),Minz));  //ÉäÈë½»µã
+    vec4 Max_min=(ffmin(ffmin(Maxx,Maxy),Maxz));  //å°„å‡ºäº¤ç‚¹
+    vec4 Min_max=(ffmax(ffmax(Minx,Miny),Minz));  //å°„å…¥äº¤ç‚¹
     if(Min_max.x>1e-6)
     {
         rec.t = Min_max.x;
@@ -130,13 +131,13 @@ bool sdBox( ray r, cube c,inout hit_record record)
     }
     else
     {
-        rec.t = Max_min.x;//ÅĞ¶Ï·¨Ïò  
+        rec.t = Max_min.x;//åˆ¤æ–­æ³•å‘  
         rec.normal = Max_min.yzw;   
         rec.color = c.color;
     }
     rec.p = r.origin + rec.t * r.dir;
     rec.material=c.material;
-    if((Min_max.x<Max_min.x)&&(Max_min.x>1e-6)) //»÷ÖĞ
+    if((Min_max.x<Max_min.x)&&(Max_min.x>1e-6)) //å‡»ä¸­
     {
         if(rec.t<record.t)
         {
@@ -147,7 +148,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
      return false;
 }
 
-//¹âÏßÓëÇòÇó½»
+//å…‰çº¿ä¸çƒæ±‚äº¤
 bool sdSphere(ray r,sphere s,inout hit_record record)
 {
     hit_record rec;
@@ -158,7 +159,7 @@ bool sdSphere(ray r,sphere s,inout hit_record record)
     float discriminant = b*b - a*c;
     if (discriminant > 1e-6) 
     {
-        float temp = (-b - sqrt(discriminant))/a;  //½ÏĞ¡½â
+        float temp = (-b - sqrt(discriminant))/a;  //è¾ƒå°è§£
         if (temp > 1e-1) 
         {
             rec.t = temp;
@@ -172,7 +173,7 @@ bool sdSphere(ray r,sphere s,inout hit_record record)
                 return true;
             }
         }
-        temp = (-b + sqrt(discriminant)) / a;      //½Ï´ó½â
+        temp = (-b + sqrt(discriminant)) / a;      //è¾ƒå¤§è§£
         if (temp > 1e-1)
         {
             rec.t = temp;
@@ -207,37 +208,37 @@ void map(ray r,inout hit_record rec)
 vec3 calColor(ray r)
 {
     
-    for(int i=0;i<50;i++)  //Ñ­»·¼ÆËãÑÕÉ«
+    for(int i=0;i<50;i++)  //å¾ªç¯è®¡ç®—é¢œè‰²
     {
         hit_record rec;
         rec.t=1000;
         map(r,rec);
-        if(rec.material==0)  //Èç¹û»÷ÖĞÇ½±Ú Ö±½Ó·µ»Ø
+        if(rec.material==0)  //å¦‚æœå‡»ä¸­å¢™å£ ç›´æ¥è¿”å›
         {
             return texture(cubeMap,rec.p).rgb;
         }
-        else if(rec.material==1)  //ÈôÊÇÍ¸Ã÷²ÄÖÊ
+        else if(rec.material==1)  //è‹¥æ˜¯é€æ˜æè´¨
         {
-            float n=0.7;  //ÕÛÉäÂÊ
+            float n=0.7;  //æŠ˜å°„ç‡
             vec3 rDir;
-            if(dot(r.dir,rec.normal)>0.0f)   //Éä³ö
+            if(dot(r.dir,rec.normal)>0.0f)   //å°„å‡º
                 rDir=refract(r.dir,-1.0*rec.normal,n);
             else
-                rDir=refract(r.dir,rec.normal,n);     //ÉäÈë       
-            //·¢ÉäĞÂÉäÏß
+                rDir=refract(r.dir,rec.normal,n);     //å°„å…¥       
+            //å‘å°„æ–°å°„çº¿
             r=ray(rec.p,normalize(rDir));
         }
-        else if(rec.material==2)  //ÈôÊÇ¾µ×Ó
+        else if(rec.material==2)  //è‹¥æ˜¯é•œå­
         {
             vec3 rDir;
-            if(dot(r.dir,rec.normal)>0.0f)   //Éä³ö
+            if(dot(r.dir,rec.normal)>0.0f)   //å°„å‡º
                 return vec3(1.0);
             else
                 rDir=reflect(r.dir,rec.normal);  
-            //·¢ÉäĞÂÉäÏß
+            //å‘å°„æ–°å°„çº¿
             r=ray(rec.p,normalize(rDir));
         }
-        else         //Âş·´Éä
+        else         //æ¼«åå°„
         {
             return rec.color;
         }
@@ -248,21 +249,23 @@ vec3 calColor(ray r)
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;
 
-    ray r;   //·¢Éä¹âÏß
-    //Ğı×ª¹âÏß·½Ïò
+    ray r;   //å‘å°„å…‰çº¿
+    //æ—‹è½¬å…‰çº¿æ–¹å‘
     r.dir = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);;
-    //Ğı×ª¹âÏßÎ»ÖÃ
+    //æ—‹è½¬å…‰çº¿ä½ç½®
     r.origin = cameraPosition;
-    //¼ÆËãÑÕÉ«
+    //è®¡ç®—é¢œè‰²
     fragColor=vec4(calColor(r),1.0f);
 }
 
 void main(void)
 {
-    mainImage(gl_FragColor, gl_FragCoord.xy);
+    vec4 color;
+    mainImage(color, gl_FragCoord.xy);
+    FragColor = color;
 }

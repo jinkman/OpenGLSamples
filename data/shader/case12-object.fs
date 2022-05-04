@@ -1,4 +1,5 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 
@@ -8,13 +9,13 @@ uniform float persistence;
 uniform float delta;
 uniform bool change;
 
-//hashº¯Êı[-1,1]
+//hashèŒƒå›´[-1,1]
 float hash2(vec2 n)
 {   
     return fract(sin(dot(n, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-//·µ»ØÕûÊıÍø¸ñ¶ÔÓ¦µÄÌØÕ÷µãÊı
+//è¿”å›æ•´æ•°ç½‘æ ¼å¯¹åº”çš„ç‰¹å¾ç‚¹æ•°
 int featureCount(vec2 n)
 {
     float result = hash2(n) * 0.5 +0.5;
@@ -37,7 +38,7 @@ float noise(vec2 uv)
         {
             vec2 currentN = N + vec2(i,j);
             int count = featureCount(currentN);
-            //¼ÆËã¾àÀë
+            
             vec2 point = rand(currentN);  
             for(int k=0;k<count;k++)
             {
@@ -53,21 +54,21 @@ float noise(vec2 uv)
 
 void main(void) 
 {
-    vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;  //±ê×¼»¯×ø±êÏµ
+    vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;  //æ ‡å‡†åŒ–åæ ‡ç³»
     uv = uv * resolution.xy / max(resolution.x, resolution.y);
-    float total=0.0;//Í³¼Æ¾­¹ı±¶Æµ´¦ÀíºóµÄÔëÉùÖµ
+    float total=0.0;//ç»Ÿè®¡ç»è¿‡å€é¢‘å¤„ç†åçš„å™ªå£°å€¼
     if(change)
     {
         
-        for(int i=0;i<octaves;++i)//±¶ÆµÑ­»·
+        for(int i=0;i<octaves;++i)//å€é¢‘å¾ªç¯
         {
-            float frequency = pow(2.0,i);//¼ÆËãÆµÂÊ£¬ÆµÂÊÔ½´ó£¬ÔëÉùÔ½²»¹æÔò
-            float amplitude = pow(persistence,i);//¼ÆËãÕñ·ù£¬Õñ·ùÔ½´ó£¬ÔëÉù²¨¶¯Ô½´ó
+            float frequency = pow(2.0,i);//è®¡ç®—é¢‘ç‡ï¼Œé¢‘ç‡è¶Šå¤§ï¼Œå™ªå£°è¶Šä¸è§„åˆ™
+            float amplitude = pow(persistence,i);//è®¡ç®—æŒ¯å¹…ï¼ŒæŒ¯å¹…è¶Šå¤§ï¼Œå™ªå£°æ³¢åŠ¨è¶Šå¤§
             total += noise(uv*frequency*delta)*amplitude;
         }
     }
     else
         total = noise(uv*delta);
     vec3 color = vec3(total / sqrt(1));
-    gl_FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, 1.0);
 }

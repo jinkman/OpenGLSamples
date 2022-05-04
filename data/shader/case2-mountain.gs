@@ -25,9 +25,6 @@ void perform(vec4 a, vec2 b)
     EmitVertex();
 }
 
-
-
-
 void main() 
 {   
     for(int i=0;i<3;i++)

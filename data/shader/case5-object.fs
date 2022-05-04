@@ -1,11 +1,13 @@
 #version 330 core
+out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform vec2 resolution;
 uniform samplerCube diffuseMap;
 uniform sampler2D frameMap;
 
-//Ïà»ú²ÎÊı
+
+//ç›¸æœºå‚æ•°
 uniform vec3 cameraPosition;
 uniform vec3 cameraFront;
 uniform vec3 cameraRight;
@@ -14,7 +16,7 @@ uniform vec3 spherePos;
 
 #define iResolution resolution.xy
 
-//¹âÏßÓëÇòÇó½»
+//å…‰çº¿ä¸çƒæ±‚äº¤
 bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Normal,inout float temp)
 {
     vec3 oc = origin - center;
@@ -24,13 +26,13 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Nor
     float discriminant = B*B - A*C;
     if (discriminant > 1e-6) 
     {
-        temp = (-B - sqrt(discriminant)) / A;  //½ÏĞ¡½â
+        temp = (-B - sqrt(discriminant)) / A;  //è¾ƒå°è§£
         if (temp > 1e-6) 
         {
             Normal = (origin + temp * Dir - center) / Radius;
             return true;
         }
-        temp = (-B + sqrt(discriminant)) / A;      //½Ï´ó½â
+        temp = (-B + sqrt(discriminant)) / A;      //è¾ƒå¤§è§£
         if (temp > 1e-6)
         {
             Normal = (origin + temp * Dir - center) / Radius;
@@ -53,31 +55,32 @@ vec4 map(vec3 orig,vec3 ray)
 
 void mainImage( inout vec4 fragColor, in vec2 fragCoord )
 {
-    //±ê×¼»¯×ø±êÏµ
+    //æ ‡å‡†åŒ–åæ ‡ç³»
     vec2 xy = gl_FragCoord.xy / resolution.xy;
     vec2 uv = (-1.0 + 2.0 * xy) * vec2(resolution.x/resolution.y,1.0);
     vec3 orig = cameraPosition;
     vec3 ray = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);
-    //¼ÆËãÑÕÉ«
+    //è®¡ç®—é¢œè‰²
     vec4 C = vec4(0.0);
     C= map(orig,ray);
-    //Èç¹ûÃ»ÓĞ»÷ÖĞ
+    //å¦‚æœæ²¡æœ‰å‡»ä¸­
     if(C.a < 1e-6)
         C = texture(frameMap,TexCoord);
     else if(texture(frameMap,TexCoord).a < 1e-6)
         C=C;
-    //Èç¹û»÷ÖĞ
+    //å¦‚æœå‡»ä¸­
     else
     {
         if(texture(frameMap,TexCoord).a < C.a)
             C = texture(frameMap,TexCoord);
     }
-    fragColor = C;   //×îÖÕÑÕÉ«
+    fragColor = C;   //æœ€ç»ˆé¢œè‰²
     //C = texture(frameMap,TexCoord);
 }
+
 void main( void ) 
 {
     vec4 color = vec4(0.0);
     mainImage(color, gl_FragCoord.xy);
-    gl_FragColor = color;
+    FragColor = color;
 }
