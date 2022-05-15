@@ -210,8 +210,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 void drawMountain()
 {
 	static size_t num = 0;
-	static unsigned int mountainMap = loadTexture(getLocalPath("texture/草坪.jpg").c_str());
-	static unsigned int mountainMap1 = loadTexture(getLocalPath("texture/草地.jpg").c_str());
+	static unsigned int mountainMap = loadTexture(getLocalPath("texture/lawn.jpg").c_str());
+	static unsigned int mountainMap1 = loadTexture(getLocalPath("texture/ground.jpg").c_str());
 	if (moutainVAO == 0)
 	{
 		std::vector<float> Arr;

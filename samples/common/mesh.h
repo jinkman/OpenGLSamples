@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <glad/glad.h> 
+#include <glad/glad.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,35 +15,37 @@
 #include <vector>
 using namespace std;
 
-struct Vertex {
-	// Î»ÖÃ
+struct Vertex
+{
+	// ä½ç½®
 	glm::vec3 Position;
-	// ·¨Ïß
+	// æ³•çº¿
 	glm::vec3 Normal;
-	// Î»ÖÃ
+	// çº¹ç†åæ ‡
 	glm::vec2 TexCoords;
-	// ÇĞÏß
+	// åˆ‡çº¿
 	glm::vec3 Tangent;
-	// Ë«ÇĞÏß
+	// å‰¯åˆ‡çº¿
 	glm::vec3 Bitangent;
 };
 
-//ÎÆÀíid  ·´ÉäÀàĞÍ Â·¾¶
-struct Texture {
-	unsigned int id;  
+// çº¹ç†id ç±»å‹ è·¯å¾„
+struct Texture
+{
+	unsigned int id;
 	string type;
 	string path;
 };
 
-class Mesh {
+class Mesh
+{
 public:
-	/*  Íø¸ñÊı¾İ  */
+	/*  ç½‘æ ¼æ•°æ®  */
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 	unsigned int VAO;
 
-	/*  ¹¹Ôìº¯Êı  */
 	// constructor
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
 	{
@@ -51,78 +53,63 @@ public:
 		this->indices = indices;
 		this->textures = textures;
 
-		// ÏÖÔÚÎÒÃÇÓĞÁËËùÓĞĞèÒªµÄÊı¾İ£¬ÉèÖÃ¶¥µã»º³åÇø¼°ÆäÊôĞÔÖ¸Õë
 		setupMesh();
 	}
 
-	// äÖÈ¾Íø¸ñ
-	void Draw(Shader shader) 
+	// ç»˜åˆ¶
+	void Draw(Shader shader)
 	{
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
-		for(unsigned int i = 0; i < textures.size(); i++)
+		for (unsigned int i = 0; i < textures.size(); i++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i); // ÔÚ°ó¶¨Ö®Ç°¼¤»îÏàÓ¦µÄÎÆÀíµ¥Ôª
-			// »ñÈ¡ÎÆÀíĞòºÅ£¨diffuse_textureN ÖĞµÄ N£©
+			glActiveTexture(GL_TEXTURE0 + i); // æ¿€æ´»çº¹ç†å•å…ƒ
+			// è·å–çº¹ç†åºå·
 			string number;
 			string name = textures[i].type;
-			if(name == "texture_diffuse")
+			if (name == "texture_diffuse")
 				number = char(diffuseNr++);
-			else if(name == "texture_specular")
+			else if (name == "texture_specular")
 				number = char(specularNr++);
 
 			shader.setFloat(("material." + name + number).c_str(), (float)i);
-			//°ó¶¨ÎÆÀíÊôÓÚÄÄ¸öÎÆÀíµ¥Ôª
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);
 
-		// ¿ªÊ¼»æÖÆÍø¸ñ
+		// ç»˜åˆ¶
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 
 private:
-	/*  äÖÈ¾Êı¾İ  */
 	unsigned int VBO, EBO;
 
-	/*  º¯Êı   */
-	// ³õÊ¼»¯ËùÓĞ»º³å¶ÔÏó/Êı×é
 	void setupMesh()
 	{
-		// ´´½¨»º³å/Êı×é
-		//¶¥µãÊı×é
 		glGenVertexArrays(1, &VAO);
-		//¶¥µã»º³å
 		glGenBuffers(1, &VBO);
-		//¶¥µãË÷Òı
 		glGenBuffers(1, &EBO);
-		//°ó¶¨¶¥µã¶ÔÏóÊı×é
 		glBindVertexArray(VAO);
-		// ¼ÓÔØÊı¾İµ½¶¥µã»º³åÇø
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		// ÓëÒÔÇ°²»Í¬´Ë´¦Ê¹ÓÃ½á¹¹ÌåÖĞµÄ¶¥µãÊı¾İ
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-		// ¶¥µãÎ»ÖÃ
-		glEnableVertexAttribArray(0);	
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-		// 
-		glEnableVertexAttribArray(1);	
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-		// ¶¥µãÎÆÀíÎ»ÖÃ
-		glEnableVertexAttribArray(2);	
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Normal));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
 		// vertex tangent
 		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-		// ¶¥µãË«·¨Ïß
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Tangent));
+
 		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
 
 		glBindVertexArray(0);
 	}

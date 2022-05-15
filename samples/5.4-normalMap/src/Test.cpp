@@ -78,8 +78,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	Shader shader(getLocalPath("shader/5.4-normal_mapping.vs").c_str(), getLocalPath("shader/5.4-normal_mapping.fs").c_str());
-	GLuint diffuseMap = loadTexture(getLocalPath("texture/纹理.jpg").c_str());
-	GLuint normalMap = loadTexture(getLocalPath("texture/法线.jpg").c_str());
+	GLuint diffuseMap = loadTexture(getLocalPath("texture/tex.jpg").c_str());
+	GLuint normalMap = loadTexture(getLocalPath("texture/normal.jpg").c_str());
 
 	shader.use();
 	shader.setInt("diffuseMap", 0);

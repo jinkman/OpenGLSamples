@@ -6,28 +6,27 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
-
-// Ã¶¾Ù·½Ïò
-enum Camera_Movement {
+// æžšä¸¾æ–¹å‘
+enum Camera_Movement
+{
 	FORWARD,
 	BACKWARD,
 	LEFT,
 	RIGHT
 };
 
-// ³õÊ¼ÉãÏñ»úÊý¾Ý
-const float YAW         = -90.0f;
-const float PITCH       =  0.0f;
-const float SPEED       =  2.5f;
-const float SENSITIVITY =  0.1f;
-const float ZOOM        =  45.0f;
+// åˆå§‹åŒ–ç›¸æœºæ•°æ®
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 2.5f;
+const float SENSITIVITY = 0.1f;
+const float ZOOM = 45.0f;
 
-
-// ÉãÏñ»úÀà
+// æ‘„åƒæœºç±»
 class Camera
 {
 public:
-	//ÉãÏñ»úÊý¾Ý
+	// æ‘„åƒæœºæ•°æ®
 	glm::vec3 Position;
 	glm::vec3 Front;
 	glm::vec3 Up;
@@ -39,7 +38,7 @@ public:
 	float MouseSensitivity;
 	float Zoom;
 
-	// ¹¹Ôìº¯Êý
+	// æž„é€ å‡½æ•°
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = position;
@@ -48,7 +47,7 @@ public:
 		Pitch = pitch;
 		updateCameraVectors();
 	}
-	// ¹¹Ôìº¯Êý
+	// æž„é€ å‡½æ•°
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = glm::vec3(posX, posY, posZ);
@@ -58,13 +57,13 @@ public:
 		updateCameraVectors();
 	}
 
-	// ÉèÖÃ¹Û²ì¾ØÕó
+	// è®¾ç½®è§‚å¯ŸçŸ©é˜µ
 	glm::mat4 GetViewMatrix()
 	{
 		return glm::lookAt(Position, Position + Front, Up);
 	}
 
-	// °´¼üº¯Êý
+	// æŒ‰é”®å‡½æ•°
 	void ProcessKeyboard(Camera_Movement direction, float keyspeed)
 	{
 		float velocity = MovementSpeed * keyspeed;
@@ -78,16 +77,15 @@ public:
 			Position += Right * velocity;
 	}
 
-	// ´¦Àí´ÓÊó±êÊäÈëÏµÍ³½ÓÊÕµ½µÄÊäÈë¡£ÆÚÍûXºÍY·½ÏòµÄÆ«ÒÆÖµ.
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
 	{
 		xoffset *= MouseSensitivity;
 		yoffset *= MouseSensitivity;
 
-		Yaw   += xoffset;
+		Yaw += xoffset;
 		Pitch += yoffset;
 
-		// È·¶¨²»»áÔ½½çÔì³ÉÍ¼Ïñ²»»á·´¹ýÀ´
+		// ç¡®å®šä¸ä¼šè¶Šç•Œ
 		if (constrainPitch)
 		{
 			if (Pitch > 89.0f)
@@ -96,11 +94,11 @@ public:
 				Pitch = -89.0f;
 		}
 
-		// ¸üÐÂ
+		// æ›´æ–°æ‘„åƒæœºæ–¹å‘
 		updateCameraVectors();
 	}
 
-	// Êó±ê¹öÂÖ
+	// é¼ æ ‡æ»šè½®
 	void ProcessMouseScroll(float yoffset)
 	{
 		if (Zoom >= 1.0f && Zoom <= 45.0f)
@@ -112,7 +110,7 @@ public:
 	}
 
 private:
-	// ¸üÐÂÊý¾Ý
+	// æ›´æ–°æ–¹å‘
 	void updateCameraVectors()
 	{
 		// Calculate the new Front vector
@@ -122,8 +120,8 @@ private:
 		front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 		Front = glm::normalize(front);
 		// Also re-calculate the Right and Up vector
-		Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-		Up    = glm::normalize(glm::cross(Right, Front));
+		Right = glm::normalize(glm::cross(Front, WorldUp)); // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		Up = glm::normalize(glm::cross(Right, Front));
 	}
 };
 

@@ -4,7 +4,11 @@ cmake_minimum_required(VERSION 3.0)
 # 括号里面填你的工程名
 PROJECT(OpenGLSamples)
 
-set(CMAKE_CXX_STANDARD 17)
+if(NOT WIN32)
+	set(CMAKE_CXX_STANDARD 17)
+endif()
+
+add_compile_definitions(_HAS_TRI_NAMESPACE)
 
 if (CMAKE_CL_64)
     # 设置 可执行程序输出目录

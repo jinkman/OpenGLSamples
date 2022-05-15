@@ -190,7 +190,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 
 void rendObject()
 {
-	static unsigned int grassMap = loadTexture(getLocalPath("texture/草.png").c_str());
+	static unsigned int grassMap = loadTexture(getLocalPath("texture/grass.png").c_str());
 	static size_t vertextNum = 0;
 	if (objectVAO == 0)
 	{

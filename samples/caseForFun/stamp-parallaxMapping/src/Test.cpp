@@ -112,21 +112,21 @@ int main()
 	textureShader.use();
 	textureShader.setInt("diffuseMap", 0);
 	// 读取纹理
-	diffuseMap[0] = loadTexture(getLocalPath("texture/耶敕.png").c_str());
-	diffuseMap[1] = loadTexture(getLocalPath("texture/令.png").c_str());
-	diffuseMap[2] = loadTexture(getLocalPath("texture/密.png").c_str());
-	diffuseMap[3] = loadTexture(getLocalPath("texture/独孤信白书.png").c_str());
-	diffuseMap[4] = loadTexture(getLocalPath("texture/信白笺.png").c_str());
-	diffuseMap[5] = loadTexture(getLocalPath("texture/臣信上疏.png").c_str());
-	diffuseMap[6] = loadTexture(getLocalPath("texture/臣信上章.png").c_str());
-	diffuseMap[7] = loadTexture(getLocalPath("texture/臣信上表.png").c_str());
-	diffuseMap[8] = loadTexture(getLocalPath("texture/信启事.png").c_str());
-	diffuseMap[9] = loadTexture(getLocalPath("texture/臣信启事.png").c_str());
-	diffuseMap[10] = loadTexture(getLocalPath("texture/大司马印.png").c_str());
-	diffuseMap[11] = loadTexture(getLocalPath("texture/大都督印.png").c_str());
-	diffuseMap[12] = loadTexture(getLocalPath("texture/刺史之印.png").c_str());
-	diffuseMap[13] = loadTexture(getLocalPath("texture/柱国之印.png").c_str());
-	diffuseMap[14] = loadTexture(getLocalPath("texture/背景.png").c_str());
+	diffuseMap[0] = loadTexture(getLocalPath("texture/yechi.png").c_str());
+	diffuseMap[1] = loadTexture(getLocalPath("texture/ling.png").c_str());
+	diffuseMap[2] = loadTexture(getLocalPath("texture/mi.png").c_str());
+	diffuseMap[3] = loadTexture(getLocalPath("texture/duguxinbaishu.png").c_str());
+	diffuseMap[4] = loadTexture(getLocalPath("texture/xinbaijian.png").c_str());
+	diffuseMap[5] = loadTexture(getLocalPath("texture/chenxinshangshu.png").c_str());
+	diffuseMap[6] = loadTexture(getLocalPath("texture/chenxinshangzhang.png").c_str());
+	diffuseMap[7] = loadTexture(getLocalPath("texture/chenxinshangbiao.png").c_str());
+	diffuseMap[8] = loadTexture(getLocalPath("texture/xinqishi.png").c_str());
+	diffuseMap[9] = loadTexture(getLocalPath("texture/chenxinqishi.png").c_str());
+	diffuseMap[10] = loadTexture(getLocalPath("texture/dasimayin.png").c_str());
+	diffuseMap[11] = loadTexture(getLocalPath("texture/daduduyin.png").c_str());
+	diffuseMap[12] = loadTexture(getLocalPath("texture/cishizhiyin.png").c_str());
+	diffuseMap[13] = loadTexture(getLocalPath("texture/zhuguozhiyin.png").c_str());
+	diffuseMap[14] = loadTexture(getLocalPath("texture/bk.png").c_str());
 	readVertext();
 	//读入面表数据
 	//顶部

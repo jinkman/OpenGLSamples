@@ -140,7 +140,6 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	//ɾ�������ͷ���Դ
 	glDeleteVertexArrays(1, &objectVAO);
 	glDeleteBuffers(1, &objectVBO);
 	glDeleteVertexArrays(1, &floorVAO);
@@ -243,7 +242,7 @@ void rendObject()
 
 void rendWindow()
 {
-	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/窗户.png").c_str());
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/window.png").c_str());
 	if (windowVAO == 0)
 	{
 		float transparentVertices[] = {

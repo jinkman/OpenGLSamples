@@ -95,21 +95,21 @@ int main()
 	Shader stampShader(getLocalPath("shader/case10-stamp.vs").c_str(), getLocalPath("shader/case10-stamp.fs").c_str(), getLocalPath("shader/case10-stamp.gs").c_str());
 	stampShader.use();
 	stampShader.setInt("texture0", 0);
-	texture[0] = loadTexture(getLocalPath("texture/耶敕.png").c_str());
-	texture[1] = loadTexture(getLocalPath("texture/令.png").c_str());
-	texture[2] = loadTexture(getLocalPath("texture/密.png").c_str());
-	texture[3] = loadTexture(getLocalPath("texture/独孤信白书.png").c_str());
-	texture[4] = loadTexture(getLocalPath("texture/信白笺.png").c_str());
-	texture[5] = loadTexture(getLocalPath("texture/臣信上疏.png").c_str());
-	texture[6] = loadTexture(getLocalPath("texture/臣信上章.png").c_str());
-	texture[7] = loadTexture(getLocalPath("texture/臣信上表.png").c_str());
-	texture[8] = loadTexture(getLocalPath("texture/信启事.png").c_str());
-	texture[9] = loadTexture(getLocalPath("texture/臣信启事.png").c_str());
-	texture[10] = loadTexture(getLocalPath("texture/大司马印.png").c_str());
-	texture[11] = loadTexture(getLocalPath("texture/大都督印.png").c_str());
-	texture[12] = loadTexture(getLocalPath("texture/刺史之印.png").c_str());
-	texture[13] = loadTexture(getLocalPath("texture/柱国之印.png").c_str());
-	texture[14] = loadTexture(getLocalPath("texture/背景.png").c_str());
+	texture[0] = loadTexture(getLocalPath("texture/yechi.png").c_str());
+	texture[1] = loadTexture(getLocalPath("texture/ling.png").c_str());
+	texture[2] = loadTexture(getLocalPath("texture/mi.png").c_str());
+	texture[3] = loadTexture(getLocalPath("texture/duguxinbaishu.png").c_str());
+	texture[4] = loadTexture(getLocalPath("texture/xinbaijian.png").c_str());
+	texture[5] = loadTexture(getLocalPath("texture/chenxinshangshu.png").c_str());
+	texture[6] = loadTexture(getLocalPath("texture/chenxinshangzhang.png").c_str());
+	texture[7] = loadTexture(getLocalPath("texture/chenxinshangbiao.png").c_str());
+	texture[8] = loadTexture(getLocalPath("texture/xinqishi.png").c_str());
+	texture[9] = loadTexture(getLocalPath("texture/chenxinqishi.png").c_str());
+	texture[10] = loadTexture(getLocalPath("texture/dasimayin.png").c_str());
+	texture[11] = loadTexture(getLocalPath("texture/daduduyin.png").c_str());
+	texture[12] = loadTexture(getLocalPath("texture/cishizhiyin.png").c_str());
+	texture[13] = loadTexture(getLocalPath("texture/zhuguozhiyin.png").c_str());
+	texture[14] = loadTexture(getLocalPath("texture/bk.png").c_str());
 	readVertext();
 	//读入面表数据
 	//顶部

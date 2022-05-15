@@ -156,12 +156,11 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 
 void rendTree()
 {
-	// ��������
-	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/树.png").c_str());
+	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/tree.png").c_str());
 	if (treeVAO == 0)
 	{
 		float transparentVertices[] = {
-			// λ��               //  ����
+			// 坐标             //  纹理
 			-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
 			0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
 			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
@@ -183,18 +182,16 @@ void rendTree()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glBindVertexArray(treeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6); // ����
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 
 void rendFloor()
 {
-	// ��������
 	static unsigned int diffuseMap = loadTexture(getLocalPath("texture/test.jpg").c_str());
 	if (floorVAO == 0)
 	{
 		float planeVertices[] = {
-			// λ��          // ����
 			5.0f, -1.0f, 5.0f, 1.0f, 0.0f,
 			-5.0f, -1.0f, 5.0f, 0.0f, 0.0f,
 			-5.0f, -1.0f, -5.0f, 0.0f, 1.0f,
