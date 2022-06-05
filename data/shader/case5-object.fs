@@ -49,6 +49,7 @@ vec4 map(vec3 orig,vec3 ray)
     bool judge = sdSphere(orig,ray,spherePos,0.05,Normal,temp);
     if(judge==true)
         return vec4(texture(diffuseMap,Normal).rgb,temp/100.0);
+        //return vec4(0.2, 0.3, 0.4, 1.0);
     else 
         return vec4(0.0); 
 }
