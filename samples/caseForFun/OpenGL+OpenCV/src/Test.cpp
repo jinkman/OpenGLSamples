@@ -8,7 +8,9 @@
 #include <shader_s.h>
 #include <stb_image.h>
 #include <common.h>
-#include <regex>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <sstream>
 
 #include <opencv2/opencv.hpp>
 using namespace cv;
@@ -32,13 +34,15 @@ float mixFactor = 0.5f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void rendObject(Shader &shader, unsigned int texSrc);
+void rendObject(Shader &shader, const unsigned int& texSrc, const std::vector<unsigned int>& texArray);
 void readVertext(std::vector<float> &Arr);
 unsigned int createTexture();
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat);
 void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet);
+std::vector<unsigned int> generateCharacter(const std::string& text);
 
 unsigned int objectVAO = 0, objectVBO;
+const unsigned int charSize = 64;
 
 int main()
 {
@@ -96,6 +100,8 @@ int main()
 	VideoCapture cap(0);
 	Mat frame;
 
+	std::vector<unsigned int> textTexArray = generateCharacter("@W#$EOXC[(?=_");
+	//std::vector<unsigned int> textTexArray = generateCharacter("_=?([CXOE$#W@");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -120,7 +126,8 @@ int main()
 		shader.use();
 		shader.setFloat("mixFactor", mixFactor);
 
-		rendObject(shader, texSrc);
+		//rendObject(shader, texSrc);
+		rendObject(shader, texSrc, textTexArray);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -145,7 +152,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void rendObject(Shader &shader, unsigned int texSrc)
+void rendObject(Shader &shader, const unsigned int& texSrc, const std::vector<unsigned int>& texArray)
 {
 	static size_t vertextNum = 0;
 	if (objectVAO == 0)
@@ -170,6 +177,20 @@ void rendObject(Shader &shader, unsigned int texSrc)
 	shader.setInt("texSrc", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texSrc);
+	// 设置纹理数组
+	for (int i=0; i< texArray.size(); i++)
+	{
+		std::stringstream texName;
+		texName << "tex[";
+		texName << i;
+		texName << "]";
+
+		std::string texNameStr;
+		texName >> texNameStr;
+		shader.setInt(texNameStr, i +1);
+		glActiveTexture(GL_TEXTURE1 + i);
+		glBindTexture(GL_TEXTURE_2D, texArray.at(i));
+	}
 	glBindVertexArray(objectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
 	glBindVertexArray(0);
@@ -180,32 +201,32 @@ void readVertext(std::vector<float> &Arr)
 	Arr.push_back(-1.0f);
 	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
-	Arr.push_back(1.0f);
-
-	Arr.push_back(-1.0f);
-	Arr.push_back(-1.0f);
-	Arr.push_back(0.0f);
-	Arr.push_back(0.0f);
-
-	Arr.push_back(1.0f);
-	Arr.push_back(-1.0f);
-	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
 
 	Arr.push_back(-1.0f);
-	Arr.push_back(1.0f);
+	Arr.push_back(-1.0f);
 	Arr.push_back(0.0f);
 	Arr.push_back(1.0f);
 
 	Arr.push_back(1.0f);
 	Arr.push_back(-1.0f);
 	Arr.push_back(1.0f);
+	Arr.push_back(1.0f);
+
+	Arr.push_back(-1.0f);
+	Arr.push_back(1.0f);
 	Arr.push_back(0.0f);
+	Arr.push_back(0.0f);
+
+	Arr.push_back(1.0f);
+	Arr.push_back(-1.0f);
+	Arr.push_back(1.0f);
+	Arr.push_back(1.0f);
 
 	Arr.push_back(1.0f);
 	Arr.push_back(1.0f);
 	Arr.push_back(1.0f);
-	Arr.push_back(1.0f);
+	Arr.push_back(0.0f);
 }
 
 unsigned int createTexture()
@@ -265,4 +286,40 @@ void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet)
 		}
 	}
 	cvtColor(temp, matRet, COLOR_Lab2BGR);
+}
+
+std::vector<unsigned int> generateCharacter(const std::string& text)
+{
+	// FreeType
+	FT_Library ft;
+	FT_Face face;
+	if (FT_Init_FreeType(&ft))
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+	if (FT_New_Face(ft, getLocalPath("font/font.ttf").c_str(), 0, &face))
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+	FT_Set_Pixel_Sizes(face, 0, charSize);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	std::vector<unsigned int> ret;
+	for (int i = 0; i < text.size(); i++)
+	{
+		auto ch = text.at(i);
+		if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		GLuint texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		ret.push_back(texture);
+	}
+	return ret;
 }
