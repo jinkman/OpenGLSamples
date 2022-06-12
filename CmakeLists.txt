@@ -27,7 +27,7 @@ ADD_SUBDIRECTORY(${third-party-path}/glfw)
 ADD_SUBDIRECTORY(${third-party-path}/glm)
 ADD_SUBDIRECTORY(${third-party-path}/soil)
 ADD_SUBDIRECTORY(${third-party-path}/freetype)
-ADD_SUBDIRECTORY(${third-party-path}/opencv-3.4)
+ADD_SUBDIRECTORY(${third-party-path}/opencv-4.0)
 
 
 #添加头文件
@@ -36,7 +36,7 @@ list(APPEND INCLUDES_DIR ${third-party-path}/glfw/include)
 list(APPEND INCLUDES_DIR ${third-party-path}/glm)
 list(APPEND INCLUDES_DIR ${third-party-path}/soil/inc)
 list(APPEND INCLUDES_DIR ${third-party-path}/freetype/include)
-list(APPEND INCLUDES_DIR ${third-party-path}/opencv-3.4/preBuild)
+list(APPEND INCLUDES_DIR ${third-party-path}/opencv-4.0/preBuild)
 list(APPEND INCLUDES_DIR ${third-party-path}/glad/include)
 list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common)
 
