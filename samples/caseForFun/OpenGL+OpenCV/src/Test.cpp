@@ -40,6 +40,7 @@ unsigned int createTexture();
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat);
 void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet);
 std::vector<unsigned int> generateCharacter(const std::string& text);
+unsigned int loadTexture(char const *path);
 
 unsigned int objectVAO = 0, objectVBO;
 const unsigned int charSize = 64;
@@ -100,8 +101,22 @@ int main()
 	VideoCapture cap(0);
 	Mat frame;
 
-	std::vector<unsigned int> textTexArray = generateCharacter("@W#$EOXC[(?=_");
+	//@W#$OEXC[(/?=^~_.`
+	//std::vector<unsigned int> textTexArray = generateCharacter("@W#$OEXC[(/?=^~_.`");
 	//std::vector<unsigned int> textTexArray = generateCharacter("_=?([CXOE$#W@");
+
+	std::vector<unsigned int> textTexArray;
+	int charSize = 17;
+	for (int i = charSize; i >= 0; i--)
+	{
+		std::stringstream ss;
+		ss << getLocalPath("texture/chars/");
+		ss << i;
+		ss << ".png";
+		std::string path = ss.str();
+		unsigned int texID = loadTexture(path.c_str());
+		textTexArray.push_back(texID);
+	}
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -125,6 +140,7 @@ int main()
 
 		shader.use();
 		shader.setFloat("mixFactor", mixFactor);
+		shader.setVec2("resolution", glm::vec2(float(SCR_WIDTH), float(SCR_HEIGHT)));
 
 		//rendObject(shader, texSrc);
 		rendObject(shader, texSrc, textTexArray);
@@ -323,3 +339,41 @@ std::vector<unsigned int> generateCharacter(const std::string& text)
 	}
 	return ret;
 }
+
+unsigned int loadTexture(char const *path)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	stbi_set_flip_vertically_on_load(false);
+	int width, height, nrComponents;
+	unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(data);
+	}
+
+	return textureID;
+}
+

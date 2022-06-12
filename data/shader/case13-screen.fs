@@ -2,16 +2,17 @@
 out vec4 FragColor;
 in vec2 TexCoord;
 
-#define texNum 13
+#define texNum 18
 uniform sampler2D texSrc;
 uniform sampler2D tex[texNum];
 
 uniform float mixFactor;
+uniform vec2 resolution;
 
 vec4 filterChar()
 {
-    vec2 charXYNum = vec2(1280.0 / 8., 720.0 / 8.);
-    //charXYNum = vec2(10.);
+    vec2 charXYNum = vec2(resolution.x / 6., resolution.y / 6.);
+    //charXYNum = vec2(resolution.x / 20., resolution.y / 20.);
     // 计算uv，方格中间
     vec2 uv = (vec2(0.5) + floor(TexCoord * charXYNum)) / charXYNum;
 
@@ -24,6 +25,9 @@ vec4 filterChar()
 
     float charCol = texture(tex[index], TexCoord * charXYNum).r;
 
+    // 反色
+    charCol = 1.0 - charCol;
+    
     return vec4(vec3(charCol), color.a);
 }
 
