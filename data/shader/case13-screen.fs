@@ -33,7 +33,7 @@ vec4 filterChar()
 
     charCol = 1.0 - charCol;
     
-    return vec4(vec3(charCol), color.a);
+    return vec4(color.rgb * vec3(charCol), color.a);
 }
 
 void main() 
