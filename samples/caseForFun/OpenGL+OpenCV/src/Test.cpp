@@ -1,5 +1,3 @@
-// Test.cpp : 定义控制台应用程序的入口点。
-//
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -34,12 +32,12 @@ float mixFactor = 0.5f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void rendObject(Shader &shader, const unsigned int& texSrc, const std::vector<unsigned int>& texArray);
+void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID);
 void readVertext(std::vector<float> &Arr);
 unsigned int createTexture();
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat);
 void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet);
-std::vector<unsigned int> generateCharacter(const std::string& text);
+std::vector<unsigned int> generateCharacter(const std::string &text);
 unsigned int loadTexture(char const *path);
 
 unsigned int objectVAO = 0, objectVBO;
@@ -102,21 +100,10 @@ int main()
 	Mat frame;
 
 	//@W#$OEXC[(/?=^~_.`
-	//std::vector<unsigned int> textTexArray = generateCharacter("@W#$OEXC[(/?=^~_.`");
-	//std::vector<unsigned int> textTexArray = generateCharacter("_=?([CXOE$#W@");
+	// std::vector<unsigned int> textTexArray = generateCharacter("@W#$OEXC[(/?=^~_.`");
+	// std::vector<unsigned int> textTexArray = generateCharacter("_=?([CXOE$#W@");
 
-	std::vector<unsigned int> textTexArray;
-	int charSize = 17;
-	for (int i = charSize; i >= 0; i--)
-	{
-		std::stringstream ss;
-		ss << getLocalPath("texture/chars/");
-		ss << i;
-		ss << ".png";
-		std::string path = ss.str();
-		unsigned int texID = loadTexture(path.c_str());
-		textTexArray.push_back(texID);
-	}
+	unsigned int charsTexID = loadTexture(getLocalPath("texture/chars.png").c_str());
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -129,10 +116,13 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ImGui::SliderFloat("float", &mixFactor, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+		static float uPiexlSize = 10.0f;
+		ImGui::SliderFloat("mixFactor", &mixFactor, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("pixelSize", &uPiexlSize, 2.0f, 100.0f);
 
 		cap >> frame;
-		if (frame.empty()){
+		if (frame.empty())
+		{
 			break;
 		}
 
@@ -140,10 +130,10 @@ int main()
 
 		shader.use();
 		shader.setFloat("mixFactor", mixFactor);
+		shader.setFloat("pixelSize", uPiexlSize);
 		shader.setVec2("resolution", glm::vec2(float(SCR_WIDTH), float(SCR_HEIGHT)));
 
-		//rendObject(shader, texSrc);
-		rendObject(shader, texSrc, textTexArray);
+		rendObject(shader, texSrc, charsTexID);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -168,7 +158,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void rendObject(Shader &shader, const unsigned int& texSrc, const std::vector<unsigned int>& texArray)
+void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID)
 {
 	static size_t vertextNum = 0;
 	if (objectVAO == 0)
@@ -193,20 +183,11 @@ void rendObject(Shader &shader, const unsigned int& texSrc, const std::vector<un
 	shader.setInt("texSrc", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texSrc);
-	// 设置纹理数组
-	for (int i=0; i< texArray.size(); i++)
-	{
-		std::stringstream texName;
-		texName << "tex[";
-		texName << i;
-		texName << "]";
 
-		std::string texNameStr;
-		texName >> texNameStr;
-		shader.setInt(texNameStr, i +1);
-		glActiveTexture(GL_TEXTURE1 + i);
-		glBindTexture(GL_TEXTURE_2D, texArray.at(i));
-	}
+	shader.setInt("charsTex", 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, charsTexID);
+
 	glBindVertexArray(objectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
 	glBindVertexArray(0);
@@ -248,31 +229,23 @@ void readVertext(std::vector<float> &Arr)
 unsigned int createTexture()
 {
 	GLuint textureID;
-	// 创建一个纹理对象，并返回一个独一无二的标识保存在textureID中
 	glGenTextures(1, &textureID);
-	// 绑定textureID标识的纹理，之后的所有操作都是相对于该纹理的
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	// 设置纹理环绕方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// 设置纹理过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// 解绑
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return textureID;
 }
 
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat)
 {
-	// 绑定textureID标识的纹理，之后的所有操作都是相对于该纹理的
 	glBindTexture(GL_TEXTURE_2D, textureId);
-	// 注意OpenCV中图像通道的顺序是BGR
 	Mat sMat;
 	cvtColor(mat, sMat, COLOR_BGR2RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sMat.cols, sMat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, sMat.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	// 解绑
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -304,7 +277,7 @@ void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet)
 	cvtColor(temp, matRet, COLOR_Lab2BGR);
 }
 
-std::vector<unsigned int> generateCharacter(const std::string& text)
+std::vector<unsigned int> generateCharacter(const std::string &text)
 {
 	// FreeType
 	FT_Library ft;
@@ -331,7 +304,7 @@ std::vector<unsigned int> generateCharacter(const std::string& text)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -376,4 +349,3 @@ unsigned int loadTexture(char const *path)
 
 	return textureID;
 }
-
