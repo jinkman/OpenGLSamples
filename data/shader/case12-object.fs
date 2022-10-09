@@ -9,13 +9,13 @@ uniform float persistence;
 uniform float delta;
 uniform bool change;
 
-//hash范围[-1,1]
+//hash range [-1,1]
 float hash2(vec2 n)
 {   
     return fract(sin(dot(n, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-//返回整数网格对应的特征点数
+//Returns the number of feature points corresponding to the integer grid
 int featureCount(vec2 n)
 {
     float result = hash2(n) * 0.5 +0.5;
@@ -54,16 +54,16 @@ float noise(vec2 uv)
 
 void main(void) 
 {
-    vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;  //标准化坐标系
+    vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;  //Standardized coordinate system
     uv = uv * resolution.xy / max(resolution.x, resolution.y);
-    float total=0.0;//统计经过倍频处理后的噪声值
+    float total=0.0;
     if(change)
     {
         
-        for(int i=0;i<octaves;++i)//倍频循环
+        for(int i=0;i<octaves;++i)
         {
-            float frequency = pow(2.0,i);//计算频率，频率越大，噪声越不规则
-            float amplitude = pow(persistence,i);//计算振幅，振幅越大，噪声波动越大
+            float frequency = pow(2.0,i);
+            float amplitude = pow(persistence,i);
             total += noise(uv*frequency*delta)*amplitude;
         }
     }

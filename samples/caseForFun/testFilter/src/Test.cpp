@@ -1,4 +1,3 @@
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <math.h>
@@ -32,16 +31,17 @@ float mixFactor = 0.5f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID);
+void rendObject(Shader &shader, const unsigned int &texSrc);
 void readVertext(std::vector<float> &Arr);
 unsigned int createTexture();
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat);
 void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet);
-std::vector<unsigned int> generateCharacter(const std::string &text);
-unsigned int loadTexture(char const *path);
+unsigned int create3DTexFromCube(const std::string &path);
 
 unsigned int objectVAO = 0, objectVBO;
-const unsigned int charSize = 64;
+
+unsigned int lutTex = 0;
+unsigned int lutSize = 16;
 
 int main() {
     glfwInit();
@@ -87,23 +87,15 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    Shader shader(getLocalPath("shader/case13-screen.vs").c_str(), getLocalPath("shader/case13-screen.fs").c_str());
+    Shader shader(getLocalPath("shader/testFilter.vs").c_str(), getLocalPath("shader/testFilter.fs").c_str());
 
     auto texSrc = createTexture();
 
-    VideoCapture cap1(getLocalPath("movies/mv/源视频1.mp4").c_str());
-    if (cap1.isOpened()) {
-        int a = 0;
-    }
     VideoCapture cap(0);
     Mat frame;
 
-    //@W#$OEXC[(/?=^~_.`
-    // std::vector<unsigned int> textTexArray = generateCharacter("@W#$OEXC[(/?=^~_.`");
-    // std::vector<unsigned int> textTexArray = generateCharacter("_=?([CXOE$#W@");
-
-    unsigned int charsTexID = loadTexture(getLocalPath("texture/chars.png").c_str());
-
+    lutTex = create3DTexFromCube(getLocalPath("texture/07_Davinci Resolve LUTs_Sunset.cube"));
+    glEnable(GL_TEXTURE_3D);
     while (!glfwWindowShouldClose(window)) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -114,9 +106,7 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        static float uPiexlSize = 10.0f;
-        ImGui::SliderFloat("mixFactor", &mixFactor, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("pixelSize", &uPiexlSize, 2.0f, 100.0f);
+        ImGui::SliderFloat("float", &mixFactor, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
 
         cap >> frame;
         if (frame.empty()) {
@@ -127,10 +117,8 @@ int main() {
 
         shader.use();
         shader.setFloat("mixFactor", mixFactor);
-        shader.setFloat("pixelSize", uPiexlSize);
-        shader.setVec2("resolution", glm::vec2(float(SCR_WIDTH), float(SCR_HEIGHT)));
 
-        rendObject(shader, texSrc, charsTexID);
+        rendObject(shader, texSrc);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -153,7 +141,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID) {
+void rendObject(Shader &shader, const unsigned int &texSrc) {
     static size_t vertextNum = 0;
     if (objectVAO == 0) {
         std::vector<float> Arr;
@@ -174,12 +162,12 @@ void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &
     }
     shader.use();
     shader.setInt("texSrc", 0);
+    shader.setInt("lutTex", 1);
+    shader.setInt("lutSize", lutSize);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texSrc);
-
-    shader.setInt("charsTex", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, charsTexID);
+    glBindTexture(GL_TEXTURE_3D, lutTex);
 
     glBindVertexArray(objectVAO);
     glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
@@ -263,68 +251,42 @@ void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet) {
     cvtColor(temp, matRet, COLOR_Lab2BGR);
 }
 
-std::vector<unsigned int> generateCharacter(const std::string &text) {
-    // FreeType
-    FT_Library ft;
-    FT_Face face;
-    if (FT_Init_FreeType(&ft))
-        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-    if (FT_New_Face(ft, getLocalPath("font/font.ttf").c_str(), 0, &face))
-        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-    FT_Set_Pixel_Sizes(face, 0, charSize);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+unsigned int create3DTexFromCube(const std::string &path) {
+    // Load the LUT
+    std::vector<glm::vec3> LUT;
 
-    std::vector<unsigned int> ret;
-    for (int i = 0; i < text.size(); i++) {
-        auto ch = text.at(i);
-        if (FT_Load_Char(face, ch, FT_LOAD_RENDER)) {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+    std::ifstream LUTfile(path.c_str());
+
+    while (!LUTfile.eof()) {
+        std::string LUTline;
+        std::getline(LUTfile, LUTline);
+
+        if (LUTline.empty())
             continue;
-        }
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        ret.push_back(texture);
+        glm::vec3 line;
+        if (sscanf(LUTline.c_str(), "%f %f %f", &line.x, &line.y, &line.z) == 3)
+            LUT.push_back(line);
     }
-    return ret;
-}
-
-unsigned int loadTexture(char const *path) {
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    stbi_set_flip_vertically_on_load(false);
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    } else {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
+    if (LUT.size() != (pow(lutSize, 3.0))) {
+        std::cout << "LUT size is incorrect." << std::endl;
+        return 0;
     }
 
-    return textureID;
+    unsigned int texture3D = 0;
+    glGenTextures(1, &texture3D);
+    glBindTexture(GL_TEXTURE_3D, texture3D);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_LINEAR);
+
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, lutSize, lutSize, lutSize, 0, GL_RGB,
+                 GL_FLOAT, &LUT[0]);
+
+    glBindTexture(GL_TEXTURE_3D, 0);
+    return texture3D;
 }

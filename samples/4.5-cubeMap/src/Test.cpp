@@ -1,6 +1,3 @@
-// Test.cpp : 定义控制台应用程序的入口点。
-//
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
@@ -35,206 +32,195 @@ float lastFrame = 0.0f;
 
 unsigned int objectVAO = 0, objectVBO;
 
-int main()
-{
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+int main() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
-	}
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-	Shader shader(getLocalPath("shader/4.5-cubemaps.vs").c_str(), getLocalPath("shader/4.5-cubemaps.fs").c_str());
-	Shader skyboxShader(getLocalPath("shader/4.5-skybox.vs").c_str(), getLocalPath("shader/4.5-skybox.fs").c_str());
+    Shader shader(getLocalPath("shader/4.5-cubemaps.vs").c_str(), getLocalPath("shader/4.5-cubemaps.fs").c_str());
+    Shader skyboxShader(getLocalPath("shader/4.5-skybox.vs").c_str(), getLocalPath("shader/4.5-skybox.fs").c_str());
 
-	skyboxShader.use();
-	skyboxShader.setInt("skybox", 0);
-	shader.use();
-	shader.setInt("skybox", 0);
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
+    shader.use();
+    shader.setInt("skybox", 0);
 
-	Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
+    Model ourModel(getLocalPath("model/nanosuit/nanosuit.obj").c_str());
 
-	std::vector<std::string> faces;
-	faces.push_back(getLocalPath("skybox/right.jpg"));
-	faces.push_back(getLocalPath("skybox/left.jpg"));
-	faces.push_back(getLocalPath("skybox/top.jpg"));
-	faces.push_back(getLocalPath("skybox/bottom.jpg"));
-	faces.push_back(getLocalPath("skybox/front.jpg"));
-	faces.push_back(getLocalPath("skybox/back.jpg"));
+    std::vector<std::string> faces;
+    faces.push_back(getLocalPath("skybox/right.jpg"));
+    faces.push_back(getLocalPath("skybox/left.jpg"));
+    faces.push_back(getLocalPath("skybox/top.jpg"));
+    faces.push_back(getLocalPath("skybox/bottom.jpg"));
+    faces.push_back(getLocalPath("skybox/front.jpg"));
+    faces.push_back(getLocalPath("skybox/back.jpg"));
 
-	unsigned int cubemapTexture = loadCubemap(faces);
+    unsigned int cubemapTexture = loadCubemap(faces);
 
-	while (!glfwWindowShouldClose(window))
-	{
-		float currentFrame = (float)glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+    while (!glfwWindowShouldClose(window)) {
+        float currentFrame = (float)glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-		processInput(window);
+        processInput(window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 model(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f));
-		shader.use();
-		shader.setMat4("model", model);
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-		shader.setVec3("cameraPos", camera.Position);
-		shader.setInt("halfWidth", SCR_WIDTH / 2);
-		ourModel.Draw(shader);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 model(1.0f);
+        model = glm::scale(model, glm::vec3(0.1f));
+        shader.use();
+        shader.setMat4("model", model);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+        shader.setVec3("cameraPos", camera.Position);
+        shader.setInt("halfWidth", SCR_WIDTH / 2);
+        ourModel.Draw(shader);
 
-		// skybox optimize
-		glDepthFunc(GL_LEQUAL);
+        // skybox optimize
+        glDepthFunc(GL_LEQUAL);
 
-		skyboxShader.use();
-		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		skyboxShader.setMat4("view", view);
-		skyboxShader.setMat4("projection", projection);
-		rendObject();
-		glDepthFunc(GL_LESS);
+        skyboxShader.use();
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        skyboxShader.setMat4("view", view);
+        skyboxShader.setMat4("projection", projection);
+        rendObject();
+        glDepthFunc(GL_LESS);
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
 
-	glDeleteVertexArrays(1, &objectVAO);
-	glDeleteBuffers(1, &objectVBO);
+    glDeleteVertexArrays(1, &objectVAO);
+    glDeleteBuffers(1, &objectVBO);
 
-	glfwTerminate();
-	return 0;
+    glfwTerminate();
+    return 0;
 }
 
-void processInput(GLFWwindow *window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
 
-void rendObject()
-{
-	if (objectVAO == 0)
-	{
-		float skyboxVertices[] = {
-			// positions
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
+void rendObject() {
+    if (objectVAO == 0) {
+        float skyboxVertices[] = {
+            // positions
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
 
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
 
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
 
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
 
-			-1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
 
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f};
-		glGenVertexArrays(1, &objectVAO);
-		glGenBuffers(1, &objectVBO);
-		glBindVertexArray(objectVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-		glBindVertexArray(0);
-	}
-	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f};
+        glGenVertexArrays(1, &objectVAO);
+        glGenBuffers(1, &objectVBO);
+        glBindVertexArray(objectVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glBindVertexArray(0);
+    }
+    glBindVertexArray(objectVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-	glViewport(0, 0, width, height);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-	if (firstMouse)
-	{
-		lastX = (float)xpos;
-		lastY = (float)ypos;
-		firstMouse = false;
-	}
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = (float)xpos;
+        lastY = (float)ypos;
+        firstMouse = false;
+    }
 
-	float xoffset = (float)xpos - lastX;
-	float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = (float)xpos - lastX;
+    float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = (float)xpos;
-	lastY = (float)ypos;
+    lastX = (float)xpos;
+    lastY = (float)ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+    camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
-	camera.ProcessMouseScroll((float)yoffset);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+    camera.ProcessMouseScroll((float)yoffset);
 }
 
 // +X (right)
@@ -244,32 +230,27 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 // +Z (front)
 // -Z (back)
 // -------------------------------------------------------
-unsigned int loadCubemap(std::vector<std::string> faces)
-{
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+unsigned int loadCubemap(std::vector<std::string> faces) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-	int width, height, nrChannels;
-	for (unsigned int i = 0; i < faces.size(); i++)
-	{
-		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-		if (data)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-			stbi_image_free(data);
-		}
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++) {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        } else {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	return textureID;
+    return textureID;
 }

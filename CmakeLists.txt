@@ -1,5 +1,5 @@
 # 最低指定的CMake版本
-#cmake_minimum_required(VERSION 3.0)
+# cmake_minimum_required(VERSION 3.0)
 
 # 括号里面填你的工程名
 PROJECT(OpenGLSamples)
@@ -10,18 +10,17 @@ endif()
 
 add_compile_definitions(_HAS_TRI_NAMESPACE)
 
-#设置输出路径
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY 	${CMAKE_BINARY_DIR}/bin)
+# 设置输出路径
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-#三方库路径
+# 三方库路径
 set(third-party-path ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 
-
-#Data路径
+# Data路径
 set(data-path ${CMAKE_CURRENT_SOURCE_DIR}/data)
 set(DATA_PATH ${data-path}/)
 
-#添加三方库
+# 添加三方库
 ADD_SUBDIRECTORY(${third-party-path}/assimp)
 ADD_SUBDIRECTORY(${third-party-path}/glfw)
 ADD_SUBDIRECTORY(${third-party-path}/glm)
@@ -29,8 +28,7 @@ ADD_SUBDIRECTORY(${third-party-path}/soil)
 ADD_SUBDIRECTORY(${third-party-path}/freetype)
 ADD_SUBDIRECTORY(${third-party-path}/opencv-4.0)
 
-
-#添加头文件
+# 添加头文件
 list(APPEND INCLUDES_DIR ${third-party-path}/assimp/include)
 list(APPEND INCLUDES_DIR ${third-party-path}/glfw/include)
 list(APPEND INCLUDES_DIR ${third-party-path}/glm)
@@ -39,43 +37,45 @@ list(APPEND INCLUDES_DIR ${third-party-path}/freetype/include)
 list(APPEND INCLUDES_DIR ${third-party-path}/opencv-4.0/preBuild)
 list(APPEND INCLUDES_DIR ${third-party-path}/glad/include)
 list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common)
+list(APPEND INCLUDES_DIR ${third-party-path}/json/single_include)
 
-#添加源文件
+# 添加源文件
 set(glad-c ${CMAKE_CURRENT_SOURCE_DIR}/third-party/glad/src/glad.c)
 set(stbimage-c ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/stb_image.cpp)
 
-file(GLOB_RECURSE  SRC_TEST_CPP_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/samples/*Test.cpp)
+file(GLOB_RECURSE SRC_TEST_CPP_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/samples/*Test.cpp)
 
-#匹配...Test.cpp所在文件夹下所有文件
+# 匹配...Test.cpp所在文件夹下所有文件
 foreach(TEST_CPP_DIR ${SRC_TEST_CPP_DIRS})
 	string(REGEX REPLACE ".*/\(.*\)" "\\1" SUFFIX ${TEST_CPP_DIR})
 	string(REGEX REPLACE "/${SUFFIX}" "" SRC_DIR ${TEST_CPP_DIR})
 	list(APPEND SRC_DIRS ${SRC_DIR})
 endforeach()
 
-
-#配置文件
+# 配置文件
 configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/samples/common/Config.h.in"
-        "${CMAKE_CURRENT_SOURCE_DIR}/samples/common/Config.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/samples/common/Config.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/samples/common/Config.h"
 )
 
-#imgui
+# imgui
 list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui)
 list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/backends)
 
+list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/stb_image_write.h)
+list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/stb_image_resize.h)
+
 file(GLOB IMGUI_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/backends/imgui_impl_opengl3.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/samples/common/imgui/backends/imgui_impl_glfw.cpp
 )
 
-#遍历源代码文件，构建工程
-
+# 遍历源代码文件，构建工程
 foreach(SRC_DIR ${SRC_DIRS})
-	file(GLOB_RECURSE  SRC_CPP ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
-	file(GLOB_RECURSE  SRC_H ${SRC_DIR}/*.h ${SRC_DIR}/*.hpp)
+	file(GLOB_RECURSE SRC_CPP ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
+	file(GLOB_RECURSE SRC_H ${SRC_DIR}/*.h ${SRC_DIR}/*.hpp)
 
 	string(REGEX REPLACE ".*/\(.*\)" "\\1" SRC ${SRC_DIR})
 	string(REGEX REPLACE "/${SRC}" "" PRO_DIR ${SRC_DIR})
@@ -88,12 +88,12 @@ foreach(SRC_DIR ${SRC_DIRS})
 		${stbimage-c}
 		${IMGUI_SRC}
 	)
-	target_include_directories(${PRO_NAME} 
+	target_include_directories(${PRO_NAME}
 		PUBLIC
 		${INCLUDES_DIR}
 	)
 
-	target_link_libraries(${PRO_NAME} 
+	target_link_libraries(${PRO_NAME}
 		PRIVATE
 		assimp
 		glfw
@@ -106,5 +106,3 @@ foreach(SRC_DIR ${SRC_DIRS})
 		opencv_highgui
 	)
 endforeach()
-
-

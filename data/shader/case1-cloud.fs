@@ -23,7 +23,7 @@ float noise(vec2 n)
 
 void main()
 {    
-    // 噪声
+    // noise
     float total = 0.0;
     vec2 pos = TexCoords * uCloudSize;
     total += noise(pos * 1.0 + vec2(uTime * 2.0, 0.0));

@@ -87,7 +87,7 @@ vec3 normal(vec2 pos, float e, float depth){
                            normalize(a-vec3(pos.x, getwavesHI(pos.xy + ex.yx) * depth, pos.y + e))));
 }
 
-float rand2sTimex(vec2 co)   //产生随时间变化的正弦函数
+float rand2sTimex(vec2 co)   //Produces a sine function that varies in time
 {
     return fract(sin(dot(co.xy * iGlobalTime,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -110,14 +110,14 @@ float raymarchwater(vec3 camera, vec3 start, vec3 end, float depth)
     return -1.0;
 }
 
-//与平面相交测试
+//Intersecting with the plane test
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { 
     //N*p(t)+D=0  y=R0+Rd*t   t=-(D+N*R0)/(N*Ed); 
     return clamp(dot(point - origin, normal) / dot(normal ,direction), -1.0, 9991999.0); 
 }
 
-//根据光线y值获得大气层颜色
+//The atmosphere color is obtained from the light y value
 vec3 getatm(vec3 ray)
 {
     //return vec3(0.0, 0.2, 0.5);
@@ -125,7 +125,6 @@ vec3 getatm(vec3 ray)
     return clamp(mix(vec3(0.5), vec3(0.0, 0.5, 1.0), sqrt(abs(ray.y))),0.0,1.0)/30.0;
 }
 
-//光线与球求交
 bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Normal)
 {
     vec3 oc = origin - center;
@@ -135,13 +134,13 @@ bool sdSphere(in vec3 origin,in vec3 Dir,vec3 center,float Radius,inout vec3 Nor
     float discriminant = B*B - A*C;
     if (discriminant > 1e-6) 
     {
-        float temp = (-B - sqrt(discriminant)) / A;  //较小解
+        float temp = (-B - sqrt(discriminant)) / A;  //SMALL
         if (temp > 1e-6) 
         {
             Normal = (origin + temp * Dir - center) / Radius;
             return true;
         }
-        temp = (-B + sqrt(discriminant)) / A;      //较大解
+        temp = (-B + sqrt(discriminant)) / A;      //BIG
         if (temp > 1e-6)
         {
             Normal = (origin + temp * Dir - center) / Radius;
@@ -172,24 +171,23 @@ vec3 moon(vec3 orig,vec3 ray)
 
 vec3 getColor(vec2 uv)
 {
-    float waterdepth = 2.7;  //水波高度
+    float waterdepth = 2.7;  //Water wave height
     vec3 wfloor = vec3(0.0, -waterdepth, 0.0);
     vec3 wceil = vec3(0.0, 0.0, 0.0);
-    //光线投射
     vec3 orig = cameraPosition;
     vec3 ray = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);
-    //天空颜色
+    //The sky color
     if(ray.y >= -0.01)
     {
-        vec3 C = getatm(ray) * 2.0 + moon(orig,ray); //天空与月亮颜色
-        C = normalize(C) * sqrt(length(C));   //gamma校正
+        vec3 C = getatm(ray) * 2.0 + moon(orig,ray); //Sky and moon color
+        C = normalize(C) * sqrt(length(C));   //GAMMA
         return C; 
     }
-    //海面颜色
+    //The surface color
     float hihit = intersectPlane(orig, ray, wceil, vec3(0.0, 1.0, 0.0));  
     float lohit = intersectPlane(orig, ray, wfloor, vec3(0.0, 1.0, 0.0));
-    vec3 hipos = orig + ray * hihit;   //上平面交点
-    vec3 lopos = orig + ray * lohit;   //下平面交点
+    vec3 hipos = orig + ray * hihit;   //Intersection in the up plane
+    vec3 lopos = orig + ray * lohit;   //Intersection in the down plane
     float dist = raymarchwater(orig, hipos, lopos, waterdepth);
     vec3 pos = orig + ray * dist;
 
@@ -207,13 +205,12 @@ vec3 getColor(vec2 uv)
 
 void mainImage( inout vec4 fragColor, in vec2 fragCoord )
 {
-    //标准化坐标系
+    //Standardized coordinate system
     vec2 xy = gl_FragCoord.xy / resolution.xy;
     vec2 uv = (-1.0 + 2.0 * xy) * vec2(resolution.x/resolution.y,1.0);
-    //计算颜色
+    //Calculation of the color
     vec3 C = vec3(0.0);
     float W = 0.0;
-    //采样次数
     for(int i=0;i<AA_SAMPLES;i++){
         C += getColor(uv + vec2(rand2sTimex(uv), rand2sTimex(uv + 100.0)) / iResolution.xy);  //����Ŷ�   
         uv += 200.0;

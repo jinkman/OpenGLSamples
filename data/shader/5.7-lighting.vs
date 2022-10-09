@@ -19,7 +19,7 @@ void main()
     vs_out.TexCoords = aTexCoords;
     
     mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vs_out.Normal = normalize(normalMatrix * -aNormal);   //内部照明 法向量取反	
+    vs_out.Normal = normalize(normalMatrix * -aNormal);   // space trans
     
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

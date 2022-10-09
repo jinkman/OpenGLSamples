@@ -6,7 +6,7 @@ uniform float time;
 uniform vec2 resolution;
 uniform samplerCube moonMap;
 uniform samplerCube nightMap;
-//相机参数
+//camera setting
 uniform vec3 cameraPosition;
 uniform vec3 cameraFront;
 uniform vec3 cameraRight;

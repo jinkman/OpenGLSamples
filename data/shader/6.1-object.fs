@@ -22,7 +22,7 @@ struct ray     //光线
     vec3 dir;
 };
 
-struct cube    //唯一确定一个立方体
+struct cube
 {
     vec3 Up;
     vec3 Front;
@@ -33,7 +33,7 @@ struct cube    //唯一确定一个立方体
     vec3 color;
 };
 
-struct sphere  //球体
+struct sphere
 {
     vec3 center;
     float radius;
@@ -41,7 +41,7 @@ struct sphere  //球体
     vec3 color;
 };
 
-struct hit_record  //击中返回值
+struct hit_record  // hit info
 {
     float  t;  
     vec3 p;
@@ -66,13 +66,13 @@ vec4 ffmin(vec4 a,vec4 b)
     else
         return b;
 }
-//光线与立方体求交
+// The ray intersects the cube
 bool sdBox( ray r, cube c,inout hit_record record)
 { 
     hit_record rec;
     vec4 tx0,tx1,ty0,ty1,tz0,tz1;
     bool tx=false,ty=false,tz=false;
-    //x方向
+    //x dir
     if(abs(dot(c.Left,r.dir))>1e-6)
     {
         tx=true;
@@ -83,7 +83,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
         tx1.x = -1.0f*(c.Scale.x+dot(left,r.origin))/dot(left,r.dir);
         tx0.yzw=left;
     }
-    //y方向
+    //y dir
     if(abs(dot(c.Up,r.dir))>1e-6)
     {
         ty=true;
@@ -94,7 +94,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
         ty1.x = -1.0f*(c.Scale.y+dot(up,r.origin))/dot(up,r.dir);
         ty0.yzw=up;
     }
-    //z方向
+    //z dir
     if(abs(dot(c.Front,r.dir))>1e-6)
     {
         tz=true;
@@ -121,8 +121,8 @@ bool sdBox( ray r, cube c,inout hit_record record)
         Maxz=ffmax(tz0,tz1);
         Minz=ffmin(tz0,tz1);
     }
-    vec4 Max_min=(ffmin(ffmin(Maxx,Maxy),Maxz));  //射出交点
-    vec4 Min_max=(ffmax(ffmax(Minx,Miny),Minz));  //射入交点
+    vec4 Max_min=(ffmin(ffmin(Maxx,Maxy),Maxz));  //out point
+    vec4 Min_max=(ffmax(ffmax(Minx,Miny),Minz));  //in point
     if(Min_max.x>1e-6)
     {
         rec.t = Min_max.x;
@@ -131,13 +131,13 @@ bool sdBox( ray r, cube c,inout hit_record record)
     }
     else
     {
-        rec.t = Max_min.x;//判断法向  
+        rec.t = Max_min.x;  
         rec.normal = Max_min.yzw;   
         rec.color = c.color;
     }
     rec.p = r.origin + rec.t * r.dir;
     rec.material=c.material;
-    if((Min_max.x<Max_min.x)&&(Max_min.x>1e-6)) //击中
+    if((Min_max.x<Max_min.x)&&(Max_min.x>1e-6)) // hit
     {
         if(rec.t<record.t)
         {
@@ -148,7 +148,7 @@ bool sdBox( ray r, cube c,inout hit_record record)
      return false;
 }
 
-//光线与球求交
+// The ray intersects the sphere
 bool sdSphere(ray r,sphere s,inout hit_record record)
 {
     hit_record rec;
@@ -159,7 +159,7 @@ bool sdSphere(ray r,sphere s,inout hit_record record)
     float discriminant = b*b - a*c;
     if (discriminant > 1e-6) 
     {
-        float temp = (-b - sqrt(discriminant))/a;  //较小解
+        float temp = (-b - sqrt(discriminant))/a;  // small
         if (temp > 1e-1) 
         {
             rec.t = temp;
@@ -173,7 +173,7 @@ bool sdSphere(ray r,sphere s,inout hit_record record)
                 return true;
             }
         }
-        temp = (-b + sqrt(discriminant)) / a;      //较大解
+        temp = (-b + sqrt(discriminant)) / a;      // big
         if (temp > 1e-1)
         {
             rec.t = temp;
@@ -208,37 +208,37 @@ void map(ray r,inout hit_record rec)
 vec3 calColor(ray r)
 {
     
-    for(int i=0;i<50;i++)  //循环计算颜色
+    for(int i=0;i<50;i++)  // loop to cal color
     {
         hit_record rec;
         rec.t=1000;
         map(r,rec);
-        if(rec.material==0)  //如果击中墙壁 直接返回
+        if(rec.material==0)  // If you hit the wall, go straight back
         {
             return texture(cubeMap,rec.p).rgb;
         }
-        else if(rec.material==1)  //若是透明材质
+        else if(rec.material==1)  // If it's transparent
         {
-            float n=0.7;  //折射率
+            float n=0.7;  // The refractive index
             vec3 rDir;
-            if(dot(r.dir,rec.normal)>0.0f)   //射出
+            if(dot(r.dir,rec.normal)>0.0f)   // out
                 rDir=refract(r.dir,-1.0*rec.normal,n);
             else
-                rDir=refract(r.dir,rec.normal,n);     //射入       
-            //发射新射线
+                rDir=refract(r.dir,rec.normal,n);     // in       
+            // new ray
             r=ray(rec.p,normalize(rDir));
         }
-        else if(rec.material==2)  //若是镜子
+        else if(rec.material==2)  // If the mirror
         {
             vec3 rDir;
-            if(dot(r.dir,rec.normal)>0.0f)   //射出
+            if(dot(r.dir,rec.normal)>0.0f)   //out
                 return vec3(1.0);
             else
                 rDir=reflect(r.dir,rec.normal);  
-            //发射新射线
+            // new ray
             r=ray(rec.p,normalize(rDir));
         }
-        else         //漫反射
+        else // diffuse
         {
             return rec.color;
         }
@@ -249,17 +249,17 @@ vec3 calColor(ray r)
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    //标准化坐标系
+    // Standardized coordinate system
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;
 
-    ray r;   //发射光线
-    //旋转光线方向
-    r.dir = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);;
-    //旋转光线位置
+    ray r;
+    // Rotation of light direction
+    r.dir = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);
+    // ray position
     r.origin = cameraPosition;
-    //计算颜色
+    // cal color
     fragColor=vec4(calColor(r),1.0f);
 }
 

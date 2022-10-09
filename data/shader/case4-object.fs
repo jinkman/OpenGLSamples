@@ -4,23 +4,23 @@ in vec2 TexCoord;
 
 uniform float time;
 
-const int ITETARION = 300; // 迭代上限
+const int ITETARION = 300; // The iteration limit
 
 float bits = 6.0;
 uniform float size;
 uniform vec2 offset;
 
 
-// 复数平方
+// Square of complex numbers
 vec2 ComplexSquare(in vec2 val)
 {
     return vec2(val.x*val.x-val.y*val.y, 2.0*val.x*val.y);
 }
 
-// 根据迭代次数获取颜色
+// Get the color based on the number of iterations
 vec4 getRgb(in float itr) 
 {
-    //最大迭代次数
+    // Maximum number of iterations
     if(itr == ITETARION) 
         return vec4(0, 0, 0, 0);
     float r = floor(itr/(bits*bits));
@@ -31,7 +31,7 @@ vec4 getRgb(in float itr)
     return vec4(r, g, b, 1.0);
 }
 
-// 返回迭代次数
+// Return iteration number
 float fractal(vec2 z)
 {
     vec2 c = vec2(cos(time), sin(time))*0.7;

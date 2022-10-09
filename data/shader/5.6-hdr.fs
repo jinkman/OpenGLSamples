@@ -15,7 +15,7 @@ void main()
     {
         // reinhard
         // vec3 result = hdrColor / (hdrColor + vec3(1.0));
-        // 曝光
+        // exposure
         vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
         // gamma     
         result = pow(result, vec3(1.0 / gamma));

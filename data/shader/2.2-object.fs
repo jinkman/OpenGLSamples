@@ -16,17 +16,17 @@ void main()
 {
     vec3 diffuseColor = texture(diffuseMap, TexCoord).rgb;
     vec3 specularColor = texture(specularMap, TexCoord).rgb;
-    // 环境光
+    // ambient
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor * diffuseColor;
   	
-    // 漫反射
+    // diffuse
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor * diffuseColor;
     
-    // 高光
+    // specular
     float specularStrength = 0.5;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  

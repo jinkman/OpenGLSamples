@@ -52,11 +52,10 @@ void Move(int index)
      mat4 model2 = projection * view;
      for(int i=0;i<index;i++)
      { 
-  	  	//越靠近顶部精度越高
+  	  	// The closer you get to the top, the higher the accuracy
 		float t = sqrt(i / float(index));  //（0,1）
         float t1 = sqrt((i + 1) / float(index)) - t;
-	  	//重新赋值
-	  	//偏移量
+	  	// offset
 		float dY = (speed.x * t - g * t * t / 2.0f) * size;
 		float dZ = speed.y * t;
 
@@ -67,7 +66,7 @@ void Move(int index)
 		rup.y = dY;
 		rup.z = dZ;
 		
-	  	//第一个三角形
+	  	// first triangle
 		gl_Position = ldown;
 		gl_Position = model1 * gl_Position + y;
 		gl_Position = model2 * gl_Position;
@@ -84,7 +83,7 @@ void Move(int index)
 		TexCoords = vec2(lucoord.x,t + t1);
 		EmitVertex();
 
-	  	//第2个三角形
+	  	// second triangle
 		gl_Position = rdown;
 		gl_Position = model1 * gl_Position + y;
 		gl_Position = model2 * gl_Position;

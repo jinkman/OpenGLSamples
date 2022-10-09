@@ -30,7 +30,7 @@ void main()
         float diff = max(dot(lightDir, normal), 0.0);
         vec3 diffuse = lights[i].Color * diff * color;      
         vec3 result = diffuse;        
-        // 衰减
+        // attenuation
         float distance = length(fs_in.FragPos - lights[i].Position);
         result *= 1.0 / (distance * distance);
         lighting += result;

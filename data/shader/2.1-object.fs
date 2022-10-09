@@ -12,21 +12,21 @@ uniform float shininess;
 
 void main()
 {
-    // 环境光
+    // ambient
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor;
   	
-    // 漫反射
+    // diffuse
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
     
-    // 高光
+    // specular
     float specularStrength = 0.5;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);  //shininess 材质
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);  //shininess material
     vec3 specular = specularStrength * spec * lightColor;  
         
     vec3 result = (ambient + diffuse + specular) * objectColor;

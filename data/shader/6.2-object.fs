@@ -16,23 +16,23 @@ uniform vec2 resolution;
 #define iResolution resolution
 const float pi = 3.14159;
 
-struct ray     //光线
+struct ray
 {
     vec3 origin;
     vec3 dir;
 };
 
 
-struct sphere  //球体
+struct sphere
 {
     vec3 center;
     float radius;
     int material;
     vec3 color;
-    float ratio; //漫反射系数
+    float ratio; //diffuse ratio
 };
 
-struct hit_record  //击中返回值
+struct hit_record // hit info
 {
     float  t;  
     vec3 p;
@@ -49,7 +49,6 @@ float rand(vec3 n)
     return sin( 1.0 - ( (x * (x * x * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
 }
 
-//光线与球求交
 bool sdSphere(inout ray r,sphere s,inout hit_record record)
 {
     hit_record rec;
@@ -60,7 +59,7 @@ bool sdSphere(inout ray r,sphere s,inout hit_record record)
     float discriminant = b*b - a*c;
     if (discriminant > 1e-6) 
     {
-        float temp = (-b - sqrt(discriminant))/a;  //较小解
+        float temp = (-b - sqrt(discriminant))/a;  // small
         if (temp > 1e-1) 
         {
             rec.t = temp;
@@ -74,7 +73,7 @@ bool sdSphere(inout ray r,sphere s,inout hit_record record)
                 return true;
             }
         }
-        temp = (-b + sqrt(discriminant)) / a;      //较大解
+        temp = (-b + sqrt(discriminant)) / a;      // big
         if (temp > 1e-1)
         {
             rec.t = temp;
@@ -92,12 +91,12 @@ bool sdSphere(inout ray r,sphere s,inout hit_record record)
     return false;
 }
 
-//位置 半径 材质 颜色 反射系数
+//position radus material color Reflection coefficient
 sphere s0=sphere(vec3(-2.0,0.0,0.0),1.998,1,vec3(1.0,0.0,0.0),0.0);
 sphere s2=sphere(vec3(2.0,0.0,0.0),1.998,1,vec3(0.0,1.0,0.0),0.0);
 sphere s3=sphere(vec3(0.0,2.0*sqrt(3),0.0),1.998,1,vec3(0.0,0.0,1.0),0.0);
 sphere s4=sphere(vec3(0.0,2.0*sqrt(3)/3.0,-4.0*sqrt(6)/3.0),1.998,1,vec3(1.0,0.0,1.0),0.0);
-//天空盒
+// skybox
 sphere s1=sphere(vec3(0.0f),100,0,vec3(1.0,0.0,0.0),0.0);
 
 
@@ -115,26 +114,26 @@ vec3 calColor(inout ray r)
     vec3 color = vec3(0.0);
     hit_record rec;
     int times=1;
-    for(int j=0;j<times;j++)  //蒙特卡洛
+    for(int j=0;j<times;j++)  // The monte carlo
     {
-        for(int i=0;i<50;i++)  //循环计算颜色
+        for(int i=0;i<50;i++)  // Cyclic calculation of color
         {
             rec.t=1000;
             map(r,rec);
-            if(rec.material==0)  //如果击中墙壁 直接返回
+            if(rec.material==0)  // If you hit the wall, go straight back
             {
                 color += texture(cubeMap, normalize(rec.p)).rgb * pow(0.65,i);
                 break;
             }
-            else   //若是反射材质
+            else   // If it's a reflective material
             {   
-                if(dot(r.dir,rec.normal)>0.0f)   //射出
+                if(dot(r.dir,rec.normal)>0.0f)   // out
                     return vec3(1.0);
                 else
                 {
                     vec3 rDir=reflect(r.dir,rec.normal);
                     color += rec.color*pow(0.65,i);
-                    //发射新射线
+                    // new ray
                     r=ray(rec.p,normalize(rDir));
                 }
            
@@ -147,17 +146,17 @@ vec3 calColor(inout ray r)
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    //标准化坐标系
+    // Standardized coordinate system
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;
 
-    ray r;   //发射光线
-    //旋转光线方向
+    ray r;
+    // dir
     r.dir = normalize(uv.x*cameraRight + uv.y*cameraUp + 3.0*cameraFront);;
-    //旋转光线位置
+    // pos
     r.origin = cameraPosition;
-    //计算颜色
+    // color
     fragColor=vec4(calColor(r),1.0f);
 }
 

@@ -18,7 +18,7 @@ void main()
      }
     else
      {
-        float ratio = 1.00 / 1.52;     //折射率
+        float ratio = 1.00 / 1.52;     // The refractive index
         vec3 I = normalize(Position - cameraPos);
         vec3 R = refract(I, normalize(Normal), ratio);
         FragColor = vec4(texture(skybox, R).rgb, 1.0);

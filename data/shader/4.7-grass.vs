@@ -10,8 +10,6 @@ out VS_OUT {
 } vs_out;
 
 
-
-
 void main()
 {
     vs_out.speed = speedMatrices;

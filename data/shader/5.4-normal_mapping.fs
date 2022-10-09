@@ -25,7 +25,7 @@ void main()
     vec3 lightDir; 
     vec3 viewDir; 
     vec3 color = texture(diffuseMap, fs_in.TexCoords).rgb; 
-    //  环境光
+    //  ambient
     vec3 ambient = 0.1 * color;
     
      
@@ -44,7 +44,7 @@ void main()
         viewDir = normalize(viewPos - FragPos);
     }
 	 
-    // 漫反射
+    // diffuse
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
     

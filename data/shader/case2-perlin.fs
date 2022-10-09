@@ -2,9 +2,9 @@
 out float FragColor;
 
 in vec2 TexCoords;
-uniform int octaves;				 //倍频
-uniform float persistence;		 //振幅
-uniform float delta;			 //平滑度
+uniform int octaves;
+uniform float persistence;
+uniform float delta;
 
 
 float PI=3.1415926f;
@@ -15,7 +15,7 @@ float Noise(int x,int y);
 float InterpolatedNoise(float x,float y);
 float PerlinNoise(float x,float y);
 
-float easeCurveInterpolate(float z1,float z2,float delta)//缓动曲线插值，常用
+float easeCurveInterpolate(float z1,float z2,float delta)// Slow curve interpolation, commonly used
 {
 	float percent=(1- cos(delta * PI))*0.5;
 	return z1*(1-percent)+z2*percent;
@@ -40,31 +40,31 @@ float Noise(int x,int y)
 
 float InterpolatedNoise(float x,float y)
 {
-	//左上角点坐标(X0,Y0)
+	//leftTop(X0,Y0)
 	int X0=int(x);
 	int Y0=int(y);
-	//内部偏移量
+	//offset
 	float dX=x-X0;
 	float dY=y-Y0;
-	//4个点进行平滑
-	float z1=smoothPoint(X0,Y0);//左上
-	float z2=smoothPoint(X0+1,Y0);//右上
-	float z3=smoothPoint(X0,Y0+1);//左下
-	float z4=smoothPoint(X0+1,Y0+1);//右下
-	//两次插值，其中easeCurveInterpolate可以换成其他插值函数
-	float _z1=easeCurveInterpolate(z1,z2,dX);//上两点插值
-	float _z2=easeCurveInterpolate(z3,z4,dX);//下两点插值
-	return easeCurveInterpolate(_z1,_z2,dY);//最终插值
+	//4 points for smoothing
+	float z1=smoothPoint(X0,Y0);//left top
+	float z2=smoothPoint(X0+1,Y0);//right top
+	float z3=smoothPoint(X0,Y0+1);//left bottom
+	float z4=smoothPoint(X0+1,Y0+1);//right bottom
+	//Interpolate twice, where easeCurveInterpolate can be interpolated by other interpolating functions
+	float _z1=easeCurveInterpolate(z1,z2,dX);//Upper two point interpolation
+	float _z2=easeCurveInterpolate(z3,z4,dX);//Downer two point interpolation
+	return easeCurveInterpolate(_z1,_z2,dY);// final interpolation
 }
 
 
 float PerlinNoise(float x,float y)
 {
-    float total=0.0;//统计经过倍频处理后的噪声值
-	for(int i=0;i<octaves;++i)//倍频循环
+    float total=0.0;//The noise value after frequency doubling processing is counted
+	for(int i=0;i<octaves;++i)//Frequency multiplication cycle
 	{
-		float frequency=pow(2.0,i);//计算频率，频率越大，噪声越不规则
-		float amplitude=pow(persistence,i);//计算振幅，振幅越大，噪声波动越大
+		float frequency=pow(2.0,i);//Calculate the frequency, the higher the frequency, the more irregular the noise
+		float amplitude=pow(persistence,i);//Calculate the amplitude, the larger the amplitude, the larger the noise fluctuation
 		total=total+InterpolatedNoise(x*frequency*delta,y*frequency*delta)*amplitude;
 	}
 	return total;

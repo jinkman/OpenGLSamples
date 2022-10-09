@@ -35,7 +35,7 @@ void main( void )
     pos*=size;
     pos+=offset;
     vec3 colors[7];
-    //ºì³È»ÆÂÌÇàÀ¶×Ï
+    //The color order
     colors[0] = vec3(1.0,0.0,0.0);
     colors[1] = vec3(1.0,0.5,0.0);
     colors[2] = vec3(1.0,1.0,0.0);

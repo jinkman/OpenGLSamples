@@ -21,48 +21,46 @@ in vec3 Normal;
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 { 
-   // 深度层数
     const float minLayers = 8;
-    const float maxLayers = 30;
-    // 夹角小层数多
+    const float maxLayers = 32;
+    // The smaller the Angle, the more layers there are
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
-    // 每层深度
+    // Each layer depth
     float layerDepth = 1.0 / numLayers;
-    // 从最上层开始遍历
+    // Start at the top level
     float currentLayerDepth = 0.0;
-    // 每层应移动的纹理坐标
-    vec2 P = viewDir.xy / viewDir.z * 0.01; //移动比例
+    // The texture coordinates that each layer should move
+    vec2 P = viewDir.xy / viewDir.z * heightScale; // motion ratio
     vec2 deltaTexCoords = P / numLayers;
   
-    // 初始值
+    // init
     vec2  currentTexCoords     = texCoords;
     float currentDepthMapValue = texture(depthMap, currentTexCoords).r;
       
     while(currentLayerDepth < currentDepthMapValue)
     {
-        // 移动纹理
+        // move
         currentTexCoords -= deltaTexCoords;
-        // 移动后坐标纹理深度值
+        // Coordinate texture depth value after moving
         currentDepthMapValue = texture(depthMap, currentTexCoords).r;  
-        // 当前深度
+        // current depth
         currentLayerDepth += layerDepth;  
     }
     
-    // 前一层深度的纹理坐标
+    // Texture coordinates for the previous depth
     vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
 
-    // 计算插值常量
+    // Computed interpolation constant
     float afterDepth  = currentDepthMapValue - currentLayerDepth;
     float beforeDepth = texture(depthMap, prevTexCoords).r - currentLayerDepth + layerDepth;
  
-    // 线性插值
+    // Linear interpolation
     float weight = afterDepth / (afterDepth - beforeDepth);
     vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
     return finalTexCoords;
 }
 
-//普通光照
 vec4 normalLighting()
 {
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
@@ -70,15 +68,14 @@ vec4 normalLighting()
 
     vec3 normal = normalize(Normal);          
    
-    // 获得当前纹理坐标贴图颜色
     vec3 color = texture(diffuseMap, texCoords).rgb;
-    // 环境光
+    // ambient
     vec3 ambient = 0.1 * color;
-    // 漫反射
+    // diffuse
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
-    // 高光    
+    // specular    
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
@@ -89,25 +86,23 @@ vec4 normalLighting()
 
 vec4 parallaxLighting()
 {
-   // 获得视差贴图的纹理坐标以及边界外丢弃
+   // Obtain the texture coordinates of the disparity map and discard outside the boundary
     vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
     vec2 texCoords = ParallaxMapping(fs_in.TexCoords,  viewDir);       
     /*if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
         discard;*/
 
-    // 从发现贴图获得法线数据
     vec3 normal = texture(normalMap, texCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);   
    
-    // 获得当前纹理坐标贴图颜色
     vec3 color = texture(diffuseMap, texCoords).rgb;
-    // 环境光
+    // ambient
     vec3 ambient = 0.1 * color;
-    // 漫反射
+    // diffuse
     vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
-    // 高光    
+    // specular    
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);

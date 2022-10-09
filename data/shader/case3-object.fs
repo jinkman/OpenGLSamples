@@ -9,10 +9,10 @@ uniform vec2 resolution;
 
 void main()
 {  
-    //标准化坐标系
+    //Standardized coordinate system
     vec2 uv = (gl_FragCoord.xy/resolution.xy)-0.5;
     //uv*=0.01;
-    //离远点越远 转的角度越大
+    //The farther away you are, the bigger the Angle
     float time = time * 0.1 + ((0.25+0.05*sin(time*0.1))/(length(uv.xy)*2+0.07))* 2.2; 
     float si = sin(time);
     float co = cos(time);

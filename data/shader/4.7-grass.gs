@@ -29,7 +29,7 @@ void InitMat()
      T[2]=vec4(0.0f,0.0f,1.0f,0.0f);
      T[3]=vec4(0.0f,0.0f,0.0f,1.0f);
 }
-void RotateX(float beta)//ÈÆXÖáÐý×ª±ä»»¾ØÕó
+void RotateX(float beta)//ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½×ªï¿½ä»»ï¿½ï¿½ï¿½ï¿½
 {    
      InitMat();
      float rad=beta*PI/180.0f;
@@ -40,8 +40,8 @@ void RotateX(float beta)//ÈÆXÖáÐý×ª±ä»»¾ØÕó
 void Move(int index)
 {    
      vec4 lup,ldown,rup,rdown;
-     ldown = vec4(-0.5f,-1.0f,0.0f,1.0f); //Î»ÖÃ×ø±ê
-     vec2 ldcoord = vec2(0.0f,0.0f);  //ÎÆÀí×ø±ê
+     ldown = vec4(-0.5f,-1.0f,0.0f,1.0f); 
+     vec2 ldcoord = vec2(0.0f,0.0f);  
      rdown = vec4(0.5f,-1.0f,0.0f,1.0f);
      vec2 rdcoord = vec2(1.0f,0.0f);
      lup = vec4(-0.5f,0.0f,0.0f,1.0f);
@@ -55,11 +55,11 @@ void Move(int index)
      mat4 model2 = projection * view;
      for(int i=0;i<index;i++)
      { 
-  	  //Ô½¿¿½ü¶¥²¿¾«¶ÈÔ½¸ß
-        float t = sqrt(i / float(index)); //£¨0,1£©
+  	  //Ô½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½
+        float t = sqrt(i / float(index)); //ï¿½ï¿½0,1ï¿½ï¿½
         float t1 = sqrt((i + 1) / float(index)) - t;
-	  //ÖØÐÂ¸³Öµ
-	  //Æ«ÒÆÁ¿
+	  //ï¿½ï¿½ï¿½Â¸ï¿½Öµ
+	  //Æ«ï¿½ï¿½ï¿½ï¿½
 		float dY = (gs_in[0].speed.x * t - g * t * t / 2.0f) * size;
 		float dZ = gs_in[0].speed.y * t;
 
@@ -70,7 +70,7 @@ void Move(int index)
 		rup.y = dY;
 		rup.z = dZ;
 		
-	  //µÚÒ»¸öÈý½ÇÐÎ
+	  //ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		gl_Position = ldown;
 		gl_Position = model1 * gl_Position + y;
 		gl_Position = model2 * gl_Position;
@@ -86,7 +86,7 @@ void Move(int index)
 		gl_Position = model2 * gl_Position;
 		TexCoords = vec2(lucoord.x,t + t1);
 		EmitVertex();
-	  //µÚ2¸öÈý½ÇÐÎ
+	  //ï¿½ï¿½2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		gl_Position = rdown;
 		gl_Position = model1 * gl_Position + y;
 		gl_Position = model2 * gl_Position;

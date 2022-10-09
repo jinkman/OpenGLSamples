@@ -12,7 +12,6 @@ void main()
     if(texColor.a < 0.001)
         discard;
     FragColor = mix(texColor,grassColor,0.4);  
-    //FragColor = texColor;
 }
 
 
