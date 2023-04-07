@@ -81,9 +81,9 @@ int main() {
 
         // create srt matrix
         glm::mat4 transform(1.0);
-        transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f));                        //位移
-        transform = glm::rotate(transform, (float)glfwGetTime() * 5, glm::vec3(1.0f, 0.0f, 0.0f)); //旋转
-        transform = glm::scale(transform, glm::vec3(1.0, 1.0, 1.0));                               //缩放
+        transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f));                        // 位移
+        transform = glm::rotate(transform, (float)glfwGetTime() * 5, glm::vec3(1.0f, 0.0f, 0.0f)); // 旋转
+        transform = glm::scale(transform, glm::vec3(1.0, 1.0, 1.0));                               // 缩放
 
         ourShader.use();
         ourShader.setMat4("transform", transform);

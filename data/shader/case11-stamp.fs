@@ -30,7 +30,7 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
     // Start at the top level
     float currentLayerDepth = 0.0;
     // The texture coordinates that each layer should move
-    vec2 P = viewDir.xy / viewDir.z * heightScale; // motion ratio
+    vec2 P = viewDir.xy / viewDir.z * 0.01; // motion ratio
     vec2 deltaTexCoords = P / numLayers;
   
     // init

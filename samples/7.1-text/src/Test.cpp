@@ -93,7 +93,7 @@ int main() {
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-    if (FT_New_Face(ft, getLocalPath("font/NotoSansCJKsc-Black.otf").c_str(), 0, &face))
+    if (FT_New_Face(ft, getLocalPath("font/font.TTF").c_str(), 0, &face))
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
     FT_Set_Pixel_Sizes(face, 0, 200);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -117,7 +117,7 @@ int main() {
         shader.setMat4("view", view);
         shader.setMat4("model", model);
 
-        RenderText(shader, L"快点击下方链接看看!", -1.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
+        RenderText(shader, L"Hello World!", -1.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
         RenderText(shader, L"Hello OpenGL!", -1.0f, 0.0f, 0.001f, glm::vec3(0.3, 0.7f, 0.9f));
 
         glfwSwapBuffers(window);

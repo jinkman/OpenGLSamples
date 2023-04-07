@@ -66,7 +66,7 @@ vec2 map(vec3 p)
 {   
 	float d = -room(p);
     float m = 0.0;
-    float pe = sdBox(p+vec3(-1.0,8.0,0.0), vec3(1.0, 2.0, 1.0))
+    float pe = sdBox(p+vec3(-1.0,8.0,0.0), vec3(1.0, 2.0, 1.0));
     if (pe < d)
     {
         d = pe;

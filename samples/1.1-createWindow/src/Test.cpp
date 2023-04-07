@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);                                    //创建窗口上下文
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); //注册窗口回调函数
+    glfwMakeContextCurrent(window);                                    // 创建窗口上下文
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 注册窗口回调函数
 
     // load opengl func ptr
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

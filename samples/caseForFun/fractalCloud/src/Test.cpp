@@ -179,7 +179,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 }
 
 void readQuadPoint(std::vector<float> &Arr) {
-    //初始化控制点
+    // 初始化控制点
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
             P3[i][j] = glm::vec3(i - 1.5f, 0.0f, j - 1.5f);

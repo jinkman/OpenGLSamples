@@ -33,20 +33,20 @@ void bindFace(int i, int texNum);
 void readFace(vec3 p0, vec2 t0, vec3 p1, vec2 t1, vec3 p2, vec2 t2);
 unsigned int loadTexture(char const *path);
 
-vector<vec3> vArr;  //顶点数据
-vector<float> fArr; //面表数据
+vector<vec3> vArr;  // 顶点数据
+vector<float> fArr; // 面表数据
 unsigned int stampVAO[26] = {0}, stampVBO[26];
 unsigned int textureVAO = 0, textureVBO;
-bool ifRotate = false; //是否旋转
-float Angle = 0.0f;    //旋转角度
-bool dir = false;      //旋转方向
-bool light = true;     //光照模型
+bool ifRotate = false; // 是否旋转
+float Angle = 0.0f;    // 旋转角度
+bool dir = false;      // 旋转方向
+bool light = true;     // 光照模型
 
-unsigned int texIndex[26];   //面纹理索引
-size_t vertextNum[26];       //顶点数目
-unsigned int diffuseMap[15]; //纹理数组
-unsigned int depthMap[15];   //深度纹理
-unsigned int normalMap[15];  //深度纹理
+unsigned int texIndex[26];   // 面纹理索引
+size_t vertextNum[26];       // 顶点数目
+unsigned int diffuseMap[15]; // 纹理数组
+unsigned int depthMap[15];   // 深度纹理
+unsigned int normalMap[15];  // 深度纹理
 
 float heightScale = 0.1f;
 
@@ -129,22 +129,22 @@ int main() {
     readFace(vArr[0], vec2(1.0, 1.0), vArr[2], vec2(0.0, 0.0), vArr[3], vec2(1.0, 0.0)); // 0 2 3
     bindFace(0, 7);
     // up
-    readFace(vArr[0], vec2(0.0, 0.0), vArr[4], vec2(0.0, 0.0), vArr[5], vec2(0.0, 0.0)); // 0 4 5 triangle
+    readFace(vArr[0], vec2(0.0, 0.0), vArr[4], vec2(1.0, 0.0), vArr[5], vec2(1.0, 1.0)); // 0 4 5 triangle
     bindFace(1, 14);
     readFace(vArr[5], vec2(1.0, 1.0), vArr[6], vec2(0.0, 1.0), vArr[1], vec2(0.0, 0.0)); // 5 6 1	  chenxinshangzhang
     readFace(vArr[5], vec2(1.0, 1.0), vArr[1], vec2(0.0, 0.0), vArr[0], vec2(1.0, 0.0)); // 5 1 0
     bindFace(2, 6);
-    readFace(vArr[1], vec2(0.0, 0.0), vArr[6], vec2(0.0, 0.0), vArr[7], vec2(0.0, 0.0)); // 1 6 7 triangle
+    readFace(vArr[1], vec2(0.0, 0.0), vArr[6], vec2(1.0, 0.0), vArr[7], vec2(1.0, 1.0)); // 1 6 7 triangle
     bindFace(3, 14);
     readFace(vArr[7], vec2(0.0, 1.0), vArr[8], vec2(0.0, 0.0), vArr[2], vec2(1.0, 0.0)); // 7 8 2
     readFace(vArr[7], vec2(0.0, 1.0), vArr[2], vec2(1.0, 0.0), vArr[1], vec2(1.0, 1.0)); // 7 2 1
     bindFace(4, 14);
-    readFace(vArr[2], vec2(0.0, 0.0), vArr[8], vec2(0.0, 0.0), vArr[9], vec2(0.0, 0.0)); // 2 8 9 triangle
+    readFace(vArr[2], vec2(0.0, 0.0), vArr[8], vec2(1.0, 0.0), vArr[9], vec2(1.0, 1.0)); // 2 8 9 triangle
     bindFace(5, 14);
     readFace(vArr[9], vec2(0.0, 0.0), vArr[10], vec2(1.0, 0.0), vArr[3], vec2(1.0, 1.0)); // 9 10 3	  chenxinqishi
     readFace(vArr[9], vec2(0.0, 0.0), vArr[3], vec2(1.0, 1.0), vArr[2], vec2(0.0, 1.0));  // 9 3 2
     bindFace(6, 9);
-    readFace(vArr[3], vec2(0.0, 0.0), vArr[10], vec2(0.0, 0.0), vArr[11], vec2(0.0, 0.0)); // 3 10 11 triangle
+    readFace(vArr[3], vec2(0.0, 0.0), vArr[10], vec2(1.0, 0.0), vArr[11], vec2(1.0, 1.0)); // 3 10 11 triangle
     bindFace(7, 14);
     readFace(vArr[11], vec2(1.0, 0.0), vArr[4], vec2(1.0, 1.0), vArr[0], vec2(0.0, 1.0)); // 11 4 0	  xinqishi
     readFace(vArr[11], vec2(1.0, 0.0), vArr[0], vec2(0.0, 1.0), vArr[3], vec2(0.0, 0.0)); // 11 0 3
@@ -175,22 +175,22 @@ int main() {
     readFace(vArr[19], vec2(1.0, 0.0), vArr[4], vec2(0.0, 1.0), vArr[11], vec2(0.0, 0.0)); // 19 4 11
     bindFace(16, 3);
     // down
-    readFace(vArr[12], vec2(0.0, 0.0), vArr[20], vec2(0.0, 0.0), vArr[13], vec2(0.0, 0.0)); // 12 20 13	triangle
+    readFace(vArr[12], vec2(0.0, 0.0), vArr[20], vec2(1.0, 0.0), vArr[13], vec2(1.0, 1.0)); // 12 20 13	triangle
     bindFace(17, 14);
     readFace(vArr[20], vec2(1.0, 1.0), vArr[21], vec2(0.0, 1.0), vArr[14], vec2(0.0, 0.0)); // 20 21 14	   zhuguozhiyin
     readFace(vArr[20], vec2(1.0, 1.0), vArr[14], vec2(0.0, 0.0), vArr[13], vec2(1.0, 0.0)); // 20 14 13
     bindFace(18, 13);
-    readFace(vArr[14], vec2(0.0, 0.0), vArr[21], vec2(0.0, 0.0), vArr[15], vec2(0.0, 0.0)); // 14 21 15	triangle
+    readFace(vArr[14], vec2(0.0, 0.0), vArr[21], vec2(1.0, 0.0), vArr[15], vec2(1.0, 1.0)); // 14 21 15	triangle
     bindFace(19, 14);
     readFace(vArr[21], vec2(0.0, 0.0), vArr[22], vec2(1.0, 0.0), vArr[16], vec2(1.0, 1.0)); // 21 22 16
     readFace(vArr[21], vec2(0.0, 0.0), vArr[16], vec2(1.0, 1.0), vArr[15], vec2(0.0, 1.0)); // 21 16 15
     bindFace(20, 14);
-    readFace(vArr[16], vec2(0.0, 0.0), vArr[22], vec2(0.0, 0.0), vArr[17], vec2(0.0, 0.0)); // 16 22 17	triangle
+    readFace(vArr[16], vec2(0.0, 0.0), vArr[22], vec2(1.0, 0.0), vArr[17], vec2(1.0, 1.0)); // 16 22 17	triangle
     bindFace(21, 14);
     readFace(vArr[22], vec2(0.0, 0.0), vArr[23], vec2(1.0, 0.0), vArr[18], vec2(1.0, 1.0)); // 22 23 18	   daduduyin
     readFace(vArr[22], vec2(0.0, 0.0), vArr[18], vec2(1.0, 1.0), vArr[17], vec2(0.0, 1.0)); // 22 18 17
     bindFace(22, 11);
-    readFace(vArr[18], vec2(0.0, 0.0), vArr[23], vec2(0.0, 0.0), vArr[19], vec2(0.0, 0.0)); // 18 23 19	triangle
+    readFace(vArr[18], vec2(0.0, 0.0), vArr[23], vec2(1.0, 0.0), vArr[19], vec2(1.0, 1.0)); // 18 23 19	triangle
     bindFace(23, 14);
     readFace(vArr[23], vec2(0.0, 0.0), vArr[20], vec2(1.0, 0.0), vArr[12], vec2(1.0, 1.0)); // 23 20 12
     readFace(vArr[23], vec2(0.0, 0.0), vArr[12], vec2(1.0, 1.0), vArr[19], vec2(0.0, 1.0)); // 23 12 19
@@ -240,7 +240,7 @@ int main() {
 
         glViewport(0, 0, 400, 400);
         for (int i = 0; i < 15; i++) {
-            //制作深度图
+            // 制作深度图
             glBindFramebuffer(GL_FRAMEBUFFER, depthBuffer[i]);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -253,7 +253,7 @@ int main() {
         }
 
         for (int i = 0; i < 15; i++) {
-            //制作法线图
+            // 制作法线图
             glBindFramebuffer(GL_FRAMEBUFFER, normalBuffer[i]);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -280,7 +280,7 @@ int main() {
         if (ifRotate) {
             if ((Angle += 0.02f) >= 360.0f) {
                 Angle = 0.0f;
-                dir = !dir; //����ȡ��
+                dir = !dir;
             }
         }
 

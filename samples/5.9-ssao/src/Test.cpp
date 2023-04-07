@@ -143,8 +143,8 @@ int main() {
     std::default_random_engine generator;
     std::vector<glm::vec3> ssaoKernel;
     for (unsigned int i = 0; i < 64; ++i) {
-        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator)); //法线半球
-        sample = glm::normalize(sample);                                                                                     //单位化至半球
+        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator)); // 法线半球
+        sample = glm::normalize(sample);                                                                                     // 单位化至半球
         sample *= randomFloats(generator);
         float scale = float(i) / 64.0f;
 
@@ -473,7 +473,7 @@ unsigned int loadTexture(char const *path) {
     return textureID;
 }
 
-//��ֵ����
+// ��ֵ����
 float lerp(float a, float b, float f) {
     return a + f * (b - a);
 }

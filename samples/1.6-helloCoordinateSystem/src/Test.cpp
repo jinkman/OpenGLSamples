@@ -72,7 +72,7 @@ int main() {
         ourShader.use();
 
         glm::mat4 view(1.0f), projection(1.0f);
-        view = glm::translate(view, glm::vec3(worldx, worldy, worldz)); //从局部空间原点到任意世界坐标
+        view = glm::translate(view, glm::vec3(worldx, worldy, worldz)); // 从局部空间原点到任意世界坐标
         projection = glm::perspective(glm::radians(worldangle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
 
         // use matrix: MVP

@@ -10,8 +10,7 @@ uniform vec3 outLineColor;
 void main()
 {    
     vec4 color = texture(text, TexCoords);
-    vec4 finalColor = vec4(outLineColor, 1.0) * color.r;
-    finalColor += vec4(textColor, 1.0) * color.g;
+    vec4 finalColor = vec4(textColor, 1.0) * color.r;
     FragColor = finalColor;
     // FragColor = color;
 }
