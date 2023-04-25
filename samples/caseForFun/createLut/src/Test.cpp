@@ -36,7 +36,7 @@ unsigned int objectVAO = 0, objectVBO = 0;
 unsigned int srcVAO = 0, srcVBO = 0;
 
 // lut设置
-const float lutSamples = 32.0f;
+const float lutSamples = 16.0f;
 float actualSamples = lutSamples;
 static bool bUseLut = true;
 static bool bUseFbo = true;
@@ -201,6 +201,8 @@ int main() {
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
+    // 注册字体
+    io.Fonts->AddFontFromFileTTF(getLocalPath("font/ZiYuYongHuaiTi.ttf").c_str(), 16.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 
     Shader frameBufferShader(getLocalPath("shader/createLutFbo.vs").c_str(), getLocalPath("shader/createLutFbo.fs").c_str());
     Shader srceenShader(getLocalPath("shader/createLutSrc.vs").c_str(), getLocalPath("shader/createLutSrc.fs").c_str());
@@ -230,6 +232,8 @@ int main() {
     VideoCapture cap(0);
     Mat frame;
 
+    unsigned int srcTexture = loadTexture(getLocalPath("texture/test.jpeg").c_str());
+
     while (!glfwWindowShouldClose(window)) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -240,26 +244,31 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        static std::string mText = "use fbo";
+        static std::string mText = "使用fbo";
         unsigned int useLut = 0;
         if (bUseFbo) {
-            mText = "use fbo";
+            mText = "使用fbo";
             useLut = textureColorbuffer;
             actualSamples = lutSamples;
         } else {
-            mText = "use input";
+            mText = "使用输入纹理";
             useLut = lutTex;
             actualSamples = 16.0f;
         }
 
         ImGui::Checkbox(mText.c_str(), &bUseFbo);
+        static float temperature = 6550.0f;
+        ImGui::SliderFloat("色温", &temperature, 1000.0f, 40000.0f);
         static float hsvV[3] = {0.0f, 0.0f, 0.0f};
-        ImGui::SliderFloat("h", &hsvV[0], 0.0f, 1.0f);
-        ImGui::SliderFloat("s", &hsvV[1], -1.0f, 1.0f);
-        ImGui::SliderFloat("v", &hsvV[2], -1.0f, 1.0f);
+        ImGui::SliderFloat("色调", &hsvV[0], -1.0f, 1.0f);
+        ImGui::SliderFloat("饱和度", &hsvV[1], -1.0f, 1.0f);
+        ImGui::SliderFloat("亮度", &hsvV[2], -1.0f, 1.0f);
+        static float contrast = 1.0f;
+        ImGui::SliderFloat("对比度", &contrast, 0.0f, 2.0f);
+
         static float scaleV = 2.5f;
-        ImGui::SliderFloat("scale", &scaleV, 1.0f, 20.0f);
-        ImGui::Checkbox("bUseLut", &bUseLut);
+        ImGui::SliderFloat("缩放", &scaleV, 1.0f, 20.0f);
+        ImGui::Checkbox("使用lut", &bUseLut);
 
         if (objectVAO == 0) {
             float vertArr[] = {0.0, 0.0f, 0.0f, 0.0f, 0.0f, hei, 0.0f, 1.0f, wid, hei, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, wid, hei, 1.0f, 1.0f, wid, 0.0f, 1.0f, 0.0f};
@@ -281,6 +290,8 @@ int main() {
         frameBufferShader.setMat4("projection", glm::ortho(0.0f, wid, 0.0f, hei));
         frameBufferShader.setFloat("samples", lutSamples);
         frameBufferShader.setVec3("hsvV", glm::vec3(hsvV[0], hsvV[1], hsvV[2]));
+        frameBufferShader.setFloat("temperature", temperature);
+        frameBufferShader.setFloat("contrast", contrast);
         glViewport(0, 0, wid, hei);
         glBindVertexArray(objectVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -302,7 +313,8 @@ int main() {
 
         cvmatToTexture(texSrc, frame);
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        rendObject(srceenShader, texSrc, useLut);
+        // rendObject(srceenShader, texSrc, useLut);
+        rendObject(srceenShader, srcTexture, useLut);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -329,4 +341,6 @@ void processInput(GLFWwindow *window) {
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 }
