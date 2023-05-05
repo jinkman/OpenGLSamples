@@ -263,12 +263,26 @@ int main() {
         ImGui::SliderFloat("色调", &hsvV[0], -1.0f, 1.0f);
         ImGui::SliderFloat("饱和度", &hsvV[1], -1.0f, 1.0f);
         ImGui::SliderFloat("亮度", &hsvV[2], -1.0f, 1.0f);
-        static float contrast = 1.0f;
-        ImGui::SliderFloat("对比度", &contrast, 0.0f, 2.0f);
+        static float contrast = 0.0f;
+        ImGui::SliderFloat("对比度", &contrast, -1.0f, 1.0f);
+        static float hightLight = 0.0f;
+        ImGui::SliderFloat("高亮", &hightLight, -1.0f, 1.0f);
+        static float shadow = 0.0f;
+        ImGui::SliderFloat("阴影", &shadow, -1.0f, 1.0f);
+        static float sharpen = 0.0f;
+        ImGui::SliderFloat("锐化", &sharpen, 0.0f, 1.0f);
+        static float particle = 0.0f;
+        ImGui::SliderFloat("颗粒", &particle, 0.0f, 1.0f);
+        static float fade = 0.0f;
+        ImGui::SliderFloat("褪色", &fade, 0.0f, 1.0f);
+        static float corner = 0.0f;
+        ImGui::SliderFloat("暗角", &corner, -1.0f, 1.0f);
 
         static float scaleV = 2.5f;
         ImGui::SliderFloat("缩放", &scaleV, 1.0f, 20.0f);
         ImGui::Checkbox("使用lut", &bUseLut);
+        static bool useCamera = false;
+        ImGui::Checkbox("使用摄像头", &useCamera);
 
         if (objectVAO == 0) {
             float vertArr[] = {0.0, 0.0f, 0.0f, 0.0f, 0.0f, hei, 0.0f, 1.0f, wid, hei, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, wid, hei, 1.0f, 1.0f, wid, 0.0f, 1.0f, 0.0f};
@@ -290,8 +304,10 @@ int main() {
         frameBufferShader.setMat4("projection", glm::ortho(0.0f, wid, 0.0f, hei));
         frameBufferShader.setFloat("samples", lutSamples);
         frameBufferShader.setVec3("hsvV", glm::vec3(hsvV[0], hsvV[1], hsvV[2]));
-        frameBufferShader.setFloat("temperature", temperature);
-        frameBufferShader.setFloat("contrast", contrast);
+        frameBufferShader.setFloat("temperatureV", temperature);
+        frameBufferShader.setFloat("contrastV", contrast);
+        frameBufferShader.setFloat("highLightV", hightLight);
+        frameBufferShader.setFloat("shadowV", shadow);
         glViewport(0, 0, wid, hei);
         glBindVertexArray(objectVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -313,8 +329,17 @@ int main() {
 
         cvmatToTexture(texSrc, frame);
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        // rendObject(srceenShader, texSrc, useLut);
-        rendObject(srceenShader, srcTexture, useLut);
+        srceenShader.use();
+        srceenShader.setFloat("sharpenV", sharpen);
+        srceenShader.setFloat("particleV", particle);
+        srceenShader.setFloat("fadeV", fade);
+        srceenShader.setFloat("cornerV", corner);
+        srceenShader.setVec2("resolution", float(SCR_WIDTH), float(SCR_HEIGHT));
+        if (useCamera) {
+            rendObject(srceenShader, texSrc, useLut);
+        } else {
+            rendObject(srceenShader, srcTexture, useLut);
+        }
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -330,6 +355,7 @@ int main() {
     glDeleteTextures(1, &textureColorbuffer);
     glDeleteTextures(1, &lutTex);
     glDeleteTextures(1, &texSrc);
+    glDeleteTextures(1, &srcTexture);
     glfwTerminate();
     return 0;
 }

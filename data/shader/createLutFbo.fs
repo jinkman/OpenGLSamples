@@ -5,8 +5,10 @@ in vec2 TexCoord;
 
 uniform float samples;
 uniform vec3 hsvV;
-uniform float temperature;
-uniform float contrast;
+uniform float temperatureV;
+uniform float contrastV;
+uniform float highLightV;
+uniform float shadowV;
 
 const float EPSILON = 1e-10;
 
@@ -67,15 +69,64 @@ vec3 contrastAdjust( in vec3 color, in float c) {
     return color * vec3(c) + vec3(t);
 }
 
+float luminance(vec3 color) {
+    float fmin = min(min(color.r, color.g), color.b);
+    float fmax = max(max(color.r, color.g), color.b);
+    return (fmax + fmin) / 2.0;
+}
+
+// vec3 highLight(vec3 color, float progress) {
+//     // float lumin = luminance(color);
+//     const vec3 luminanceWeighting1 = vec3(0.3, 0.3, 0.3);
+//     float lumin = dot(color, luminanceWeighting1);
+//     float shadowLevel = 0.0;
+//     float shadow = clamp((pow(lumin, 1.0 / (shadowLevel + 1.0)) + (-0.76) * pow(lumin, 2.0 / (shadowLevel + 1.0))) - lumin, 0.0, 1.0);
+//     float highlight = clamp((1.0 - (pow(1.0 - lumin, 1.0 / (2.0 - progress)) + (-0.8) * pow(1.0 - lumin, 2.0 / (2.0 - progress)))) - lumin, -1.0, 0.0);
+//     float divider = max(lumin - 0.0, 1e-6);
+//     vec3 rgb = vec3(0.0, 0.0, 0.0) + ((lumin + shadow + highlight) - 0.0) * ((color - vec3(0.0,0.0, 0.0)) / divider);
+//     rgb = clamp(rgb, 0.0, 1.0);
+//     return rgb;
+// }
+
+// vec3 highLight(vec3 color, float progress) {
+//     // 曲线编辑：x+(pow(x,0.5)-x)*pow(1.0-x,2.0)  https://zh.numberempire.com/graphingcalculator.php?functions=&xmin=0&xmax=3&ymin=-1.0&ymax=1.0&var=x
+//     float lumin = clamp(luminance(color), 0.0, 1.0);
+//     float maxV = 20.0;
+//     float u = progress * (maxV - 1.0); // -1,1
+//     u = u > 0.0 ? 1.0 / (1.0 + u) : 1.0 - u;
+//     float extraLumin = (pow(lumin, u) - lumin) * pow(1.0 - lumin, 2.0);
+//     return color * (1.0 + extraLumin);
+// }
+
+vec3 highLight(vec3 color, float progress) {
+    // 曲线编辑：x+(0.5)*pow(1.0-x,2.0)  https://zh.numberempire.com/graphingcalculator.php?functions=&xmin=0&xmax=3&ymin=-1.0&ymax=1.0&var=x
+    float lumin = clamp(luminance(color), 0.0, 1.0);
+    float maxV = 0.3;
+    float extraLumin = maxV * progress * pow(lumin, 4.0);
+    return color * (1.0 + extraLumin);
+}
+
+vec3 shadow(vec3 color, float progress) {
+    // 曲线编辑：x+(0.5)*pow(1.0-x,2.0)  https://zh.numberempire.com/graphingcalculator.php?functions=&xmin=0&xmax=3&ymin=-1.0&ymax=1.0&var=x
+    float lumin = clamp(luminance(color), 0.0, 1.0);
+    float maxV = 1.5;
+    float extraLumin = maxV * progress * pow(1.0 - lumin, 4.0);
+    return color * (1.0 + extraLumin);
+}
+
 vec3 lutColor(in vec3 color)
 {
     // 色温
-    vec3 outColor = mix(color, color * colorTemperatureToRGB(temperature), 0.8); 
+    vec3 outColor = mix(color, color * colorTemperatureToRGB(temperatureV), 0.8); 
     // HSV 色调、饱和度、亮度
     vec3 hsv = RGBtoHSV(outColor);
     vec3 rgb = HSVtoRGB(hsv + hsvV);
     // 对比度
-    rgb = contrastAdjust(rgb, contrast);
+    rgb = contrastAdjust(rgb, contrastV + 1.0);
+    // 高亮
+    rgb = highLight(rgb, highLightV);
+    // 阴影
+    rgb = shadow(rgb, shadowV);
     
     return rgb;
 }
