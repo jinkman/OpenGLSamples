@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "stb_image.h"
-#include <assimp/Importer.hpp>
+#include <assimp/importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
@@ -23,31 +23,35 @@ using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
-class Model {
+class Model
+{
 public:
     vector<Texture> textures_loaded;
     vector<Mesh> meshes;
     string directory;
     bool gammaCorrection;
 
-    Model(string const &path, bool gamma = false) :
-        gammaCorrection(gamma) {
+    Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
+    {
         loadModel(path);
     }
 
     // draw all mesh
-    void Draw(Shader shader) {
+    void Draw(Shader shader)
+    {
         for (unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
 
 private:
     // load model by assimp
-    void loadModel(string const &path) {
+    void loadModel(string const &path)
+    {
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         // check if sucees
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        {
             cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
             return;
         }
@@ -58,25 +62,30 @@ private:
     }
 
     // repeated for its children (if any)
-    void processNode(aiNode *node, const aiScene *scene) {
-        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+    void processNode(aiNode *node, const aiScene *scene)
+    {
+        for (unsigned int i = 0; i < node->mNumMeshes; i++)
+        {
             aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
             meshes.push_back(processMesh(mesh, scene));
         }
         // handle mode
-        for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        for (unsigned int i = 0; i < node->mNumChildren; i++)
+        {
             processNode(node->mChildren[i], scene);
         }
     }
 
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene) {
+    Mesh processMesh(aiMesh *mesh, const aiScene *scene)
+    {
         vector<Vertex> vertices;
 
         vector<unsigned int> indices;
 
         vector<Texture> textures;
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
             Vertex vertex;
             // handle vertices data
             glm::vec3 vector;
@@ -98,7 +107,8 @@ private:
                 vec.x = mesh->mTextureCoords[0][i].x;
                 vec.y = mesh->mTextureCoords[0][i].y;
                 vertex.TexCoords = vec;
-            } else
+            }
+            else
                 vertex.TexCoords = glm::vec2(0.0f, 0.0f);
             vector.x = mesh->mTangents[i].x;
             vector.y = mesh->mTangents[i].y;
@@ -112,7 +122,8 @@ private:
             vertices.push_back(vertex);
         }
         // get index
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        {
             aiFace face = mesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
                 indices.push_back(face.mIndices[j]);
@@ -139,20 +150,25 @@ private:
     }
 
     // Check the texture and load it if not already loaded
-    vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName) {
+    vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
+    {
         vector<Texture> textures;
-        for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+        for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+        {
             aiString str;
             mat->GetTexture(type, i, &str);
             bool skip = false;
-            for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-                if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
+            for (unsigned int j = 0; j < textures_loaded.size(); j++)
+            {
+                if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+                {
                     textures.push_back(textures_loaded[j]);
                     skip = true;
                     break;
                 }
             }
-            if (!skip) { // not load
+            if (!skip)
+            { // not load
                 Texture texture;
                 texture.id = TextureFromFile(str.C_Str(), this->directory);
                 texture.type = typeName;
@@ -166,7 +182,8 @@ private:
 };
 
 // load texture
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma) {
+unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
+{
     string filename = string(path);
     filename = directory + '/' + filename;
 
@@ -175,7 +192,8 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data) {
+    if (data)
+    {
         GLenum format;
         if (nrComponents == 1)
             format = GL_RED;
@@ -192,7 +210,9 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
-    } else {
+    }
+    else
+    {
         std::cout << "Texture failed to load at path: " << path << std::endl;
         stbi_image_free(data);
     }

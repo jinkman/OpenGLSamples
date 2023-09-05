@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 macOS - www.glfw.org
+// GLFW 3.3 macOS - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2009-2019 Camilla Löwy <elmindreda@glfw.org>
 //
@@ -31,7 +31,9 @@
 
 // NOTE: All of NSGL was deprecated in the 10.14 SDK
 //       This disables the pointless warnings for every symbol we use
+#ifndef GL_SILENCE_DEPRECATION
 #define GL_SILENCE_DEPRECATION
+#endif
 
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
@@ -40,8 +42,10 @@ typedef void* id;
 #endif
 
 // NOTE: Many Cocoa enum values have been renamed and we need to build across
-//       SDK versions where one is unavailable or the other deprecated
-//       We use the newer names in code and these macros to handle compatibility
+//       SDK versions where one is unavailable or deprecated.
+//       We use the newer names in code and replace them with the older names if
+//       the base SDK does not provide the newer names.
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
  #define NSBitmapFormatAlphaNonpremultiplied NSAlphaNonpremultipliedBitmapFormat
  #define NSEventMaskAny NSAnyEventMask
@@ -58,6 +62,15 @@ typedef void* id;
  #define NSWindowStyleMaskMiniaturizable NSMiniaturizableWindowMask
  #define NSWindowStyleMaskResizable NSResizableWindowMask
  #define NSWindowStyleMaskTitled NSTitledWindowMask
+#endif
+
+// NOTE: Many Cocoa dynamically linked constants have been renamed and we need
+//       to build across SDK versions where one is unavailable or deprecated.
+//       We use the newer names in code and replace them with the older names if
+//       the deployment target is older than the newer names.
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 101300
+ #define NSPasteboardTypeURL NSURLPboardType
 #endif
 
 typedef VkFlags VkMacOSSurfaceCreateFlagsMVK;
@@ -85,10 +98,15 @@ typedef VkResult (APIENTRY *PFN_vkCreateMetalSurfaceEXT)(VkInstance,const VkMeta
 #include "posix_thread.h"
 #include "cocoa_joystick.h"
 #include "nsgl_context.h"
+#include "egl_context.h"
+#include "osmesa_context.h"
 
 #define _glfw_dlopen(name) dlopen(name, RTLD_LAZY | RTLD_LOCAL)
 #define _glfw_dlclose(handle) dlclose(handle)
 #define _glfw_dlsym(handle, name) dlsym(handle, name)
+
+#define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->ns.layer)
+#define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
 
 #define _GLFW_PLATFORM_WINDOW_STATE         _GLFWwindowNS  ns
 #define _GLFW_PLATFORM_LIBRARY_WINDOW_STATE _GLFWlibraryNS ns
@@ -128,7 +146,6 @@ typedef struct _GLFWwindowNS
     // since the last cursor motion event was processed
     // This is kept to counteract Cocoa doing the same internally
     double          cursorWarpDeltaX, cursorWarpDeltaY;
-
 } _GLFWwindowNS;
 
 // Cocoa-specific global data
@@ -137,6 +154,7 @@ typedef struct _GLFWlibraryNS
 {
     CGEventSourceRef    eventSource;
     id                  delegate;
+    GLFWbool            finishedLaunching;
     GLFWbool            cursorHidden;
     TISInputSourceRef   inputSource;
     IOHIDManagerRef     hidManager;
@@ -162,7 +180,6 @@ typedef struct _GLFWlibraryNS
         PFN_LMGetKbdType GetKbdType;
         CFStringRef     kPropertyUnicodeKeyLayoutData;
     } tis;
-
 } _GLFWlibraryNS;
 
 // Cocoa-specific per-monitor data
@@ -174,7 +191,6 @@ typedef struct _GLFWmonitorNS
     uint32_t            unitNumber;
     id                  screen;
     double              fallbackRefreshRate;
-
 } _GLFWmonitorNS;
 
 // Cocoa-specific per-cursor data
@@ -182,7 +198,6 @@ typedef struct _GLFWmonitorNS
 typedef struct _GLFWcursorNS
 {
     id              object;
-
 } _GLFWcursorNS;
 
 // Cocoa-specific global timer data
@@ -190,7 +205,6 @@ typedef struct _GLFWcursorNS
 typedef struct _GLFWtimerNS
 {
     uint64_t        frequency;
-
 } _GLFWtimerNS;
 
 

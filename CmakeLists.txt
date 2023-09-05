@@ -1,14 +1,12 @@
 # 最低指定的CMake版本
-# cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0)
 
 # 括号里面填你的工程名
 PROJECT(OpenGLSamples)
 
-if(NOT WIN32)
-	set(CMAKE_CXX_STANDARD 17)
-endif()
+set(CMAKE_CXX_STANDARD 17)
 
-add_compile_definitions(_HAS_TRI_NAMESPACE)
+add_compile_options(-Wno-nonportable-include-path)
 
 # 设置输出路径
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -21,23 +19,52 @@ set(data-path ${CMAKE_CURRENT_SOURCE_DIR}/data)
 set(DATA_PATH ${data-path}/)
 
 # 添加三方库
-ADD_SUBDIRECTORY(${third-party-path}/assimp)
-ADD_SUBDIRECTORY(${third-party-path}/glfw)
-ADD_SUBDIRECTORY(${third-party-path}/glm)
-ADD_SUBDIRECTORY(${third-party-path}/soil)
-ADD_SUBDIRECTORY(${third-party-path}/freetype)
-ADD_SUBDIRECTORY(${third-party-path}/opencv-4.0)
+set(Freetype_DIR ${third-party-path}/deploy/freetype/lib/cmake/freetype)
+find_package(Freetype REQUIRED)
+if(NOT Freetype_FOUND)
+	message(FATAL_ERROR "freetype library not found in: " ${Freetype_DIR})
+endif()
+
+set(glm_DIR ${third-party-path}/deploy/glm/lib/cmake/glm)
+find_package(glm REQUIRED)
+if(NOT glm_FOUND)
+	message(FATAL_ERROR "glm library not found in: " ${glm_DIR})
+
+endif()
+
+set(glfw3_DIR ${third-party-path}/deploy/glfw/lib/cmake/glfw3)
+find_package(glfw3 REQUIRED)
+if(NOT glfw3_FOUND)
+	message(FATAL_ERROR "glfw library not found in: " ${glfw3_DIR})
+endif()
+
+set(OpenCV_DIR ${third-party-path}/deploy/opencv-4.0/lib/cmake/opencv4)
+find_package(OpenCV COMPONENTS opencv_core opencv_video opencv_videoio opencv_highgui REQUIRED)
+if(NOT OpenCV_FOUND)
+	message(FATAL_ERROR "OpenCV library not found in: " ${OpenCV_DIR})
+endif()
+
+set(assimp_DIR ${third-party-path}/deploy/assimp/lib/cmake/assimp-5.2)
+find_package(assimp COMPONENTS assimp REQUIRED)
+if(NOT assimp_FOUND)
+	message(FATAL_ERROR "assimp library not found in: " ${assimp_DIR})
+endif()
+
+set(nlohmann_json_DIR ${third-party-path}/deploy/json/lib/cmake/nlohmann_json)
+find_package(nlohmann_json REQUIRED)
+if(NOT nlohmann_json_FOUND)
+	message(FATAL_ERROR "nlohmann_json library not found in: " ${nlohmann_json_DIR})
+endif()
+
+set(soil2_DIR ${third-party-path}/deploy/soil/share/soil2)
+find_package(soil2 REQUIRED)
+if(NOT soil2_FOUND)
+	message(FATAL_ERROR "soil2 library not found in: " ${soil2_DIR})
+endif()
 
 # 添加头文件
-list(APPEND INCLUDES_DIR ${third-party-path}/assimp/include)
-list(APPEND INCLUDES_DIR ${third-party-path}/glfw/include)
-list(APPEND INCLUDES_DIR ${third-party-path}/glm)
-list(APPEND INCLUDES_DIR ${third-party-path}/soil/inc)
-list(APPEND INCLUDES_DIR ${third-party-path}/freetype/include)
-list(APPEND INCLUDES_DIR ${third-party-path}/opencv-4.0/preBuild)
 list(APPEND INCLUDES_DIR ${third-party-path}/glad/include)
 list(APPEND INCLUDES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples/common)
-list(APPEND INCLUDES_DIR ${third-party-path}/json/single_include)
 
 # 添加源文件
 set(glad-c ${CMAKE_CURRENT_SOURCE_DIR}/third-party/glad/src/glad.c)
@@ -95,14 +122,15 @@ foreach(SRC_DIR ${SRC_DIRS})
 
 	target_link_libraries(${PRO_NAME}
 		PRIVATE
-		assimp
+		assimp::assimp
+		nlohmann_json::nlohmann_json
+		Freetype::Freetype
+		soil2::soil2
 		glfw
 		glm
-		soil
-		freetype
 		opencv_core
-		opencv_video
-		opencv_videoio
-		opencv_highgui
+    	opencv_video
+    	opencv_videoio
+    	opencv_highgui
 	)
 endforeach()

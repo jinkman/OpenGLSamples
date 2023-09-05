@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 - www.glfw.org
+// GLFW 3.3 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2019 Camilla Löwy <elmindreda@glfw.org>
@@ -170,8 +170,7 @@ _GLFWmonitor* _glfwAllocMonitor(const char* name, int widthMM, int heightMM)
     monitor->widthMM = widthMM;
     monitor->heightMM = heightMM;
 
-    if (name)
-        monitor->name = _glfw_strdup(name);
+    strncpy(monitor->name, name, sizeof(monitor->name) - 1);
 
     return monitor;
 }
@@ -189,7 +188,6 @@ void _glfwFreeMonitor(_GLFWmonitor* monitor)
     _glfwFreeGammaArrays(&monitor->currentRamp);
 
     free(monitor->modes);
-    free(monitor->name);
     free(monitor);
 }
 
@@ -523,6 +521,8 @@ GLFWAPI void glfwSetGammaRamp(GLFWmonitor* handle, const GLFWgammaramp* ramp)
     assert(ramp->green != NULL);
     assert(ramp->blue != NULL);
 
+    _GLFW_REQUIRE_INIT();
+
     if (ramp->size <= 0)
     {
         _glfwInputError(GLFW_INVALID_VALUE,
@@ -530,8 +530,6 @@ GLFWAPI void glfwSetGammaRamp(GLFWmonitor* handle, const GLFWgammaramp* ramp)
                         ramp->size);
         return;
     }
-
-    _GLFW_REQUIRE_INIT();
 
     if (!monitor->originalRamp.size)
     {

@@ -1,7 +1,22 @@
+struct vec4
+{
+	static int length();
+};
+
+int vec4::length()
+{
+	return 4;
+}
+
 int main()
 {
-	int Error = 0;
+	int Failed = 0;
 
-	return Error;
+	vec4 V;
+
+	int LengthA = V.length();
+	int LengthB = vec4::length();
+
+	return Failed;
 }
 

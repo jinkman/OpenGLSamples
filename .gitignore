@@ -1,0 +1,11 @@
+/build
+/samples/common/Config.h
+/.vscode
+/third-party/deploy
+/third-party/assimp/build
+/third-party/glfw/build
+/third-party/glm/build
+/third-party/freetype/build
+/third-party/opencv-4.0/build
+/third-party/json/build
+/third-party/soil/build

@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 WGL - www.glfw.org
+// GLFW 3.3 WGL - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2018 Camilla Löwy <elmindreda@glfw.org>
@@ -115,7 +115,6 @@ typedef struct _GLFWcontextWGL
     HDC       dc;
     HGLRC     handle;
     int       interval;
-
 } _GLFWcontextWGL;
 
 // WGL-specific global data
@@ -148,7 +147,6 @@ typedef struct _GLFWlibraryWGL
     GLFWbool                            ARB_create_context_robustness;
     GLFWbool                            ARB_create_context_no_error;
     GLFWbool                            ARB_context_flush_control;
-
 } _GLFWlibraryWGL;
 
 

@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 Win32 - www.glfw.org
+// GLFW 3.3 Win32 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2019 Camilla Löwy <elmindreda@glfw.org>
@@ -39,8 +39,8 @@
 #endif
 
 // This is a workaround for the fact that glfw3.h needs to export APIENTRY (for
-// example to allow applications to correctly declare a GL_ARB_debug_output
-// callback) but windows.h assumes no one will define APIENTRY before it does
+// example to allow applications to correctly declare a GL_KHR_debug callback)
+// but windows.h assumes no one will define APIENTRY before it does
 #undef APIENTRY
 
 // GLFW on Windows is Unicode only and does not work in MBCS mode
@@ -162,7 +162,12 @@ typedef enum
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((HANDLE) -4)
 #endif /*DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2*/
 
-// HACK: Define versionhelpers.h functions manually as MinGW lacks the header
+// Replacement for versionhelpers.h macros, as we cannot rely on the
+// application having a correct embedded manifest
+//
+#define IsWindowsXPOrGreater()                                 \
+    _glfwIsWindowsVersionOrGreaterWin32(HIBYTE(_WIN32_WINNT_WINXP),   \
+                                        LOBYTE(_WIN32_WINNT_WINXP), 0)
 #define IsWindowsVistaOrGreater()                                     \
     _glfwIsWindowsVersionOrGreaterWin32(HIBYTE(_WIN32_WINNT_VISTA),   \
                                         LOBYTE(_WIN32_WINNT_VISTA), 0)
@@ -215,10 +220,6 @@ typedef enum
  #define DIDFT_OPTIONAL 0x80000000
 #endif
 
-// winmm.dll function pointer typedefs
-typedef DWORD (WINAPI * PFN_timeGetTime)(void);
-#define timeGetTime _glfw.win32.winmm.GetTime
-
 // xinput.dll function pointer typedefs
 typedef DWORD (WINAPI * PFN_XInputGetCapabilities)(DWORD,DWORD,XINPUT_CAPABILITIES*);
 typedef DWORD (WINAPI * PFN_XInputGetState)(DWORD,XINPUT_STATE*);
@@ -236,12 +237,14 @@ typedef BOOL (WINAPI * PFN_EnableNonClientDpiScaling)(HWND);
 typedef BOOL (WINAPI * PFN_SetProcessDpiAwarenessContext)(HANDLE);
 typedef UINT (WINAPI * PFN_GetDpiForWindow)(HWND);
 typedef BOOL (WINAPI * PFN_AdjustWindowRectExForDpi)(LPRECT,DWORD,BOOL,DWORD,UINT);
+typedef int (WINAPI * PFN_GetSystemMetricsForDpi)(int,UINT);
 #define SetProcessDPIAware _glfw.win32.user32.SetProcessDPIAware_
 #define ChangeWindowMessageFilterEx _glfw.win32.user32.ChangeWindowMessageFilterEx_
 #define EnableNonClientDpiScaling _glfw.win32.user32.EnableNonClientDpiScaling_
 #define SetProcessDpiAwarenessContext _glfw.win32.user32.SetProcessDpiAwarenessContext_
 #define GetDpiForWindow _glfw.win32.user32.GetDpiForWindow_
 #define AdjustWindowRectExForDpi _glfw.win32.user32.AdjustWindowRectExForDpi_
+#define GetSystemMetricsForDpi _glfw.win32.user32.GetSystemMetricsForDpi_
 
 // dwmapi.dll function pointer typedefs
 typedef HRESULT (WINAPI * PFN_DwmIsCompositionEnabled)(BOOL*);
@@ -279,6 +282,8 @@ typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(
 
 #include "win32_joystick.h"
 #include "wgl_context.h"
+#include "egl_context.h"
+#include "osmesa_context.h"
 
 #if !defined(_GLFW_WNDCLASSNAME)
  #define _GLFW_WNDCLASSNAME L"GLFW30"
@@ -287,6 +292,9 @@ typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(
 #define _glfw_dlopen(name) LoadLibraryA(name)
 #define _glfw_dlclose(handle) FreeLibrary((HMODULE) handle)
 #define _glfw_dlsym(handle, name) GetProcAddress((HMODULE) handle, name)
+
+#define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->win32.handle)
+#define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
 
 #define _GLFW_PLATFORM_WINDOW_STATE         _GLFWwindowWin32  win32
 #define _GLFW_PLATFORM_LIBRARY_WINDOW_STATE _GLFWlibraryWin32 win32
@@ -312,7 +320,6 @@ typedef struct _GLFWwindowWin32
     // Whether to enable framebuffer transparency on DWM
     GLFWbool            transparent;
     GLFWbool            scaleToMonitor;
-    GLFWbool            keymenu;
 
     // Cached size used to filter out duplicate events
     int                 width, height;
@@ -321,13 +328,13 @@ typedef struct _GLFWwindowWin32
     int                 lastCursorPosX, lastCursorPosY;
     // The last recevied high surrogate when decoding pairs of UTF-16 messages
     WCHAR               highSurrogate;
-
 } _GLFWwindowWin32;
 
 // Win32-specific global data
 //
 typedef struct _GLFWlibraryWin32
 {
+    HINSTANCE           instance;
     HWND                helperWindowHandle;
     HDEVNOTIFY          deviceNotificationHandle;
     DWORD               foregroundLockTimeout;
@@ -340,14 +347,11 @@ typedef struct _GLFWlibraryWin32
     double              restoreCursorPosX, restoreCursorPosY;
     // The window whose disabled cursor mode is active
     _GLFWwindow*        disabledCursorWindow;
+    // The window the cursor is captured in
+    _GLFWwindow*        capturedCursorWindow;
     RAWINPUT*           rawInput;
     int                 rawInputSize;
     UINT                mouseTrailSize;
-
-    struct {
-        HINSTANCE                       instance;
-        PFN_timeGetTime                 GetTime;
-    } winmm;
 
     struct {
         HINSTANCE                       instance;
@@ -369,6 +373,7 @@ typedef struct _GLFWlibraryWin32
         PFN_SetProcessDpiAwarenessContext SetProcessDpiAwarenessContext_;
         PFN_GetDpiForWindow             GetDpiForWindow_;
         PFN_AdjustWindowRectExForDpi    AdjustWindowRectExForDpi_;
+        PFN_GetSystemMetricsForDpi      GetSystemMetricsForDpi_;
     } user32;
 
     struct {
@@ -389,7 +394,6 @@ typedef struct _GLFWlibraryWin32
         HINSTANCE                       instance;
         PFN_RtlVerifyVersionInfo        RtlVerifyVersionInfo_;
     } ntdll;
-
 } _GLFWlibraryWin32;
 
 // Win32-specific per-monitor data
@@ -404,7 +408,6 @@ typedef struct _GLFWmonitorWin32
     char                publicDisplayName[32];
     GLFWbool            modesPruned;
     GLFWbool            modeChanged;
-
 } _GLFWmonitorWin32;
 
 // Win32-specific per-cursor data
@@ -412,16 +415,13 @@ typedef struct _GLFWmonitorWin32
 typedef struct _GLFWcursorWin32
 {
     HCURSOR             handle;
-
 } _GLFWcursorWin32;
 
 // Win32-specific global timer data
 //
 typedef struct _GLFWtimerWin32
 {
-    GLFWbool            hasPC;
     uint64_t            frequency;
-
 } _GLFWtimerWin32;
 
 // Win32-specific thread local storage data
@@ -430,7 +430,6 @@ typedef struct _GLFWtlsWin32
 {
     GLFWbool            allocated;
     DWORD               index;
-
 } _GLFWtlsWin32;
 
 // Win32-specific mutex data
@@ -439,7 +438,6 @@ typedef struct _GLFWmutexWin32
 {
     GLFWbool            allocated;
     CRITICAL_SECTION    section;
-
 } _GLFWmutexWin32;
 
 

@@ -43,7 +43,8 @@ unsigned int loadTexture(char const *path);
 unsigned int objectVAO = 0, objectVBO;
 const unsigned int charSize = 64;
 
-int main() {
+int main()
+{
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -51,7 +52,8 @@ int main() {
 
     bool isFullScreen = false;
     GLFWwindow *window = NULL;
-    if (isFullScreen) {
+    if (isFullScreen)
+    {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         SCR_WIDTH = vidmode->width;
         SCR_HEIGHT = vidmode->height;
@@ -59,10 +61,12 @@ int main() {
         window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
         lastX = SCR_WIDTH / 2.0f;
         lastY = SCR_HEIGHT / 2.0f;
-    } else
+    }
+    else
         window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 
-    if (window == NULL) {
+    if (window == NULL)
+    {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -76,7 +80,8 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
@@ -92,7 +97,8 @@ int main() {
     auto texSrc = createTexture();
 
     VideoCapture cap1(getLocalPath("movies/mv/源视频1.mp4").c_str());
-    if (cap1.isOpened()) {
+    if (cap1.isOpened())
+    {
         int a = 0;
     }
     VideoCapture cap(0);
@@ -104,7 +110,8 @@ int main() {
 
     unsigned int charsTexID = loadTexture(getLocalPath("texture/chars.png").c_str());
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -119,7 +126,8 @@ int main() {
         ImGui::SliderFloat("pixelSize", &uPiexlSize, 2.0f, 100.0f);
 
         cap >> frame;
-        if (frame.empty()) {
+        if (frame.empty())
+        {
             break;
         }
 
@@ -144,18 +152,22 @@ int main() {
     return 0;
 }
 
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window)
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+{
     glViewport(0, 0, width, height);
 }
 
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID) {
+void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID)
+{
     static size_t vertextNum = 0;
-    if (objectVAO == 0) {
+    if (objectVAO == 0)
+    {
         std::vector<float> Arr;
         readVertext(Arr);
         vertextNum = Arr.size();
@@ -186,7 +198,8 @@ void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertext(std::vector<float> &Arr)
+{
     Arr.push_back(-1.0f);
     Arr.push_back(1.0f);
     Arr.push_back(0.0f);
@@ -218,7 +231,8 @@ void readVertext(std::vector<float> &Arr) {
     Arr.push_back(0.0f);
 }
 
-unsigned int createTexture() {
+unsigned int createTexture()
+{
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -230,7 +244,8 @@ unsigned int createTexture() {
     return textureID;
 }
 
-void cvmatToTexture(GLuint &textureId, const cv::Mat &mat) {
+void cvmatToTexture(GLuint &textureId, const cv::Mat &mat)
+{
     glBindTexture(GL_TEXTURE_2D, textureId);
     Mat sMat;
     cvtColor(mat, sMat, COLOR_BGR2RGB);
@@ -239,7 +254,8 @@ void cvmatToTexture(GLuint &textureId, const cv::Mat &mat) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet) {
+void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet)
+{
     Mat sMeanMat, sStddevMat;
     meanStdDev(sMat, sMeanMat, sStddevMat);
 
@@ -247,9 +263,12 @@ void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet) {
     meanStdDev(dMat, dMeanMat, dStddevMat);
 
     Mat temp(sMat.rows, sMat.cols, CV_8UC3, Scalar(0, 0, 0));
-    for (int row = 0; row < sMat.rows; row++) {
-        for (int col = 0; col < sMat.cols; col++) {
-            if (sMat.channels() == 3) {
+    for (int row = 0; row < sMat.rows; row++)
+    {
+        for (int col = 0; col < sMat.cols; col++)
+        {
+            if (sMat.channels() == 3)
+            {
                 int b = sMat.at<Vec3b>(row, col)[0];
                 int g = sMat.at<Vec3b>(row, col)[1];
                 int r = sMat.at<Vec3b>(row, col)[2];
@@ -263,7 +282,8 @@ void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet) {
     cvtColor(temp, matRet, COLOR_Lab2BGR);
 }
 
-std::vector<unsigned int> generateCharacter(const std::string &text) {
+std::vector<unsigned int> generateCharacter(const std::string &text)
+{
     // FreeType
     FT_Library ft;
     FT_Face face;
@@ -275,9 +295,11 @@ std::vector<unsigned int> generateCharacter(const std::string &text) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     std::vector<unsigned int> ret;
-    for (int i = 0; i < text.size(); i++) {
+    for (int i = 0; i < text.size(); i++)
+    {
         auto ch = text.at(i);
-        if (FT_Load_Char(face, ch, FT_LOAD_RENDER)) {
+        if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
+        {
             std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
             continue;
         }
@@ -296,13 +318,15 @@ std::vector<unsigned int> generateCharacter(const std::string &text) {
     return ret;
 }
 
-unsigned int loadTexture(char const *path) {
+unsigned int loadTexture(char const *path)
+{
     unsigned int textureID;
     glGenTextures(1, &textureID);
     stbi_set_flip_vertically_on_load(false);
     int width, height, nrComponents;
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data) {
+    if (data)
+    {
         GLenum format;
         if (nrComponents == 1)
             format = GL_RED;
@@ -321,7 +345,9 @@ unsigned int loadTexture(char const *path) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
-    } else {
+    }
+    else
+    {
         std::cout << "Texture failed to load at path: " << path << std::endl;
         stbi_image_free(data);
     }

@@ -1,3 +1,6 @@
+/// @ref core
+/// @file glm/detail/type_half.inl
+
 namespace glm{
 namespace detail
 {
@@ -5,8 +8,8 @@ namespace detail
 	{
 		volatile float f = 1e10;
 
-		for(int i = 0; i < 10; ++i)
-			f = f * f; // this will overflow before the for loop terminates
+		for(int i = 0; i < 10; ++i)	
+			f *= f; // this will overflow before the for loop terminates
 		return f;
 	}
 
@@ -20,12 +23,12 @@ namespace detail
 			f(f_)
 		{}
 
-		GLM_FUNC_QUALIFIER uif32(unsigned int i_) :
+		GLM_FUNC_QUALIFIER uif32(uint32 i_) :
 			i(i_)
 		{}
 
 		float f;
-		unsigned int i;
+		uint32 i;
 	};
 
 	GLM_FUNC_QUALIFIER float toFloat32(hdata value)
@@ -43,7 +46,7 @@ namespace detail
 				//
 
 				detail::uif32 result;
-				result.i = static_cast<unsigned int>(s << 31);
+				result.i = (unsigned int)(s << 31);
 				return result.f;
 			}
 			else
@@ -71,7 +74,7 @@ namespace detail
 				//
 
 				uif32 result;
-				result.i = static_cast<unsigned int>((s << 31) | 0x7f800000);
+				result.i = (unsigned int)((s << 31) | 0x7f800000);
 				return result.f;
 			}
 			else
@@ -81,7 +84,7 @@ namespace detail
 				//
 
 				uif32 result;
-				result.i = static_cast<unsigned int>((s << 31) | 0x7f800000 | (m << 13));
+				result.i = (unsigned int)((s << 31) | 0x7f800000 | (m << 13));
 				return result.f;
 			}
 		}
@@ -98,21 +101,21 @@ namespace detail
 		//
 
 		uif32 Result;
-		Result.i = static_cast<unsigned int>((s << 31) | (e << 23) | m);
+		Result.i = (unsigned int)((s << 31) | (e << 23) | m);
 		return Result.f;
 	}
 
-	GLM_FUNC_QUALIFIER hdata toFloat16(float const& f)
+	GLM_FUNC_QUALIFIER hdata toFloat16(float const & f)
 	{
 		uif32 Entry;
 		Entry.f = f;
-		int i = static_cast<int>(Entry.i);
+		int i = (int)Entry.i;
 
 		//
 		// Our floating point number, f, is represented by the bit
 		// pattern in integer i.  Disassemble that bit pattern into
 		// the sign, s, the exponent, e, and the significand, m.
-		// Shift s into the position where it will go in the
+		// Shift s into the position where it will go in in the
 		// resulting half number.
 		// Adjust e, accounting for the different exponent bias
 		// of float and half (127 versus 15).
@@ -146,7 +149,7 @@ namespace detail
 			// whose magnitude is less than __half_NRM_MIN.
 			//
 			// We convert f to a denormalized half.
-			//
+			// 
 
 			m = (m | 0x00800000) >> (1 - e);
 
@@ -157,9 +160,9 @@ namespace detail
 			// our number normalized.  Because of the way a half's bits
 			// are laid out, we don't have to treat this case separately;
 			// the code below will handle it correctly.
-			//
+			// 
 
-			if(m & 0x00001000)
+			if(m & 0x00001000) 
 				m += 0x00002000;
 
 			//
@@ -185,7 +188,7 @@ namespace detail
 				// F is a NAN; we produce a half NAN that preserves
 				// the sign bit and the 10 leftmost bits of the
 				// significand of f, with one exception: If the 10
-				// leftmost bits are all zero, the NAN would turn
+				// leftmost bits are all zero, the NAN would turn 
 				// into an infinity, so we have to set at least one
 				// bit in the significand.
 				//

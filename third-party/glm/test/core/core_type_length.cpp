@@ -1,6 +1,6 @@
 #include <glm/glm.hpp>
 
-static int test_length_mat_non_squared()
+int test_length_mat_non_squared()
 {
 	int Error = 0;
 
@@ -21,7 +21,7 @@ static int test_length_mat_non_squared()
 	return Error;
 }
 
-static int test_length_mat()
+int test_length_mat()
 {
 	int Error = 0;
 	
@@ -42,8 +42,9 @@ static int test_length_mat()
 	return Error;
 }
 
-static int test_length_vec()
+int test_length_vec()
 {
+
 	int Error = 0;
 	
 	Error += glm::vec2().length() == 2 ? 0 : 1;

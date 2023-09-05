@@ -1,3 +1,6 @@
+/// @ref core
+/// @file glm/detail/_fixes.hpp
+
 #include <cmath>
 
 //! Workaround for compatibility with other libraries

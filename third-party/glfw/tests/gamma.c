@@ -101,7 +101,6 @@ int main(int argc, char** argv)
     monitor = glfwGetPrimaryMonitor();
 
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-    glfwWindowHint(GLFW_WIN32_KEYBOARD_MENU, GLFW_TRUE);
 
     window = glfwCreateWindow(800, 400, "Gamma Test", NULL, NULL);
     if (!window)
@@ -112,6 +111,12 @@ int main(int argc, char** argv)
 
     {
         const GLFWgammaramp* ramp = glfwGetGammaRamp(monitor);
+        if (!ramp)
+        {
+            glfwTerminate();
+            exit(EXIT_FAILURE);
+        }
+
         const size_t array_size = ramp->size * sizeof(short);
         orig_ramp.size = ramp->size;
         orig_ramp.red = malloc(array_size);

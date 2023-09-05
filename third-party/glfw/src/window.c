@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 - www.glfw.org
+// GLFW 3.3 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2019 Camilla Löwy <elmindreda@glfw.org>
@@ -197,14 +197,15 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     window->videoMode.blueBits    = fbconfig.blueBits;
     window->videoMode.refreshRate = _glfw.hints.refreshRate;
 
-    window->monitor          = (_GLFWmonitor*) monitor;
-    window->resizable        = wndconfig.resizable;
-    window->decorated        = wndconfig.decorated;
-    window->autoIconify      = wndconfig.autoIconify;
-    window->floating         = wndconfig.floating;
-    window->focusOnShow      = wndconfig.focusOnShow;
-    window->mousePassthrough = wndconfig.mousePassthrough;
-    window->cursorMode       = GLFW_CURSOR_NORMAL;
+    window->monitor     = (_GLFWmonitor*) monitor;
+    window->resizable   = wndconfig.resizable;
+    window->decorated   = wndconfig.decorated;
+    window->autoIconify = wndconfig.autoIconify;
+    window->floating    = wndconfig.floating;
+    window->focusOnShow = wndconfig.focusOnShow;
+    window->cursorMode  = GLFW_CURSOR_NORMAL;
+
+    window->doublebuffer = fbconfig.doublebuffer;
 
     window->minwidth    = GLFW_DONT_CARE;
     window->minheight   = GLFW_DONT_CARE;
@@ -218,33 +219,6 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     {
         glfwDestroyWindow((GLFWwindow*) window);
         return NULL;
-    }
-
-    if (ctxconfig.client != GLFW_NO_API)
-    {
-        if (!_glfwRefreshContextAttribs(window, &ctxconfig))
-        {
-            glfwDestroyWindow((GLFWwindow*) window);
-            return NULL;
-        }
-    }
-
-    if (wndconfig.mousePassthrough)
-        _glfwPlatformSetWindowMousePassthrough(window, GLFW_TRUE);
-
-    if (window->monitor)
-    {
-        if (wndconfig.centerCursor)
-            _glfwCenterCursorInContentArea(window);
-    }
-    else
-    {
-        if (wndconfig.visible)
-        {
-            _glfwPlatformShowWindow(window);
-            if (wndconfig.focused)
-                _glfwPlatformFocusWindow(window);
-        }
     }
 
     return (GLFWwindow*) window;
@@ -367,9 +341,6 @@ GLFWAPI void glfwWindowHint(int hint, int value)
         case GLFW_COCOA_RETINA_FRAMEBUFFER:
             _glfw.hints.window.ns.retina = value ? GLFW_TRUE : GLFW_FALSE;
             return;
-        case GLFW_WIN32_KEYBOARD_MENU:
-            _glfw.hints.window.win32.keymenu = value ? GLFW_TRUE : GLFW_FALSE;
-            return;
         case GLFW_COCOA_GRAPHICS_SWITCHING:
             _glfw.hints.context.nsgl.offline = value ? GLFW_TRUE : GLFW_FALSE;
             return;
@@ -381,9 +352,6 @@ GLFWAPI void glfwWindowHint(int hint, int value)
             return;
         case GLFW_FOCUS_ON_SHOW:
             _glfw.hints.window.focusOnShow = value ? GLFW_TRUE : GLFW_FALSE;
-            return;
-        case GLFW_MOUSE_PASSTHROUGH:
-            _glfw.hints.window.mousePassthrough = value ? GLFW_TRUE : GLFW_FALSE;
             return;
         case GLFW_CLIENT_API:
             _glfw.hints.context.client = value;
@@ -403,7 +371,7 @@ GLFWAPI void glfwWindowHint(int hint, int value)
         case GLFW_OPENGL_FORWARD_COMPAT:
             _glfw.hints.context.forward = value ? GLFW_TRUE : GLFW_FALSE;
             return;
-        case GLFW_CONTEXT_DEBUG:
+        case GLFW_OPENGL_DEBUG_CONTEXT:
             _glfw.hints.context.debug = value ? GLFW_TRUE : GLFW_FALSE;
             return;
         case GLFW_CONTEXT_NO_ERROR:
@@ -512,12 +480,33 @@ GLFWAPI void glfwSetWindowTitle(GLFWwindow* handle, const char* title)
 GLFWAPI void glfwSetWindowIcon(GLFWwindow* handle,
                                int count, const GLFWimage* images)
 {
+    int i;
     _GLFWwindow* window = (_GLFWwindow*) handle;
+
     assert(window != NULL);
     assert(count >= 0);
     assert(count == 0 || images != NULL);
 
     _GLFW_REQUIRE_INIT();
+
+    if (count < 0)
+    {
+        _glfwInputError(GLFW_INVALID_VALUE, "Invalid image count for window icon");
+        return;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        assert(images[i].pixels != NULL);
+
+        if (images[i].width <= 0 || images[i].height <= 0)
+        {
+            _glfwInputError(GLFW_INVALID_VALUE,
+                            "Invalid image dimensions for window icon");
+            return;
+        }
+    }
+
     _glfwPlatformSetWindowIcon(window, count, images);
 }
 
@@ -829,8 +818,6 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* handle, int attrib)
             return _glfwPlatformWindowHovered(window);
         case GLFW_FOCUS_ON_SHOW:
             return window->focusOnShow;
-        case GLFW_MOUSE_PASSTHROUGH:
-            return window->mousePassthrough;
         case GLFW_TRANSPARENT_FRAMEBUFFER:
             return _glfwPlatformFramebufferTransparent(window);
         case GLFW_RESIZABLE:
@@ -855,7 +842,7 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* handle, int attrib)
             return window->context.robustness;
         case GLFW_OPENGL_FORWARD_COMPAT:
             return window->context.forward;
-        case GLFW_CONTEXT_DEBUG:
+        case GLFW_OPENGL_DEBUG_CONTEXT:
             return window->context.debug;
         case GLFW_OPENGL_PROFILE:
             return window->context.profile;
@@ -909,14 +896,6 @@ GLFWAPI void glfwSetWindowAttrib(GLFWwindow* handle, int attrib, int value)
     }
     else if (attrib == GLFW_FOCUS_ON_SHOW)
         window->focusOnShow = value;
-    else if (attrib == GLFW_MOUSE_PASSTHROUGH)
-    {
-        if (window->mousePassthrough == value)
-            return;
-
-        window->mousePassthrough = value;
-        _glfwPlatformSetWindowMousePassthrough(window, value);
-    }
     else
         _glfwInputError(GLFW_INVALID_ENUM, "Invalid window attribute 0x%08X", attrib);
 }

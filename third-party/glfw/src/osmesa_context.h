@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 OSMesa - www.glfw.org
+// GLFW 3.3 OSMesa - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2016 Google Inc.
 // Copyright (c) 2016-2017 Camilla Löwy <elmindreda@glfw.org>
@@ -54,6 +54,10 @@ typedef GLFWglproc (GLAPIENTRY * PFN_OSMesaGetProcAddress)(const char*);
 #define OSMesaGetDepthBuffer _glfw.osmesa.GetDepthBuffer
 #define OSMesaGetProcAddress _glfw.osmesa.GetProcAddress
 
+#define _GLFW_OSMESA_CONTEXT_STATE              _GLFWcontextOSMesa osmesa
+#define _GLFW_OSMESA_LIBRARY_CONTEXT_STATE      _GLFWlibraryOSMesa osmesa
+
+
 // OSMesa-specific per-context data
 //
 typedef struct _GLFWcontextOSMesa
@@ -62,7 +66,6 @@ typedef struct _GLFWcontextOSMesa
     int                 width;
     int                 height;
     void*               buffer;
-
 } _GLFWcontextOSMesa;
 
 // OSMesa-specific global data
@@ -78,7 +81,6 @@ typedef struct _GLFWlibraryOSMesa
     PFN_OSMesaGetColorBuffer        GetColorBuffer;
     PFN_OSMesaGetDepthBuffer        GetDepthBuffer;
     PFN_OSMesaGetProcAddress        GetProcAddress;
-
 } _GLFWlibraryOSMesa;
 
 

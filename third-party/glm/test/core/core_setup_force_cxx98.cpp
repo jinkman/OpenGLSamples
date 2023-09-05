@@ -1,6 +1,4 @@
-#ifndef GLM_FORCE_CXX98
-#	define GLM_FORCE_CXX98
-#endif
+#define GLM_FORCE_CXX98
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 

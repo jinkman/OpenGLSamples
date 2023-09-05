@@ -1,5 +1,5 @@
 /*************************************************************************
- * GLFW 3.4 - www.glfw.org
+ * GLFW 3.3 - www.glfw.org
  * A library for OpenGL, window and input
  *------------------------------------------------------------------------
  * Copyright (c) 2002-2006 Marcus Geelnard
@@ -190,6 +190,9 @@ extern "C" {
  #else /*__APPLE__*/
 
   #include <GL/glcorearb.h>
+  #if defined(GLFW_INCLUDE_GLEXT)
+   #include <GL/glext.h>
+  #endif
 
  #endif /*__APPLE__*/
 
@@ -259,13 +262,12 @@ extern "C" {
  /* We are building GLFW as a Win32 DLL */
  #define GLFWAPI __declspec(dllexport)
 #elif defined(_WIN32) && defined(GLFW_DLL)
- /* We are calling GLFW as a Win32 DLL */
+ /* We are calling a GLFW Win32 DLL */
  #define GLFWAPI __declspec(dllimport)
 #elif defined(__GNUC__) && defined(_GLFW_BUILD_DLL)
- /* We are building GLFW as a shared / dynamic library */
+ /* We are building GLFW as a Unix shared library */
  #define GLFWAPI __attribute__((visibility("default")))
 #else
- /* We are building or calling GLFW as a static library */
  #define GLFWAPI
 #endif
 
@@ -276,26 +278,27 @@ extern "C" {
 
 /*! @name GLFW version macros
  *  @{ */
-/*! @brief The major version number of the GLFW library.
+/*! @brief The major version number of the GLFW header.
  *
- *  This is incremented when the API is changed in non-compatible ways.
+ *  The major version number of the GLFW header.  This is incremented when the
+ *  API is changed in non-compatible ways.
  *  @ingroup init
  */
 #define GLFW_VERSION_MAJOR          3
-/*! @brief The minor version number of the GLFW library.
+/*! @brief The minor version number of the GLFW header.
  *
- *  This is incremented when features are added to the API but it remains
- *  backward-compatible.
+ *  The minor version number of the GLFW header.  This is incremented when
+ *  features are added to the API but it remains backward-compatible.
  *  @ingroup init
  */
-#define GLFW_VERSION_MINOR          4
-/*! @brief The revision number of the GLFW library.
+#define GLFW_VERSION_MINOR          3
+/*! @brief The revision number of the GLFW header.
  *
- *  This is incremented when a bug fix release is made that does not contain any
- *  API changes.
+ *  The revision number of the GLFW header.  This is incremented when a bug fix
+ *  release is made that does not contain any API changes.
  *  @ingroup init
  */
-#define GLFW_VERSION_REVISION       0
+#define GLFW_VERSION_REVISION       9
 /*! @} */
 
 /*! @brief One.
@@ -782,44 +785,6 @@ extern "C" {
  *  @analysis Application programmer error.  Fix the offending call.
  */
 #define GLFW_NO_WINDOW_CONTEXT      0x0001000A
-/*! @brief The specified cursor shape is not available.
- *
- *  The specified standard cursor shape is not available, either because the
- *  current system cursor theme does not provide it or because it is not
- *  available on the platform.
- *
- *  @analysis Platform or system settings limitation.  Pick another
- *  [standard cursor shape](@ref shapes) or create a
- *  [custom cursor](@ref cursor_custom).
- */
-#define GLFW_CURSOR_UNAVAILABLE     0x0001000B
-/*! @brief The requested feature is not provided by the platform.
- *
- *  The requested feature is not provided by the platform, so GLFW is unable to
- *  implement it.  The documentation for each function notes if it could emit
- *  this error.
- *
- *  @analysis Platform or platform version limitation.  The error can be ignored
- *  unless the feature is critical to the application.
- *
- *  @par
- *  A function call that emits this error has no effect other than the error and
- *  updating any existing out parameters.
- */
-#define GLFW_FEATURE_UNAVAILABLE    0x0001000C
-/*! @brief The requested feature is not implemented for the platform.
- *
- *  The requested feature has not yet been implemented in GLFW for this platform.
- *
- *  @analysis An incomplete implementation of GLFW for this platform, hopefully
- *  fixed in a future release.  The error can be ignored unless the feature is
- *  critical to the application.
- *
- *  @par
- *  A function call that emits this error has no effect other than the error and
- *  updating any existing out parameters.
- */
-#define GLFW_FEATURE_UNIMPLEMENTED  0x0001000D
 /*! @} */
 
 /*! @addtogroup window
@@ -894,13 +859,6 @@ extern "C" {
  *  [window attribute](@ref GLFW_FOCUS_ON_SHOW_attrib).
  */
 #define GLFW_FOCUS_ON_SHOW          0x0002000C
-
-/*! @brief Mouse input transparency window hint and attribute
- *
- *  Mouse input transparency [window hint](@ref GLFW_MOUSE_PASSTHROUGH_hint) or
- *  [window attribute](@ref GLFW_MOUSE_PASSTHROUGH_attrib).
- */
-#define GLFW_MOUSE_PASSTHROUGH      0x0002000D
 
 /*! @brief Framebuffer bit depth hint.
  *
@@ -1001,7 +959,7 @@ extern "C" {
  *  and [attribute](@ref GLFW_CONTEXT_VERSION_MINOR_attrib).
  */
 #define GLFW_CONTEXT_VERSION_MINOR  0x00022003
-/*! @brief Context client API revision number hint and attribute.
+/*! @brief Context client API revision number attribute.
  *
  *  Context client API revision number
  *  [attribute](@ref GLFW_CONTEXT_REVISION_attrib).
@@ -1021,15 +979,10 @@ extern "C" {
 #define GLFW_OPENGL_FORWARD_COMPAT  0x00022006
 /*! @brief Debug mode context hint and attribute.
  *
- *  Debug mode context [hint](@ref GLFW_CONTEXT_DEBUG_hint) and
- *  [attribute](@ref GLFW_CONTEXT_DEBUG_attrib).
+ *  Debug mode context [hint](@ref GLFW_OPENGL_DEBUG_CONTEXT_hint) and
+ *  [attribute](@ref GLFW_OPENGL_DEBUG_CONTEXT_attrib).
  */
-#define GLFW_CONTEXT_DEBUG          0x00022007
-/*! @brief Legacy name for compatibility.
- *
- *  This is an alias for compatibility with earlier versions.
- */
-#define GLFW_OPENGL_DEBUG_CONTEXT   GLFW_CONTEXT_DEBUG
+#define GLFW_OPENGL_DEBUG_CONTEXT   0x00022007
 /*! @brief OpenGL profile hint and attribute.
  *
  *  OpenGL profile [hint](@ref GLFW_OPENGL_PROFILE_hint) and
@@ -1078,7 +1031,6 @@ extern "C" {
  *  [window hint](@ref GLFW_X11_CLASS_NAME_hint).
  */
 #define GLFW_X11_INSTANCE_NAME      0x00024002
-#define GLFW_WIN32_KEYBOARD_MENU    0x00025001
 /*! @} */
 
 #define GLFW_NO_API                          0
@@ -1111,26 +1063,17 @@ extern "C" {
 #define GLFW_EGL_CONTEXT_API        0x00036002
 #define GLFW_OSMESA_CONTEXT_API     0x00036003
 
-#define GLFW_ANGLE_PLATFORM_TYPE_NONE    0x00037001
-#define GLFW_ANGLE_PLATFORM_TYPE_OPENGL  0x00037002
-#define GLFW_ANGLE_PLATFORM_TYPE_OPENGLES 0x00037003
-#define GLFW_ANGLE_PLATFORM_TYPE_D3D9    0x00037004
-#define GLFW_ANGLE_PLATFORM_TYPE_D3D11   0x00037005
-#define GLFW_ANGLE_PLATFORM_TYPE_VULKAN  0x00037007
-#define GLFW_ANGLE_PLATFORM_TYPE_METAL   0x00037008
-
 /*! @defgroup shapes Standard cursor shapes
  *  @brief Standard system cursor shapes.
  *
- *  These are the [standard cursor shapes](@ref cursor_standard) that can be
- *  requested from the window system.
+ *  See [standard cursor creation](@ref cursor_standard) for how these are used.
  *
  *  @ingroup input
  *  @{ */
 
 /*! @brief The regular arrow cursor shape.
  *
- *  The regular arrow cursor shape.
+ *  The regular arrow cursor.
  */
 #define GLFW_ARROW_CURSOR           0x00036001
 /*! @brief The text input I-beam cursor shape.
@@ -1138,91 +1081,26 @@ extern "C" {
  *  The text input I-beam cursor shape.
  */
 #define GLFW_IBEAM_CURSOR           0x00036002
-/*! @brief The crosshair cursor shape.
+/*! @brief The crosshair shape.
  *
- *  The crosshair cursor shape.
+ *  The crosshair shape.
  */
 #define GLFW_CROSSHAIR_CURSOR       0x00036003
-/*! @brief The pointing hand cursor shape.
+/*! @brief The hand shape.
  *
- *  The pointing hand cursor shape.
+ *  The hand shape.
  */
-#define GLFW_POINTING_HAND_CURSOR   0x00036004
-/*! @brief The horizontal resize/move arrow shape.
+#define GLFW_HAND_CURSOR            0x00036004
+/*! @brief The horizontal resize arrow shape.
  *
- *  The horizontal resize/move arrow shape.  This is usually a horizontal
- *  double-headed arrow.
+ *  The horizontal resize arrow shape.
  */
-#define GLFW_RESIZE_EW_CURSOR       0x00036005
-/*! @brief The vertical resize/move arrow shape.
+#define GLFW_HRESIZE_CURSOR         0x00036005
+/*! @brief The vertical resize arrow shape.
  *
- *  The vertical resize/move shape.  This is usually a vertical double-headed
- *  arrow.
+ *  The vertical resize arrow shape.
  */
-#define GLFW_RESIZE_NS_CURSOR       0x00036006
-/*! @brief The top-left to bottom-right diagonal resize/move arrow shape.
- *
- *  The top-left to bottom-right diagonal resize/move shape.  This is usually
- *  a diagonal double-headed arrow.
- *
- *  @note @macos This shape is provided by a private system API and may fail
- *  with @ref GLFW_CURSOR_UNAVAILABLE in the future.
- *
- *  @note @x11 This shape is provided by a newer standard not supported by all
- *  cursor themes.
- *
- *  @note @wayland This shape is provided by a newer standard not supported by
- *  all cursor themes.
- */
-#define GLFW_RESIZE_NWSE_CURSOR     0x00036007
-/*! @brief The top-right to bottom-left diagonal resize/move arrow shape.
- *
- *  The top-right to bottom-left diagonal resize/move shape.  This is usually
- *  a diagonal double-headed arrow.
- *
- *  @note @macos This shape is provided by a private system API and may fail
- *  with @ref GLFW_CURSOR_UNAVAILABLE in the future.
- *
- *  @note @x11 This shape is provided by a newer standard not supported by all
- *  cursor themes.
- *
- *  @note @wayland This shape is provided by a newer standard not supported by
- *  all cursor themes.
- */
-#define GLFW_RESIZE_NESW_CURSOR     0x00036008
-/*! @brief The omni-directional resize/move cursor shape.
- *
- *  The omni-directional resize cursor/move shape.  This is usually either
- *  a combined horizontal and vertical double-headed arrow or a grabbing hand.
- */
-#define GLFW_RESIZE_ALL_CURSOR      0x00036009
-/*! @brief The operation-not-allowed shape.
- *
- *  The operation-not-allowed shape.  This is usually a circle with a diagonal
- *  line through it.
- *
- *  @note @x11 This shape is provided by a newer standard not supported by all
- *  cursor themes.
- *
- *  @note @wayland This shape is provided by a newer standard not supported by
- *  all cursor themes.
- */
-#define GLFW_NOT_ALLOWED_CURSOR     0x0003600A
-/*! @brief Legacy name for compatibility.
- *
- *  This is an alias for compatibility with earlier versions.
- */
-#define GLFW_HRESIZE_CURSOR         GLFW_RESIZE_EW_CURSOR
-/*! @brief Legacy name for compatibility.
- *
- *  This is an alias for compatibility with earlier versions.
- */
-#define GLFW_VRESIZE_CURSOR         GLFW_RESIZE_NS_CURSOR
-/*! @brief Legacy name for compatibility.
- *
- *  This is an alias for compatibility with earlier versions.
- */
-#define GLFW_HAND_CURSOR            GLFW_POINTING_HAND_CURSOR
+#define GLFW_VRESIZE_CURSOR         0x00036006
 /*! @} */
 
 #define GLFW_CONNECTED              0x00040001
@@ -1235,11 +1113,6 @@ extern "C" {
  *  Joystick hat buttons [init hint](@ref GLFW_JOYSTICK_HAT_BUTTONS).
  */
 #define GLFW_JOYSTICK_HAT_BUTTONS   0x00050001
-/*! @brief ANGLE rendering backend init hint.
- *
- *  ANGLE rendering backend [init hint](@ref GLFW_ANGLE_PLATFORM_TYPE_hint).
- */
-#define GLFW_ANGLE_PLATFORM_TYPE    0x00050002
 /*! @brief macOS specific init hint.
  *
  *  macOS specific [init hint](@ref GLFW_COCOA_CHDIR_RESOURCES_hint).
@@ -1345,7 +1218,7 @@ typedef struct GLFWcursor GLFWcursor;
  *
  *  @ingroup init
  */
-typedef void (* GLFWerrorfun)(int,const char*);
+typedef void (* GLFWerrorfun)(int error_code, const char* description);
 
 /*! @brief The function pointer type for window position callbacks.
  *
@@ -1368,7 +1241,7 @@ typedef void (* GLFWerrorfun)(int,const char*);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowposfun)(GLFWwindow*,int,int);
+typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
 
 /*! @brief The function pointer type for window size callbacks.
  *
@@ -1390,7 +1263,7 @@ typedef void (* GLFWwindowposfun)(GLFWwindow*,int,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowsizefun)(GLFWwindow*,int,int);
+typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
 
 /*! @brief The function pointer type for window close callbacks.
  *
@@ -1410,7 +1283,7 @@ typedef void (* GLFWwindowsizefun)(GLFWwindow*,int,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowclosefun)(GLFWwindow*);
+typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
 
 /*! @brief The function pointer type for window content refresh callbacks.
  *
@@ -1430,7 +1303,7 @@ typedef void (* GLFWwindowclosefun)(GLFWwindow*);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowrefreshfun)(GLFWwindow*);
+typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);
 
 /*! @brief The function pointer type for window focus callbacks.
  *
@@ -1451,7 +1324,7 @@ typedef void (* GLFWwindowrefreshfun)(GLFWwindow*);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowfocusfun)(GLFWwindow*,int);
+typedef void (* GLFWwindowfocusfun)(GLFWwindow* window, int focused);
 
 /*! @brief The function pointer type for window iconify callbacks.
  *
@@ -1472,7 +1345,7 @@ typedef void (* GLFWwindowfocusfun)(GLFWwindow*,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowiconifyfun)(GLFWwindow*,int);
+typedef void (* GLFWwindowiconifyfun)(GLFWwindow* window, int iconified);
 
 /*! @brief The function pointer type for window maximize callbacks.
  *
@@ -1493,7 +1366,7 @@ typedef void (* GLFWwindowiconifyfun)(GLFWwindow*,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowmaximizefun)(GLFWwindow*,int);
+typedef void (* GLFWwindowmaximizefun)(GLFWwindow* window, int maximized);
 
 /*! @brief The function pointer type for framebuffer size callbacks.
  *
@@ -1514,7 +1387,7 @@ typedef void (* GLFWwindowmaximizefun)(GLFWwindow*,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWframebuffersizefun)(GLFWwindow*,int,int);
+typedef void (* GLFWframebuffersizefun)(GLFWwindow* window, int width, int height);
 
 /*! @brief The function pointer type for window content scale callbacks.
  *
@@ -1535,7 +1408,7 @@ typedef void (* GLFWframebuffersizefun)(GLFWwindow*,int,int);
  *
  *  @ingroup window
  */
-typedef void (* GLFWwindowcontentscalefun)(GLFWwindow*,float,float);
+typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
 
 /*! @brief The function pointer type for mouse button callbacks.
  *
@@ -1561,7 +1434,7 @@ typedef void (* GLFWwindowcontentscalefun)(GLFWwindow*,float,float);
  *
  *  @ingroup input
  */
-typedef void (* GLFWmousebuttonfun)(GLFWwindow*,int,int,int);
+typedef void (* GLFWmousebuttonfun)(GLFWwindow* window, int button, int action, int mods);
 
 /*! @brief The function pointer type for cursor position callbacks.
  *
@@ -1584,7 +1457,7 @@ typedef void (* GLFWmousebuttonfun)(GLFWwindow*,int,int,int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWcursorposfun)(GLFWwindow*,double,double);
+typedef void (* GLFWcursorposfun)(GLFWwindow* window, double xpos, double ypos);
 
 /*! @brief The function pointer type for cursor enter/leave callbacks.
  *
@@ -1605,7 +1478,7 @@ typedef void (* GLFWcursorposfun)(GLFWwindow*,double,double);
  *
  *  @ingroup input
  */
-typedef void (* GLFWcursorenterfun)(GLFWwindow*,int);
+typedef void (* GLFWcursorenterfun)(GLFWwindow* window, int entered);
 
 /*! @brief The function pointer type for scroll callbacks.
  *
@@ -1626,7 +1499,7 @@ typedef void (* GLFWcursorenterfun)(GLFWwindow*,int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWscrollfun)(GLFWwindow*,double,double);
+typedef void (* GLFWscrollfun)(GLFWwindow* window, double xoffset, double yoffset);
 
 /*! @brief The function pointer type for keyboard key callbacks.
  *
@@ -1652,7 +1525,7 @@ typedef void (* GLFWscrollfun)(GLFWwindow*,double,double);
  *
  *  @ingroup input
  */
-typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
+typedef void (* GLFWkeyfun)(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 /*! @brief The function pointer type for Unicode character callbacks.
  *
@@ -1673,7 +1546,7 @@ typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWcharfun)(GLFWwindow*,unsigned int);
+typedef void (* GLFWcharfun)(GLFWwindow* window, unsigned int codepoint);
 
 /*! @brief The function pointer type for Unicode character with modifiers
  *  callbacks.
@@ -1700,7 +1573,7 @@ typedef void (* GLFWcharfun)(GLFWwindow*,unsigned int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWcharmodsfun)(GLFWwindow*,unsigned int,int);
+typedef void (* GLFWcharmodsfun)(GLFWwindow* window, unsigned int codepoint, int mods);
 
 /*! @brief The function pointer type for path drop callbacks.
  *
@@ -1724,7 +1597,7 @@ typedef void (* GLFWcharmodsfun)(GLFWwindow*,unsigned int,int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWdropfun)(GLFWwindow*,int,const char*[]);
+typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
 
 /*! @brief The function pointer type for monitor configuration callbacks.
  *
@@ -1745,7 +1618,7 @@ typedef void (* GLFWdropfun)(GLFWwindow*,int,const char*[]);
  *
  *  @ingroup monitor
  */
-typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
+typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
 
 /*! @brief The function pointer type for joystick configuration callbacks.
  *
@@ -1766,7 +1639,7 @@ typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
  *
  *  @ingroup input
  */
-typedef void (* GLFWjoystickfun)(int,int);
+typedef void (* GLFWjoystickfun)(int jid, int event);
 
 /*! @brief Video mode type.
  *
@@ -1907,14 +1780,6 @@ typedef struct GLFWgamepadstate
  *  application to the `Contents/Resources` subdirectory of the application's
  *  bundle, if present.  This can be disabled with the @ref
  *  GLFW_COCOA_CHDIR_RESOURCES init hint.
- *
- *  @remark @macos This function will create the main menu and dock icon for the
- *  application.  If GLFW finds a `MainMenu.nib` it is loaded and assumed to
- *  contain a menu bar.  Otherwise a minimal menu bar is created manually with
- *  common commands like Hide, Quit and About.  The About entry opens a minimal
- *  about dialog with information from the application's bundle.  The menu bar
- *  and dock icon can be disabled entirely with the @ref GLFW_COCOA_MENUBAR init
- *  hint.
  *
  *  @remark @x11 This function will set the `LC_CTYPE` category of the
  *  application locale according to the current environment if that category is
@@ -2262,8 +2127,8 @@ GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, 
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED.
  *
- *  @remark @win32 calculates the returned physical size from the
- *  current resolution and system DPI instead of querying the monitor EDID data.
+ *  @remark @win32 On Windows 8 and earlier the physical size is calculated from
+ *  the current resolution and system DPI instead of querying the monitor EDID data.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -2417,8 +2282,9 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback);
  *
  *  This function returns an array of all video modes supported by the specified
  *  monitor.  The returned array is sorted in ascending order, first by color
- *  bit depth (the sum of all channel depths) and then by resolution area (the
- *  product of width and height).
+ *  bit depth (the sum of all channel depths), then by resolution area (the
+ *  product of width and height), then resolution width and finally by refresh
+ *  rate.
  *
  *  @param[in] monitor The monitor to query.
  *  @param[out] count Where to store the number of video modes in the returned
@@ -2749,17 +2615,25 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  @remark @win32 The context to share resources with must not be current on
  *  any other thread.
  *
- *  @remark @macos The OS only supports core profile contexts for OpenGL
- *  versions 3.2 and later.  Before creating an OpenGL context of version 3.2 or
- *  later you must set the [GLFW_OPENGL_PROFILE](@ref GLFW_OPENGL_PROFILE_hint)
- *  hint accordingly.  OpenGL 3.0 and 3.1 contexts are not supported at all
- *  on macOS.
+ *  @remark @macos The OS only supports forward-compatible core profile contexts
+ *  for OpenGL versions 3.2 and later.  Before creating an OpenGL context of
+ *  version 3.2 or later you must set the
+ *  [GLFW_OPENGL_FORWARD_COMPAT](@ref GLFW_OPENGL_FORWARD_COMPAT_hint) and
+ *  [GLFW_OPENGL_PROFILE](@ref GLFW_OPENGL_PROFILE_hint) hints accordingly.
+ *  OpenGL 3.0 and 3.1 contexts are not supported at all on macOS.
  *
  *  @remark @macos The GLFW window has no icon, as it is not a document
  *  window, but the dock icon will be the same as the application bundle's icon.
  *  For more information on bundles, see the
  *  [Bundle Programming Guide](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/)
  *  in the Mac Developer Library.
+ *
+ *  @remark @macos The first time a window is created the menu bar is created.
+ *  If GLFW finds a `MainMenu.nib` it is loaded and assumed to contain a menu
+ *  bar.  Otherwise a minimal menu bar is created manually with common commands
+ *  like Hide, Quit and About.  The About entry opens a minimal about dialog
+ *  with information from the application's bundle.  Menu bar creation can be
+ *  disabled entirely with the @ref GLFW_COCOA_MENUBAR init hint.
  *
  *  @remark @macos On OS X 10.10 and later the window frame will not be rendered
  *  at full resolution on Retina displays unless the
@@ -2769,7 +2643,7 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  [High Resolution Guidelines for OS X](https://developer.apple.com/library/mac/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Explained/Explained.html)
  *  in the Mac Developer Library.  The GLFW test and example programs use
  *  a custom `Info.plist` template for this, which can be found as
- *  `CMake/Info.plist.in` in the source tree.
+ *  `CMake/MacOSXBundleInfo.plist.in` in the source tree.
  *
  *  @remark @macos When activating frame autosaving with
  *  [GLFW_COCOA_FRAME_NAME](@ref GLFW_COCOA_FRAME_NAME_hint), the specified
@@ -2934,20 +2808,20 @@ GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title);
  *  count is zero.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_PLATFORM_ERROR and @ref GLFW_FEATURE_UNAVAILABLE (see remarks).
+ *  GLFW_INVALID_VALUE and @ref GLFW_PLATFORM_ERROR.
  *
  *  @pointer_lifetime The specified image data is copied before this function
  *  returns.
  *
- *  @remark @macos Regular windows do not have icons on macOS.  This function
- *  will emit @ref GLFW_FEATURE_UNAVAILABLE.  The dock icon will be the same as
+ *  @remark @macos The GLFW window has no icon, as it is not a document
+ *  window, so this function does nothing.  The dock icon will be the same as
  *  the application bundle's icon.  For more information on bundles, see the
  *  [Bundle Programming Guide](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/)
  *  in the Mac Developer Library.
  *
  *  @remark @wayland There is no existing protocol to change an icon, the
  *  window will thus inherit the one defined in the application's desktop file.
- *  This function will emit @ref GLFW_FEATURE_UNAVAILABLE.
+ *  This function always emits @ref GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -2973,12 +2847,12 @@ GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, int count, const GLFWimage* i
  *  @param[out] ypos Where to store the y-coordinate of the upper-left corner of
  *  the content area, or `NULL`.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_PLATFORM_ERROR and @ref GLFW_FEATURE_UNAVAILABLE (see remarks).
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+ *  GLFW_PLATFORM_ERROR.
  *
  *  @remark @wayland There is no way for an application to retrieve the global
- *  position of its windows.  This function will emit @ref
- *  GLFW_FEATURE_UNAVAILABLE.
+ *  position of its windows, this function will always emit @ref
+ *  GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -3007,12 +2881,12 @@ GLFWAPI void glfwGetWindowPos(GLFWwindow* window, int* xpos, int* ypos);
  *  @param[in] xpos The x-coordinate of the upper-left corner of the content area.
  *  @param[in] ypos The y-coordinate of the upper-left corner of the content area.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_PLATFORM_ERROR and @ref GLFW_FEATURE_UNAVAILABLE (see remarks).
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+ *  GLFW_PLATFORM_ERROR.
  *
  *  @remark @wayland There is no way for an application to set the global
- *  position of its windows.  This function will emit @ref
- *  GLFW_FEATURE_UNAVAILABLE.
+ *  position of its windows, this function will always emit @ref
+ *  GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -3324,11 +3198,8 @@ GLFWAPI float glfwGetWindowOpacity(GLFWwindow* window);
  *  @param[in] window The window to set the opacity for.
  *  @param[in] opacity The desired opacity of the specified window.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_PLATFORM_ERROR and @ref GLFW_FEATURE_UNAVAILABLE (see remarks).
- *
- *  @remark @wayland There is no way to set an opacity factor for a window.
- *  This function will emit @ref GLFW_FEATURE_UNAVAILABLE.
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+ *  GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -3347,17 +3218,14 @@ GLFWAPI void glfwSetWindowOpacity(GLFWwindow* window, float opacity);
  *  previously restored.  If the window is already iconified, this function does
  *  nothing.
  *
- *  If the specified window is a full screen window, the original monitor
- *  resolution is restored until the window is restored.
+ *  If the specified window is a full screen window, GLFW restores the original
+ *  video mode of the monitor.  The window's desired video mode is set again
+ *  when the window is restored.
  *
  *  @param[in] window The window to iconify.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
  *  GLFW_PLATFORM_ERROR.
- *
- *  @remark @wayland Once a window is iconified, @ref glfwRestoreWindow won’t
- *  be able to restore it.  This is a design decision of the xdg-shell
- *  protocol.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -3378,8 +3246,8 @@ GLFWAPI void glfwIconifyWindow(GLFWwindow* window);
  *  (minimized) or maximized.  If the window is already restored, this function
  *  does nothing.
  *
- *  If the specified window is a full screen window, the resolution chosen for
- *  the window is restored on the selected monitor.
+ *  If the specified window is an iconified full screen window, its desired
+ *  video mode is set again for its monitor when the window is restored.
  *
  *  @param[in] window The window to restore.
  *
@@ -3440,6 +3308,11 @@ GLFWAPI void glfwMaximizeWindow(GLFWwindow* window);
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
  *  GLFW_PLATFORM_ERROR.
  *
+ *  @remark @wayland Because Wayland wants every frame of the desktop to be
+ *  complete, this function does not immediately make the window visible.
+ *  Instead it will become visible the next time the window framebuffer is
+ *  updated after this call.
+ *
  *  @thread_safety This function must only be called from the main thread.
  *
  *  @sa @ref window_hide
@@ -3495,11 +3368,11 @@ GLFWAPI void glfwHideWindow(GLFWwindow* window);
  *
  *  @param[in] window The window to give input focus.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_PLATFORM_ERROR and @ref GLFW_FEATURE_UNAVAILABLE (see remarks).
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+ *  GLFW_PLATFORM_ERROR.
  *
- *  @remark @wayland It is not possible for an application to set the input
- *  focus.  This function will emit @ref GLFW_FEATURE_UNAVAILABLE.
+ *  @remark @wayland It is not possible for an application to bring its windows
+ *  to front, this function will always emit @ref GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -3642,6 +3515,9 @@ GLFWAPI void glfwSetWindowMonitor(GLFWwindow* window, GLFWmonitor* monitor, int 
  *  errors.  However, this function should not fail as long as it is passed
  *  valid arguments and the library has been [initialized](@ref intro_init).
  *
+ *  @remark @wayland The Wayland protocol provides no way to check whether a
+ *  window is iconfied, so @ref GLFW_ICONIFIED always returns `GLFW_FALSE`.
+ *
  *  @thread_safety This function must only be called from the main thread.
  *
  *  @sa @ref window_attribs
@@ -3663,7 +3539,6 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib);
  *  [GLFW_FLOATING](@ref GLFW_FLOATING_attrib),
  *  [GLFW_AUTO_ICONIFY](@ref GLFW_AUTO_ICONIFY_attrib) and
  *  [GLFW_FOCUS_ON_SHOW](@ref GLFW_FOCUS_ON_SHOW_attrib).
- *  [GLFW_MOUSE_PASSTHROUGH](@ref GLFW_MOUSE_PASSTHROUGH_attrib)
  *
  *  Some of these attributes are ignored for full screen windows.  The new
  *  value will take effect if the window is later made windowed.
@@ -3933,6 +3808,9 @@ GLFWAPI GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow* window, GLFWwi
  *  [function pointer type](@ref GLFWwindowiconifyfun).
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED.
+ *
+ *  @remark @wayland The XDG-shell protocol has no event for iconification, so
+ *  this callback will never be called.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -4252,7 +4130,7 @@ GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode);
  *  If the mode is `GLFW_RAW_MOUSE_MOTION`, the value must be either `GLFW_TRUE`
  *  to enable raw (unscaled and unaccelerated) mouse motion when the cursor is
  *  disabled, or `GLFW_FALSE` to disable it.  If raw motion is not supported,
- *  attempting to set this will emit @ref GLFW_FEATURE_UNAVAILABLE.  Call @ref
+ *  attempting to set this will emit @ref GLFW_PLATFORM_ERROR.  Call @ref
  *  glfwRawMouseMotionSupported to check for support.
  *
  *  @param[in] window The window whose input mode to set.
@@ -4262,8 +4140,7 @@ GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode);
  *  @param[in] value The new value of the specified input mode.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_INVALID_ENUM, @ref GLFW_PLATFORM_ERROR and @ref
- *  GLFW_FEATURE_UNAVAILABLE (see above).
+ *  GLFW_INVALID_ENUM and @ref GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
@@ -4401,8 +4278,7 @@ GLFWAPI int glfwGetKeyScancode(int key);
  *
  *  This function returns the last state reported for the specified key to the
  *  specified window.  The returned state is one of `GLFW_PRESS` or
- *  `GLFW_RELEASE`.  The higher-level action `GLFW_REPEAT` is only reported to
- *  the key callback.
+ *  `GLFW_RELEASE`.  The action `GLFW_REPEAT` is only reported to the key callback.
  *
  *  If the @ref GLFW_STICKY_KEYS input mode is enabled, this function returns
  *  `GLFW_PRESS` the first time you call it for a key that was pressed, even if
@@ -4563,8 +4439,8 @@ GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos);
  *  @return The handle of the created cursor, or `NULL` if an
  *  [error](@ref error_handling) occurred.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
- *  GLFW_PLATFORM_ERROR.
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
+ *  GLFW_INVALID_VALUE and @ref GLFW_PLATFORM_ERROR.
  *
  *  @pointer_lifetime The specified image data is copied before this function
  *  returns.
@@ -4583,44 +4459,19 @@ GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot)
 
 /*! @brief Creates a cursor with a standard shape.
  *
- *  Returns a cursor with a standard shape, that can be set for a window with
- *  @ref glfwSetCursor.  The images for these cursors come from the system
- *  cursor theme and their exact appearance will vary between platforms.
- *
- *  Most of these shapes are guaranteed to exist on every supported platform but
- *  a few may not be present.  See the table below for details.
- *
- *  Cursor shape                   | Windows | macOS | X11    | Wayland
- *  ------------------------------ | ------- | ----- | ------ | -------
- *  @ref GLFW_ARROW_CURSOR         | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_IBEAM_CURSOR         | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_CROSSHAIR_CURSOR     | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_POINTING_HAND_CURSOR | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_RESIZE_EW_CURSOR     | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_RESIZE_NS_CURSOR     | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_RESIZE_NWSE_CURSOR   | Yes     | Yes<sup>1</sup> | Maybe<sup>2</sup> | Maybe<sup>2</sup>
- *  @ref GLFW_RESIZE_NESW_CURSOR   | Yes     | Yes<sup>1</sup> | Maybe<sup>2</sup> | Maybe<sup>2</sup>
- *  @ref GLFW_RESIZE_ALL_CURSOR    | Yes     | Yes   | Yes    | Yes
- *  @ref GLFW_NOT_ALLOWED_CURSOR   | Yes     | Yes   | Maybe<sup>2</sup> | Maybe<sup>2</sup>
- *
- *  1) This uses a private system API and may fail in the future.
- *
- *  2) This uses a newer standard that not all cursor themes support.
- *
- *  If the requested shape is not available, this function emits a @ref
- *  GLFW_CURSOR_UNAVAILABLE error and returns `NULL`.
+ *  Returns a cursor with a [standard shape](@ref shapes), that can be set for
+ *  a window with @ref glfwSetCursor.
  *
  *  @param[in] shape One of the [standard shapes](@ref shapes).
  *  @return A new cursor ready to use or `NULL` if an
  *  [error](@ref error_handling) occurred.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
- *  GLFW_INVALID_ENUM, @ref GLFW_CURSOR_UNAVAILABLE and @ref
- *  GLFW_PLATFORM_ERROR.
+ *  GLFW_INVALID_ENUM and @ref GLFW_PLATFORM_ERROR.
  *
  *  @thread_safety This function must only be called from the main thread.
  *
- *  @sa @ref cursor_standard
+ *  @sa @ref cursor_object
  *  @sa @ref glfwCreateCursor
  *
  *  @since Added in version 3.1.
@@ -5379,6 +5230,8 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string);
  *  joystick is not present, does not have a mapping or an
  *  [error](@ref error_handling) occurred.
  *
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref GLFW_INVALID_ENUM.
+ *
  *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
  *  should not free it yourself.  It is valid until the specified joystick is
  *  disconnected, the gamepad mappings are updated or the library is terminated.
@@ -5468,8 +5321,8 @@ GLFWAPI void glfwSetClipboardString(GLFWwindow* window, const char* string);
  *  @return The contents of the clipboard as a UTF-8 encoded string, or `NULL`
  *  if an [error](@ref error_handling) occurred.
  *
- *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
- *  GLFW_PLATFORM_ERROR.
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
+ *  GLFW_FORMAT_UNAVAILABLE and @ref GLFW_PLATFORM_ERROR.
  *
  *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
  *  should not free it yourself.  It is valid until the next call to @ref
@@ -5813,13 +5666,11 @@ GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname);
  *  This function returns whether the Vulkan loader and any minimally functional
  *  ICD have been found.
  *
- *  The availability of a Vulkan loader and even an ICD does not by itself
- *  guarantee that surface creation or even instance creation is possible.
- *  For example, on Fermi systems Nvidia will install an ICD that provides no
- *  actual Vulkan support.  Call @ref glfwGetRequiredInstanceExtensions to check
- *  whether the extensions necessary for Vulkan surface creation are available
- *  and @ref glfwGetPhysicalDevicePresentationSupport to check whether a queue
- *  family of a physical device supports image presentation.
+ *  The availability of a Vulkan loader and even an ICD does not by itself guarantee that
+ *  surface creation or even instance creation is possible.  Call @ref
+ *  glfwGetRequiredInstanceExtensions to check whether the extensions necessary for Vulkan
+ *  surface creation are available and @ref glfwGetPhysicalDevicePresentationSupport to
+ *  check whether a queue family of a physical device supports image presentation.
  *
  *  @return `GLFW_TRUE` if Vulkan is minimally available, or `GLFW_FALSE`
  *  otherwise.
@@ -5864,10 +5715,6 @@ GLFWAPI int glfwVulkanSupported(void);
  *  You should check if any extensions you wish to enable are already in the
  *  returned array, as it is an error to specify an extension more than once in
  *  the `VkInstanceCreateInfo` struct.
- *
- *  @remark @macos This function currently supports either the
- *  `VK_MVK_macos_surface` extension from MoltenVK or `VK_EXT_metal_surface`
- *  extension.
  *
  *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
  *  should not free it yourself.  It is guaranteed to be valid only until the
@@ -5950,7 +5797,7 @@ GLFWAPI GLFWvkproc glfwGetInstanceProcAddress(VkInstance instance, const char* p
  *  GLFW_API_UNAVAILABLE and @ref GLFW_PLATFORM_ERROR.
  *
  *  @remark @macos This function currently always returns `GLFW_TRUE`, as the
- *  `VK_MVK_macos_surface` extension does not provide
+ *  `VK_MVK_macos_surface` and `VK_EXT_metal_surface` extensions do not provide
  *  a `vkGetPhysicalDevice*PresentationSupport` type function.
  *
  *  @thread_safety This function may be called from any thread.  For
@@ -6007,8 +5854,10 @@ GLFWAPI int glfwGetPhysicalDevicePresentationSupport(VkInstance instance, VkPhys
  *  @ref glfwVulkanSupported and @ref glfwGetRequiredInstanceExtensions should
  *  eliminate almost all occurrences of these errors.
  *
- *  @remark @macos This function currently only supports the
- *  `VK_MVK_macos_surface` extension from MoltenVK.
+ *  @remark @macos GLFW prefers the `VK_EXT_metal_surface` extension, with the
+ *  `VK_MVK_macos_surface` extension as a fallback.  The name of the selected
+ *  extension, if any, is included in the array returned by @ref
+ *  glfwGetRequiredInstanceExtensions.
  *
  *  @remark @macos This function creates and sets a `CAMetalLayer` instance for
  *  the window content view, which is required for MoltenVK to function.
@@ -6049,6 +5898,7 @@ GLFWAPI VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window
  */
 #ifndef GLAPIENTRY
  #define GLAPIENTRY APIENTRY
+ #define GLFW_GLAPIENTRY_DEFINED
 #endif
 
 /* -------------------- END SYSTEM/COMPILER SPECIFIC --------------------- */
