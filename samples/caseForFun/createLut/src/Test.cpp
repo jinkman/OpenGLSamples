@@ -161,6 +161,9 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     bool isFullScreen = false;
     GLFWwindow *window = NULL;
@@ -232,7 +235,7 @@ int main() {
     VideoCapture cap(0);
     Mat frame;
 
-    unsigned int srcTexture = loadTexture(getLocalPath("texture/test.jpeg").c_str());
+    unsigned int srcTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
 
     while (!glfwWindowShouldClose(window)) {
         ImGui_ImplOpenGL3_NewFrame();
