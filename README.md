@@ -197,9 +197,9 @@
 
 <img src="./data/readme/saturn.jpg" alt="saturn" width="282"/>
 
-- **[12.海洋](./samples/caseForFun/season/)**
+- **[12.海洋](./samples/caseForFun/ocean/)**
 
-<img src="./data/readme/season.jpg" alt="season" width="282"/>
+<img src="./data/readme/ocean.jpg" alt="ocean" width="282"/>
 
 - **[13.独孤信印章-视差贴图](./samples/caseForFun/stamp-parallaxMapping/)**
 
