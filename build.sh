@@ -16,7 +16,7 @@ target=""
 
 cd ${workdir} && \
 mkdir -p ${workdir}/build && \
-cmake -B ${workdir}/build -DCMAKE_BUILD_TYPE=${build_type}  -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_OSX_ARCHITECTURES=arm64 && \
+cmake -B ${workdir}/build -DCMAKE_BUILD_TYPE=${build_type} && \
 cmake --build ${workdir}/build ${target} -- -j 12
 
 if [[ $? -ne 0 ]]; then

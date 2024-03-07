@@ -214,14 +214,17 @@
 <img src="./data/readme/testFilter.jpg" alt="testFilter" width="282"/>
 
 ## 编译
-- **依赖CMake**
+
+- **第一次拉取代码需要编译第三方库**
 
 ```
-1.cd OpenGLSamples/
-2.mkdir build
-3.cd build/
-4.cmake ../
-5.make
+在third-party/目录下，终端执行`build.sh`编译三方库
+```
+
+- **编译工程**
+
+```
+根目录下终端执行`build.sh Debug` or `build.sh Release` 编译工程
 ```
 编译完后可执行文件在`build/bin/`目录下
 
