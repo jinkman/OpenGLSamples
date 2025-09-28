@@ -19,21 +19,21 @@ using namespace cv;
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-int SCR_WIDTH = 1280;
-int SCR_HEIGHT = 720;
+int scrWidth = 1280;
+int scrHeight = 720;
 
 #define PI 3.1415926f
 
 bool firstMouse = true;
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 float mixFactor = 0.5f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID);
-void readVertext(std::vector<float> &Arr);
+void renderObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID);
+void readVertex(std::vector<float> &Arr);
 unsigned int createTexture();
 void cvmatToTexture(GLuint &textureId, const cv::Mat &mat);
 void colorTransfer(const cv::Mat &sMat, const cv::Mat &dMat, cv::Mat &matRet);
@@ -56,14 +56,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -71,9 +71,9 @@ int main() {
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
 
@@ -127,9 +127,9 @@ int main() {
         shader.use();
         shader.setFloat("mixFactor", mixFactor);
         shader.setFloat("pixelSize", uPiexlSize);
-        shader.setVec2("resolution", glm::vec2(float(SCR_WIDTH), float(SCR_HEIGHT)));
+        shader.setVec2("resolution", glm::vec2(float(scrWidth), float(scrHeight)));
 
-        rendObject(shader, texSrc, charsTexID);
+        renderObject(shader, texSrc, charsTexID);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -152,19 +152,19 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID) {
-    static size_t vertextNum = 0;
+void renderObject(Shader &shader, const unsigned int &texSrc, const unsigned int &charsTexID) {
+    static size_t vertexNum = 0;
     if (objectVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        readVertex(Arr);
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &objectVAO);
         glGenBuffers(1, &objectVBO);
         glBindVertexArray(objectVAO);
         glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -181,11 +181,11 @@ void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &
     glBindTexture(GL_TEXTURE_2D, charsTexID);
 
     glBindVertexArray(objectVAO);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 4);
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum / 4);
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     Arr.push_back(-1.0f);
     Arr.push_back(1.0f);
     Arr.push_back(0.0f);

@@ -18,14 +18,14 @@ using namespace cv;
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-int SCR_WIDTH = 1280;
-int SCR_HEIGHT = 720;
+int scrWidth = 1280;
+int scrHeight = 720;
 
 #define PI 3.1415926f
 
 bool firstMouse = true;
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 float mixFactor = 0.5f;
 
@@ -94,8 +94,8 @@ void cvmatToTexture(GLuint &textureId, const cv::Mat &mat) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &lutTex) {
-    static size_t vertextNum = 0;
+void renderObject(Shader &shader, const unsigned int &texSrc, const unsigned int &lutTex) {
+    static size_t vertexNum = 0;
     if (srcVAO == 0) {
         std::vector<float> Arr;
         Arr.push_back(-1.0f);
@@ -127,14 +127,14 @@ void rendObject(Shader &shader, const unsigned int &texSrc, const unsigned int &
         Arr.push_back(1.0f);
         Arr.push_back(1.0f);
         Arr.push_back(0.0f);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &srcVAO);
         glGenBuffers(1, &srcVBO);
         glBindVertexArray(srcVAO);
         glBindBuffer(GL_ARRAY_BUFFER, srcVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -169,14 +169,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -184,9 +184,9 @@ int main() {
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
     float wid = lutSamples * lutSamples;
     float hei = lutSamples;
 
@@ -331,17 +331,17 @@ int main() {
         }
 
         cvmatToTexture(texSrc, frame);
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glViewport(0, 0, scrWidth, scrHeight);
         srceenShader.use();
         srceenShader.setFloat("sharpenV", sharpen);
         srceenShader.setFloat("particleV", particle);
         srceenShader.setFloat("fadeV", fade);
         srceenShader.setFloat("cornerV", corner);
-        srceenShader.setVec2("resolution", float(SCR_WIDTH), float(SCR_HEIGHT));
+        srceenShader.setVec2("resolution", float(scrWidth), float(scrHeight));
         if (useCamera) {
-            rendObject(srceenShader, texSrc, useLut);
+            renderObject(srceenShader, texSrc, useLut);
         } else {
-            rendObject(srceenShader, srcTexture, useLut);
+            renderObject(srceenShader, srcTexture, useLut);
         }
 
         ImGui::Render();
@@ -370,6 +370,6 @@ void processInput(GLFWwindow *window) {
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
+    scrWidth = width;
+    scrHeight = height;
 }

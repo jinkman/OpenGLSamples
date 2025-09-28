@@ -11,19 +11,19 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 unsigned int loadTexture(char const *path);
-void DrawObject();
+void drawObject();
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int scrWidth = 800;
+const unsigned int scrHeight = 600;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 unsigned int objectVAO = 0, objectVBO;
 
 int main() {
@@ -37,7 +37,7 @@ int main() {
 #endif
 
     // create window
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -98,7 +98,7 @@ int main() {
         ourShader.use();
         glm::mat4 view(1.0f), projection(1.0f);
         view = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)scrWidth / (float)scrHeight, 0.1f, 50.0f);
 
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
@@ -110,7 +110,7 @@ int main() {
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
-            DrawObject();
+            drawObject();
         }
 
         glfwSwapBuffers(window);
@@ -124,7 +124,7 @@ int main() {
     return 0;
 }
 
-void DrawObject() {
+void drawObject() {
     static unsigned int texture1 = 0;
     static unsigned int texture2 = 0;
     if (objectVAO == 0) {

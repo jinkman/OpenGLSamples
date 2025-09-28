@@ -10,8 +10,8 @@
 #include <common.h>
 
 // settings
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 
 bool firstMouse = true;
 
@@ -20,8 +20,8 @@ GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
@@ -38,7 +38,7 @@ std::map<wchar_t, Character> Characters;
 FT_Face face;
 GLuint VAO = 0, VBO;
 
-void RenderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+void renderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
 
 int main() {
     glfwInit();
@@ -54,23 +54,23 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -82,13 +82,13 @@ int main() {
         return -1;
     }
 
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, scrWidth, scrHeight);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     Shader shader(getLocalPath("shader/7.1-object.vs").c_str(), getLocalPath("shader/7.1-object.fs").c_str());
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCR_WIDTH), 0.0f, static_cast<GLfloat>(SCR_HEIGHT));
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(scrWidth), 0.0f, static_cast<GLfloat>(scrHeight));
     shader.use();
     shader.setMat4("projection", projection);
 
@@ -111,7 +111,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
         projection = model;
@@ -120,8 +120,8 @@ int main() {
         shader.setMat4("view", view);
         shader.setMat4("model", model);
 
-        RenderText(shader, L"Hello World!", -1.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
-        RenderText(shader, L"Hello OpenGL!", -1.0f, 0.0f, 0.001f, glm::vec3(0.3, 0.7f, 0.9f));
+        renderText(shader, L"Hello World!", -1.0f, 0.5f, 0.001f, glm::vec3(0.5, 0.8f, 0.2f));
+        renderText(shader, L"Hello OpenGL!", -1.0f, 0.0f, 0.001f, glm::vec3(0.3, 0.7f, 0.9f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -135,7 +135,7 @@ int main() {
     return 0;
 }
 
-void RenderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color) {
+void renderText(Shader &shader, wchar_t *text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color) {
     if (VAO == 0) {
         float quadVertices[] = {
             -1.0f, 1.0f, 0.0f, 1.0f,

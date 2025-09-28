@@ -6,13 +6,13 @@
 #include <stb_image.h>
 #include <common.h>
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926f
 
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 bool firstMouse = true;
 
 static float deltaTime = 0.0f;
@@ -24,7 +24,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(char const *path);
 void drawMountain();
-void readVertext(std::vector<float> &Arr);
+void readVertex(std::vector<float> &Arr);
 void rendPerlin();
 
 unsigned int moutainVAO, moutainVBO;
@@ -54,12 +54,12 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -67,9 +67,9 @@ int main() {
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
 
@@ -99,7 +99,7 @@ int main() {
 
     glGenTextures(1, &perlinColorMap);
     glBindTexture(GL_TEXTURE_2D, perlinColorMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, scrWidth, scrHeight, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, perlinColorMap, 0);
@@ -117,7 +117,7 @@ int main() {
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
 
@@ -200,7 +200,7 @@ void drawMountain() {
     static unsigned int mountainMap1 = loadTexture(getLocalPath("texture/ground.jpg").c_str());
     if (moutainVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
+        readVertex(Arr);
         num = Arr.size();
         if (num == 0)
             return;
@@ -253,7 +253,7 @@ void rendPerlin() {
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     float size = 0.1f;
     float halfPoint = pointNum / 2.0f;
     for (int i = 0; i < pointNum - 1; i++) {

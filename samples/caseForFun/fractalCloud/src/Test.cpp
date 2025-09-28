@@ -6,13 +6,13 @@
 #include <stb_image.h>
 #include <common.h>
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926f
 
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 bool firstMouse = true;
 
 static float deltaTime = 0.0f;
@@ -22,14 +22,14 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void rendObject();
-void LeftMultiMatrix(float M0[][4], glm::vec3 P0[][4]);  // left multi
-void RightMultiMatrix(glm::vec3 P0[][4], float M1[][4]); // right multi
-void TransposeMatrix(float M0[][4]);                     // transpose
+void renderObject();
+void leftMultiMatrix(float M0[][4], glm::vec3 P0[][4]);  // left multi
+void rightMultiMatrix(glm::vec3 P0[][4], float M1[][4]); // right multi
+void transposeMatrix(float M0[][4]);                     // transpose
 void readQuadPoint(std::vector<float> &Arr);
 unsigned int objectVAO = 0, objectVBO;
 glm::vec3 P3[4][4]; // position
-float MT[4][4];     // tramspose of M
+float mt[4][4];     // transpose of M
 
 int main() {
     glfwInit();
@@ -44,12 +44,12 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -57,9 +57,9 @@ int main() {
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
 
@@ -86,7 +86,7 @@ int main() {
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 5000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 5000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
 
@@ -101,7 +101,7 @@ int main() {
         cloudShader.setVec3("uCloudColor", glm::vec3(0.8, 0.8, 0.8));
         cloudShader.setFloat("uCloudSize", 30.0f);
         cloudShader.setFloat("uTime", (float)glfwGetTime() / 5.0f);
-        rendObject();
+        renderObject();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -132,23 +132,23 @@ void processInput(GLFWwindow *window) {
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
+    scrWidth = width;
+    scrHeight = height;
 }
 
-void rendObject() {
-    static size_t vertextNum = 0;
+void renderObject() {
+    static size_t vertexNum = 0;
     if (objectVAO == 0) {
         std::vector<float> Arr;
         readQuadPoint(Arr);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &objectVAO);
         glGenBuffers(1, &objectVBO);
         glBindVertexArray(objectVAO);
         glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -157,7 +157,7 @@ void rendObject() {
         Arr.clear();
     }
     glBindVertexArray(objectVAO);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5);
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum / 5);
     glBindVertexArray(0);
 }
 
@@ -192,26 +192,26 @@ void readQuadPoint(std::vector<float> &Arr) {
     P3[2][2].y = 1.0f;
 
     float x, y, z, u, v, u1, u2, u3, u4, v1, v2, v3, v4;
-    float M[4][4];
-    M[0][0] = -1.0f;
-    M[0][1] = 3.0f;
-    M[0][2] = -3.0f;
-    M[0][3] = 1.0f;
-    M[1][0] = 3.0f;
-    M[1][1] = -6.0f;
-    M[1][2] = 3.0f;
-    M[1][3] = 0.0f;
-    M[2][0] = -3.0f;
-    M[2][1] = 3.0f;
-    M[2][2] = 0.0f;
-    M[2][3] = 0.0f;
-    M[3][0] = 1.0f;
-    M[3][1] = 0.0f;
-    M[3][2] = 0.0f;
-    M[3][3] = 0.0f;
-    LeftMultiMatrix(M, P3);
-    TransposeMatrix(M);
-    RightMultiMatrix(P3, MT);
+    float m[4][4];
+    m[0][0] = -1.0f;
+    m[0][1] = 3.0f;
+    m[0][2] = -3.0f;
+    m[0][3] = 1.0f;
+    m[1][0] = 3.0f;
+    m[1][1] = -6.0f;
+    m[1][2] = 3.0f;
+    m[1][3] = 0.0f;
+    m[2][0] = -3.0f;
+    m[2][1] = 3.0f;
+    m[2][2] = 0.0f;
+    m[2][3] = 0.0f;
+    m[3][0] = 1.0f;
+    m[3][1] = 0.0f;
+    m[3][2] = 0.0f;
+    m[3][3] = 0.0f;
+    leftMultiMatrix(m, P3);
+    transposeMatrix(m);
+    rightMultiMatrix(P3, mt);
 
     int index = 0;
     glm::vec3 newP[25], oldP[25];
@@ -273,7 +273,7 @@ void readQuadPoint(std::vector<float> &Arr) {
     }
 }
 
-void LeftMultiMatrix(float M0[][4], glm::vec3 P0[][4]) {
+void leftMultiMatrix(float M0[][4], glm::vec3 P0[][4]) {
     glm::vec3 T[4][4]; // temp
     int i, j;
     for (i = 0; i < 4; i++)
@@ -287,7 +287,7 @@ void LeftMultiMatrix(float M0[][4], glm::vec3 P0[][4]) {
             P3[i][j] = T[i][j];
 }
 
-void RightMultiMatrix(glm::vec3 P0[][4], float M1[][4]) {
+void rightMultiMatrix(glm::vec3 P0[][4], float M1[][4]) {
     glm::vec3 T[4][4]; // temp
     int i, j;
     for (i = 0; i < 4; i++)
@@ -301,8 +301,8 @@ void RightMultiMatrix(glm::vec3 P0[][4], float M1[][4]) {
             P3[i][j] = T[i][j];
 }
 
-void TransposeMatrix(float M0[][4]) {
+void transposeMatrix(float M0[][4]) {
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
-            MT[j][i] = M0[i][j];
+            mt[j][i] = M0[i][j];
 }

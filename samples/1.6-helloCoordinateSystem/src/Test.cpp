@@ -11,11 +11,11 @@
 void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 unsigned int loadTexture(char const *path);
-void DrawObject();
+void drawObject();
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int scrWidth = 800;
+const unsigned int scrHeight = 600;
 unsigned int objectVAO = 0, objectVBO;
 float worldx = 0.0f, worldy = 0.0f, worldz = -4.0f, worldangle = 45.0f, rect_angle = 0.0f;
 
@@ -28,7 +28,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -76,7 +76,7 @@ int main() {
 
         glm::mat4 view(1.0f), projection(1.0f);
         view = glm::translate(view, glm::vec3(worldx, worldy, worldz)); // 从局部空间原点到任意世界坐标
-        projection = glm::perspective(glm::radians(worldangle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
+        projection = glm::perspective(glm::radians(worldangle), (float)scrWidth / (float)scrHeight, 0.1f, 50.0f);
 
         // use matrix: MVP
         ourShader.setMat4("view", view);
@@ -88,7 +88,7 @@ int main() {
             // rotate
             model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
             ourShader.setMat4("model", model);
-            DrawObject();
+            drawObject();
         }
 
         glfwSwapBuffers(window);
@@ -102,7 +102,7 @@ int main() {
     return 0;
 }
 
-void DrawObject() {
+void drawObject() {
     // load texture
     static unsigned int texture1 = 0;
     static unsigned int texture2 = 0;

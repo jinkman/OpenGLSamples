@@ -11,8 +11,8 @@
 using namespace std;
 using namespace glm;
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926
 
 GLfloat deltaTime = 0.0f;
@@ -20,15 +20,15 @@ GLfloat lastFrame = 0.0f;
 
 bool firstMouse = true;
 Camera camera(vec3(0.0f, 0.0f, 5.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void rendObject();
-void readVertext();
+void renderObject();
+void readVertex();
 void bindFace(int i, int texNum);
 void readFace(vec3 p0, vec2 t0, vec3 p1, vec2 t1, vec3 p2, vec2 t2);
 unsigned int loadTexture(char const *path);
@@ -43,7 +43,7 @@ bool dir = false;      // 旋转方向
 bool light = true;     // 光照模型
 
 unsigned int texIndex[26];   // 面纹理索引
-size_t vertextNum[26];       // 顶点数目
+size_t vertexNum[26];       // 顶点数目
 unsigned int diffuseMap[15]; // 纹理数组
 unsigned int depthMap[15];   // 深度纹理
 unsigned int normalMap[15];  // 深度纹理
@@ -63,23 +63,23 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return -1;
     }
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
 
@@ -125,7 +125,7 @@ int main() {
     diffuseMap[12] = loadTexture(getLocalPath("texture/cishizhiyin.png").c_str());
     diffuseMap[13] = loadTexture(getLocalPath("texture/zhuguozhiyin.png").c_str());
     diffuseMap[14] = loadTexture(getLocalPath("texture/bk.png").c_str());
-    readVertext();
+    readVertex();
     // read face data
     // top
     readFace(vArr[0], vec2(1.0, 1.0), vArr[1], vec2(0.0, 1.0), vArr[2], vec2(0.0, 0.0)); // 0 1 2	chenxinshangbiao
@@ -252,7 +252,7 @@ int main() {
             depthShader.setMat4("model", glm::mat4(1.0f));
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, diffuseMap[i]);
-            rendObject();
+            renderObject();
         }
 
         for (int i = 0; i < 15; i++) {
@@ -264,11 +264,11 @@ int main() {
             normalShader.setMat4("model", glm::mat4(1.0f));
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, depthMap[i]);
-            rendObject();
+            renderObject();
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glViewport(0, 0, scrWidth, scrHeight);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -278,7 +278,7 @@ int main() {
         textureShader.setMat4("model",glm::mat4());
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, normalMap[1]);
-        rendObject();*/
+        renderObject();*/
 
         if (ifRotate) {
             if ((Angle += 0.02f) >= 360.0f) {
@@ -287,7 +287,7 @@ int main() {
             }
         }
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
         stampShader.use();
@@ -309,7 +309,7 @@ int main() {
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, normalMap[texIndex[i]]);
             glBindVertexArray(stampVAO[i]);
-            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum[i] / 14);
+            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum[i] / 14);
             glBindVertexArray(0);
         }
 
@@ -391,7 +391,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll((float)yoffset);
 }
 
-void rendObject() {
+void renderObject() {
     static size_t Num = 0;
 
     if (textureVAO == 0) {
@@ -443,7 +443,7 @@ void rendObject() {
     glBindVertexArray(0);
 }
 
-void readVertext() {
+void readVertex() {
     int nIndex[4] = {4, 8, 8, 4}; // vertices of per level
     int level = 4;
     // cal the vertices data
@@ -530,15 +530,15 @@ void readFace(vec3 p0, vec2 t0, vec3 p1, vec2 t1, vec3 p2, vec2 t2) {
 }
 
 void bindFace(int i, int texNum) {
-    vertextNum[i] = fArr.size();
-    if (vertextNum[i] == 0)
+    vertexNum[i] = fArr.size();
+    if (vertexNum[i] == 0)
         return;
     texIndex[i] = texNum;
     glGenVertexArrays(1, &stampVAO[i]);
     glGenBuffers(1, &stampVBO[i]);
     glBindVertexArray(stampVAO[i]);
     glBindBuffer(GL_ARRAY_BUFFER, stampVBO[i]);
-    glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum[i], &fArr[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum[i], &fArr[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);

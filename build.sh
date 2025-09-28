@@ -1,6 +1,7 @@
 #!/bin/sh
 workdir=$(cd $(dirname $0); pwd -P)
 # git submodule update --init --recursive
+# sh ./third-party/build.sh
 
 build_type="Release"
 if [[ x"$1" == x"Debug" ]]; then

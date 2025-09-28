@@ -6,8 +6,8 @@
 #include <stb_image.h>
 #include <common.h>
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926f
 
 float deltaTime = 0.0f;
@@ -15,8 +15,8 @@ float lastFrame = 0.0f;
 
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
@@ -26,9 +26,9 @@ void drawSphere();
 void drawCube();
 void drawPlan();
 void drawQuad();
-void readVertext(std::vector<float> &Arr);
+void readVertex(std::vector<float> &Arr);
 unsigned int loadTexture(char const *path);
-void Rotatez(glm::vec3 &a, float Thta);
+void rotatez(glm::vec3 &a, float theta);
 
 unsigned int cubeVAO = 0, cubeVBO;
 unsigned int planVAO = 0, planVBO;
@@ -48,14 +48,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -88,7 +88,7 @@ int main() {
     unsigned int textureColorbuffer;
     glGenTextures(1, &textureColorbuffer);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, scrWidth, scrHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
@@ -96,7 +96,7 @@ int main() {
     unsigned int rbo;
     glGenRenderbuffers(1, &rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, scrWidth, scrHeight);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     // check if the frame is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -115,7 +115,7 @@ int main() {
 
         processInput(window);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
 
@@ -232,18 +232,18 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 }
 
 void drawSphere() {
-    static size_t vertextNum = 0;
+    static size_t vertexNum = 0;
     if (sphereVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        readVertex(Arr);
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &sphereVAO);
         glGenBuffers(1, &sphereVBO);
         glBindVertexArray(sphereVAO);
         glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -252,7 +252,7 @@ void drawSphere() {
         Arr.clear();
     }
     glBindVertexArray(sphereVAO);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5);
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum / 5);
     glBindVertexArray(0);
 }
 
@@ -368,7 +368,7 @@ void drawQuad() {
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     glm::vec3 cpt[4];
     for (float Theta = 0; Theta < 180.0f; Theta += 1.0f) {
         glm::vec3 p1(sin(Theta * PI / 180.0f), cos(Theta * PI / 180.0f), 0);
@@ -377,14 +377,14 @@ void readVertext(std::vector<float> &Arr) {
             cpt[0].x = p1.x;
             cpt[0].y = p1.y;
             cpt[0].z = p1.z;
-            Rotatez(p1, 1.0f);
+            rotatez(p1, 1.0f);
             cpt[1].x = p1.x;
             cpt[1].y = p1.y;
             cpt[1].z = p1.z;
             cpt[2].x = p2.x;
             cpt[2].y = p2.y;
             cpt[2].z = p2.z;
-            Rotatez(p2, 1.0f);
+            rotatez(p2, 1.0f);
             cpt[3].x = p2.x;
             cpt[3].y = p2.y;
             cpt[3].z = p2.z;
@@ -422,11 +422,11 @@ void readVertext(std::vector<float> &Arr) {
     }
 }
 
-void Rotatez(glm::vec3 &a, float Thta) {
+void rotatez(glm::vec3 &a, float theta) {
     float a1 = a.z;
     float b1 = a.x;
-    a.x = b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
-    a.z = b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
+    a.x = b1 * cos(theta * PI / 180.0f) - a1 * sin(theta * PI / 180.0f);
+    a.z = b1 * sin(theta * PI / 180.0f) + a1 * cos(theta * PI / 180.0f);
 }
 
 unsigned int loadTexture(char const *path) {

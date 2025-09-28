@@ -6,8 +6,8 @@
 #include <stb_image.h>
 #include <common.h>
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926
 
 float deltaTime = 0.0;
@@ -15,17 +15,17 @@ float lastFrame = 0.0;
 
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 5.0f, 0.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void rendObject();
-void readVertext(std::vector<float> &Arr);
+void renderObject();
+void readVertex(std::vector<float> &Arr);
 unsigned int loadTexture(char const *path);
-void Rotatez(glm::vec3 &a, double Thta);
+void rotatez(glm::vec3 &a, double theta);
 
 unsigned int objectVAO = 0, objectVBO;
 
@@ -42,14 +42,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -86,7 +86,7 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model(1.0f);
 
@@ -100,7 +100,7 @@ int main() {
         grassShader.setFloat("uTimes", (float)glfwGetTime() * 1.2f);
         grassShader.setVec4("grassColor", glm::vec4(0.0f, 0.7f, 0.0f, 0.0f));
 
-        rendObject();
+        renderObject();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -154,16 +154,16 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll((float)yoffset);
 }
 
-void rendObject() {
+void renderObject() {
     // load texture
     static unsigned int grassMap = loadTexture(getLocalPath("texture/grass.png").c_str());
-    static size_t vertextNum = 0;
+    static size_t vertexNum = 0;
     static unsigned int amount = 10000;
     if (objectVAO == 0) {
         std::vector<float> vArr;
-        readVertext(vArr);
-        vertextNum = vArr.size();
-        if (vertextNum == 0)
+        readVertex(vArr);
+        vertexNum = vArr.size();
+        if (vertexNum == 0)
             return;
 
         // random model matrix
@@ -209,7 +209,7 @@ void rendObject() {
         glBindVertexArray(objectVAO);
         // vertices buffer
         glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &vArr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &vArr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -243,11 +243,11 @@ void rendObject() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, grassMap);
     glBindVertexArray(objectVAO);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5, amount); // draw instance
+    glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)vertexNum / 5, amount); // draw instance
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     float times = 10.0f;
     float heightTimes = 5.0f;
     float space = 3.0f / 2;

@@ -7,25 +7,25 @@
 #include <common.h>
 
 #define PI 3.1415926f
-int SCR_WIDTH = 800, SCR_HEIGHT = 600;
+int scrWidth = 800, scrHeight = 600;
 
 // function
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void processInput(GLFWwindow *window);
-void readVertext(std::vector<float> &Arr);
-void Rotatez(glm::vec3 &a, float Thta);
+void readVertex(std::vector<float> &Arr);
+void rotatez(glm::vec3 &a, float theta);
 unsigned int loadTexture(char const *path);
-void RenderScene(Shader &shader);
-void RenderSphere();
-void RenderQuad();
+void renderScene(Shader &shader);
+void renderSphere();
+void renderQuad();
 
 // settings
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 2.0f, 10.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 float deltaTime = 0.0;
 float lastFrame = 0.0;
@@ -50,13 +50,13 @@ int main() {
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
 
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -69,7 +69,7 @@ int main() {
         return -1;
     }
 
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, scrWidth, scrHeight);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
@@ -137,16 +137,16 @@ int main() {
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_DEPTH_BUFFER_BIT);
-        RenderScene(simpleDepthShader);
+        renderScene(simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glViewport(0, 0, scrWidth, scrHeight);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render scene
         shader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         shader.setMat4("projection", projection);
         shader.setMat4("view", view);
@@ -160,7 +160,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, depthMap);
-        RenderScene(shader);
+        renderScene(shader);
 
         // render light
         sphereShader.use();
@@ -171,7 +171,7 @@ int main() {
         sphereShader.setMat4("view", view);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, woodTexture);
-        RenderSphere();
+        renderSphere();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -186,29 +186,29 @@ int main() {
     return 0;
 }
 
-void RenderScene(Shader &shader) {
+void renderScene(Shader &shader) {
     // Floor
     glm::mat4 model(1.0f);
     shader.setMat4("model", model);
-    RenderQuad();
+    renderQuad();
     // Cubes
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 2.5f, 0.0));
     shader.setMat4("model", model);
-    RenderSphere();
+    renderSphere();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 1.0f, 1.0));
     shader.setMat4("model", model);
-    RenderSphere();
+    renderSphere();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 1.0f, 2.0));
     model = glm::rotate(model, 60.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
     model = glm::scale(model, glm::vec3(0.5));
     shader.setMat4("model", model);
-    RenderSphere();
+    renderSphere();
 }
 
-void RenderQuad() {
+void renderQuad() {
     if (quadVAO == 0) {
         float planeVertices[] = {
             25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
@@ -235,19 +235,19 @@ void RenderQuad() {
     glBindVertexArray(0);
 }
 
-void RenderSphere() {
-    static size_t vertextNum = 0;
+void renderSphere() {
+    static size_t vertexNum = 0;
     if (sphereVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        readVertex(Arr);
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &sphereVAO);
         glGenBuffers(1, &sphereVBO);
         glBindVertexArray(sphereVAO);
         glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(1);
@@ -257,11 +257,11 @@ void RenderSphere() {
         glBindVertexArray(0);
     }
     glBindVertexArray(sphereVAO);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 5);
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum / 5);
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     glm::vec3 cpt[4];
     for (float Theta = 0; Theta < 180.0f; Theta += 1.0f) {
         glm::vec3 p1(sin(Theta * PI / 180.0f), cos(Theta * PI / 180.0f), 0.0f);
@@ -270,14 +270,14 @@ void readVertext(std::vector<float> &Arr) {
             cpt[0].x = p1.x;
             cpt[0].y = p1.y;
             cpt[0].z = p1.z;
-            Rotatez(p1, 1.0f);
+            rotatez(p1, 1.0f);
             cpt[1].x = p1.x;
             cpt[1].y = p1.y;
             cpt[1].z = p1.z;
             cpt[2].x = p2.x;
             cpt[2].y = p2.y;
             cpt[2].z = p2.z;
-            Rotatez(p2, 1.0f);
+            rotatez(p2, 1.0f);
             cpt[3].x = p2.x;
             cpt[3].y = p2.y;
             cpt[3].z = p2.z;
@@ -317,11 +317,11 @@ void readVertext(std::vector<float> &Arr) {
     }
 }
 
-void Rotatez(glm::vec3 &a, float Thta) {
+void rotatez(glm::vec3 &a, float theta) {
     float a1 = a.z;
     float b1 = a.x;
-    a.x = b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
-    a.z = b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
+    a.x = b1 * cos(theta * PI / 180.0f) - a1 * sin(theta * PI / 180.0f);
+    a.z = b1 * sin(theta * PI / 180.0f) + a1 * cos(theta * PI / 180.0f);
 }
 
 unsigned int loadTexture(char const *path) {

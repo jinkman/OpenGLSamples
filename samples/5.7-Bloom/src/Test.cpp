@@ -16,19 +16,19 @@ void processInput(GLFWwindow *window);
 unsigned int loadTexture(char const *path);
 void renderQuad();
 void renderCube();
-void readVertext(std::vector<float> &Arr);
-void Rotatez(glm::vec3 &a, float Thta);
+void readVertex(std::vector<float> &Arr);
+void rotatez(glm::vec3 &a, float theta);
 void renderSphere();
 
-int SCR_WIDTH = 1280;
-int SCR_HEIGHT = 720;
+int scrWidth = 1280;
+int scrHeight = 720;
 bool bloom = true;
 bool bloomKeyPressed = false;
 float exposure = 1.0f;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)scrWidth / 2.0;
+float lastY = (float)scrHeight / 2.0;
 bool firstMouse = true;
 
 float deltaTime = 0.0f;
@@ -46,13 +46,13 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -82,7 +82,7 @@ int main() {
     glGenTextures(2, colorBuffers);
     for (unsigned int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrWidth, scrHeight, 0, GL_RGB, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -92,7 +92,7 @@ int main() {
     unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrWidth, scrHeight);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
     unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
@@ -109,7 +109,7 @@ int main() {
     for (unsigned int i = 0; i < 2; i++) {
         glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrWidth, scrHeight, 0, GL_RGB, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // GL_CLAMP_TO_EDGE
@@ -151,7 +151,7 @@ int main() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
         shader.use();
@@ -456,7 +456,7 @@ unsigned int loadTexture(char const *path) {
     return textureID;
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     glm::vec3 cpt[4];
     for (float Theta = 0; Theta < 180.0f; Theta += 1.0f) {
         glm::vec3 p1(sin(Theta * PI / 180.0f), cos(Theta * PI / 180.0f), 0.0f);
@@ -465,14 +465,14 @@ void readVertext(std::vector<float> &Arr) {
             cpt[0].x = p1.x;
             cpt[0].y = p1.y;
             cpt[0].z = p1.z;
-            Rotatez(p1, 1.0f);
+            rotatez(p1, 1.0f);
             cpt[1].x = p1.x;
             cpt[1].y = p1.y;
             cpt[1].z = p1.z;
             cpt[2].x = p2.x;
             cpt[2].y = p2.y;
             cpt[2].z = p2.z;
-            Rotatez(p2, 1.0f);
+            rotatez(p2, 1.0f);
             cpt[3].x = p2.x;
             cpt[3].y = p2.y;
             cpt[3].z = p2.z;
@@ -512,18 +512,18 @@ void readVertext(std::vector<float> &Arr) {
     }
 }
 
-void Rotatez(glm::vec3 &a, float Thta) {
+void rotatez(glm::vec3 &a, float theta) {
     float a1 = a.z;
     float b1 = a.x;
-    a.x = b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
-    a.z = b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
+    a.x = b1 * cos(theta * PI / 180.0f) - a1 * sin(theta * PI / 180.0f);
+    a.z = b1 * sin(theta * PI / 180.0f) + a1 * cos(theta * PI / 180.0f);
 }
 
 void renderSphere() {
     static size_t num = 0;
     if (sphereVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
+        readVertex(Arr);
         num = Arr.size();
         glGenVertexArrays(1, &sphereVAO);
         glGenBuffers(1, &sphereVBO);

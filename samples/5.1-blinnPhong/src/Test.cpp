@@ -11,16 +11,16 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(const char *path);
-void rendPlan();
+void renderPlane();
 
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int scrWidth = 1280;
+const unsigned int scrHeight = 720;
 bool blinn = false;
 bool blinnKeyPressed = false;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)scrWidth / 2.0;
+float lastY = (float)scrHeight / 2.0;
 bool firstMouse = true;
 
 // timing
@@ -38,7 +38,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -77,14 +77,14 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         shader.setMat4("projection", projection);
         shader.setMat4("view", view);
         shader.setVec3("viewPos", camera.Position);
         shader.setVec3("lightPos", lightPos);
         shader.setInt("blinn", blinn);
-        rendPlan();
+        renderPlane();
 
         std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
 
@@ -176,7 +176,7 @@ unsigned int loadTexture(char const *path) {
     return textureID;
 }
 
-void rendPlan() {
+void renderPlane() {
     static unsigned int floorTexture = loadTexture(getLocalPath("texture/test.jpg").c_str());
     if (planVAO == 0) {
         float planeVertices[] = {

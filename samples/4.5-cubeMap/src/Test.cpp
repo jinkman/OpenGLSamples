@@ -14,17 +14,17 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void rendObject();
+void renderObject();
 
 unsigned int loadTexture(const char *path);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
-int SCR_WIDTH = 1280;
-int SCR_HEIGHT = 720;
+int scrWidth = 1280;
+int scrHeight = 720;
 
 Camera camera(glm::vec3(0.0f, 1.0f, 2.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)scrWidth / 2.0;
+float lastY = (float)scrHeight / 2.0;
 bool firstMouse = true;
 
 float deltaTime = 0.0f;
@@ -41,13 +41,13 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -96,7 +96,7 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(0.1f));
         shader.use();
@@ -104,7 +104,7 @@ int main() {
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
         shader.setVec3("cameraPos", camera.Position);
-        shader.setInt("halfWidth", SCR_WIDTH / 2);
+        shader.setInt("halfWidth", scrWidth / 2);
         ourModel.Draw(shader);
 
         // skybox optimize
@@ -114,7 +114,7 @@ int main() {
         view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
-        rendObject();
+        renderObject();
         glDepthFunc(GL_LESS);
 
         glfwSwapBuffers(window);
@@ -143,7 +143,7 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-void rendObject() {
+void renderObject() {
     if (objectVAO == 0) {
         float skyboxVertices[] = {
             // positions

@@ -9,8 +9,8 @@
 using namespace std;
 using namespace glm;
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926f
 
 GLfloat deltaTime = 0.0f;
@@ -18,14 +18,14 @@ GLfloat lastFrame = 0.0f;
 
 bool firstMouse = true;
 Camera camera(vec3(0.0f, 0.0f, 5.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void readVertext();
+void readVertex();
 void bindFace(int i, int texNum);
 void readFace(vec3 p0, vec2 t0, vec3 p1, vec2 t1, vec3 p2, vec2 t2);
 unsigned int loadTexture(char const *path);
@@ -36,12 +36,12 @@ unsigned int stampVAO[26] = {0}, stampVBO[26];
 
 // input
 bool ifRotate = false;
-float Angle = 0.0f;
+float angle = 0.0f;
 bool dir = false;
 
-unsigned int texture[15];  // teture array
+unsigned int texture[15];  // texture array
 unsigned int texIndex[26]; // texture index
-size_t vertextNum[26];     // vertices array
+size_t vertexNum[26];      // vertices array
 
 int main() {
     glfwInit();
@@ -56,14 +56,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         cout << "Failed to create GLFW window" << endl;
@@ -71,9 +71,9 @@ int main() {
         return -1;
     }
 
-    glfwGetFramebufferSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-    lastX = SCR_WIDTH / 2.0f;
-    lastY = SCR_HEIGHT / 2.0f;
+    glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+    lastX = scrWidth / 2.0f;
+    lastY = scrHeight / 2.0f;
 
     glfwMakeContextCurrent(window);
 
@@ -108,7 +108,7 @@ int main() {
     texture[12] = loadTexture(getLocalPath("texture/cishizhiyin.png").c_str());
     texture[13] = loadTexture(getLocalPath("texture/zhuguozhiyin.png").c_str());
     texture[14] = loadTexture(getLocalPath("texture/bk.png").c_str());
-    readVertext();
+    readVertex();
     // read face data
     // top
     readFace(vArr[0], vec2(1.0, 1.0), vArr[1], vec2(0.0, 1.0), vArr[2], vec2(0.0, 0.0)); // 0 1 2	chenxinshangbiao
@@ -197,21 +197,21 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         mat4 view = camera.GetViewMatrix();
         mat4 model(1.0f);
         if (ifRotate) {
-            if ((Angle += 0.02f) >= 360.0f) {
-                Angle = 0.0f;
+            if ((angle += 0.02f) >= 360.0f) {
+                angle = 0.0f;
                 dir = !dir;
             }
         }
 
         stampShader.use();
         if (dir)
-            model = rotate(model, float(radians(Angle)), vec3(0.0, 1.0, 0.0));
+            model = rotate(model, float(radians(angle)), vec3(0.0, 1.0, 0.0));
         else
-            model = rotate(model, float(radians(Angle)), vec3(1.0, 0.0, 0.0));
+            model = rotate(model, float(radians(angle)), vec3(1.0, 0.0, 0.0));
         stampShader.setVec3("viewPos", camera.Position);
         stampShader.setMat4("projection", projection);
         stampShader.setMat4("view", view);
@@ -220,7 +220,7 @@ int main() {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texIndex[i]);
             glBindVertexArray(stampVAO[i]);
-            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum[i] / 5);
+            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum[i] / 5);
             glBindVertexArray(0);
         }
 
@@ -255,7 +255,7 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && spaceKey == false) {
         spaceKey = true;
         ifRotate = !ifRotate;
-        Angle = 0.0;
+        angle = 0.0;
         dir = false;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE && spaceKey == true)
@@ -286,7 +286,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll((float)yoffset);
 }
 
-void readVertext() {
+void readVertex() {
     int nIndex[4] = {4, 8, 8, 4}; // vertices of per level
     int level = 4;
     // cal the vertices data
@@ -297,9 +297,9 @@ void readVertext() {
         float radius = cos(radians(67.5f - i * 45.0f)) / cos(radians(interval / 2)); // Are octagon
         // radius=fabs(radius);
         for (int j = 0; j < nIndex[i]; j++) {
-            float Angle = interval * j + interval / 2;
-            float x = radius * cos(radians(Angle));
-            float z = -radius * sin(radians(Angle));
+            float localAngle = interval * j + interval / 2;
+            float x = radius * cos(radians(localAngle));
+            float z = -radius * sin(radians(localAngle));
             vArr.push_back(vec3(x, y, z));
         }
     }
@@ -326,15 +326,15 @@ void readFace(vec3 p0, vec2 t0, vec3 p1, vec2 t1, vec3 p2, vec2 t2) {
 }
 
 void bindFace(int i, int texNum) {
-    vertextNum[i] = fArr.size();
-    if (vertextNum[i] == 0)
+    vertexNum[i] = fArr.size();
+    if (vertexNum[i] == 0)
         return;
     texIndex[i] = texture[texNum];
     glGenVertexArrays(1, &stampVAO[i]);
     glGenBuffers(1, &stampVBO[i]);
     glBindVertexArray(stampVAO[i]);
     glBindBuffer(GL_ARRAY_BUFFER, stampVBO[i]);
-    glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum[i], &fArr[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum[i], &fArr[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);

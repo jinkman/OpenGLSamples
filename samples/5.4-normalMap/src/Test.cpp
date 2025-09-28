@@ -6,8 +6,8 @@
 #include <stb_image.h>
 #include <common.h>
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int scrWidth = 800;
+int scrHeight = 600;
 #define PI 3.1415926f
 
 float deltaTime = 0.0;
@@ -15,17 +15,17 @@ float lastFrame = 0.0;
 
 bool firstMouse = true;
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+float lastX = scrWidth / 2.0f;
+float lastY = scrHeight / 2.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void rendObject();
-void readVertext(std::vector<float> &Arr);
+void renderObject();
+void readVertex(std::vector<float> &Arr);
 unsigned int loadTexture(char const *path);
-void Rotatez(glm::vec3 &a, float Thta);
+void rotatez(glm::vec3 &a, float theta);
 
 unsigned int objectVAO = 0, objectVBO;
 bool ifNormal = true;
@@ -43,14 +43,14 @@ int main() {
     GLFWwindow *window = NULL;
     if (isFullScreen) {
         const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        SCR_WIDTH = vidmode->width;
-        SCR_HEIGHT = vidmode->height;
+        scrWidth = vidmode->width;
+        scrHeight = vidmode->height;
         GLFWmonitor *pMonitor = isFullScreen ? glfwGetPrimaryMonitor() : NULL;
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", pMonitor, NULL);
-        lastX = SCR_WIDTH / 2.0f;
-        lastY = SCR_HEIGHT / 2.0f;
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", pMonitor, NULL);
+        lastX = scrWidth / 2.0f;
+        lastY = scrHeight / 2.0f;
     } else
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+        window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -94,7 +94,7 @@ int main() {
 
         shader.use();
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(camera.Zoom, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)scrWidth / (float)scrHeight, 0.1f, 100.0f);
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
         glm::mat4 model(1.0f);
@@ -108,7 +108,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, normalMap);
-        rendObject();
+        renderObject();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -169,19 +169,19 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll((float)yoffset);
 }
 
-void rendObject() {
-    static size_t vertextNum = 0;
+void renderObject() {
+    static size_t vertexNum = 0;
     if (objectVAO == 0) {
         std::vector<float> Arr;
-        readVertext(Arr);
-        vertextNum = Arr.size();
-        if (vertextNum == 0)
+        readVertex(Arr);
+        vertexNum = Arr.size();
+        if (vertexNum == 0)
             return;
         glGenVertexArrays(1, &objectVAO);
         glGenBuffers(1, &objectVBO);
         glBindVertexArray(objectVAO);
         glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-        glBufferData(GL_ARRAY_BUFFER, 4 * vertextNum, &Arr[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * vertexNum, &Arr[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid *)0);
         glEnableVertexAttribArray(1);
@@ -195,11 +195,11 @@ void rendObject() {
         Arr.clear();
     }
     glBindVertexArray(objectVAO);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertextNum / 11);
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertexNum / 11);
     glBindVertexArray(0);
 }
 
-void readVertext(std::vector<float> &Arr) {
+void readVertex(std::vector<float> &Arr) {
     for (float Theta = 0.0f; Theta < 180.0f; Theta += 1.0f) {
         glm::vec3 p1(sin(Theta * PI / 180.0f), cos(Theta * PI / 180.0f), 0.0f);
         glm::vec3 p2(sin((Theta + 1.0f) * PI / 180.0f), cos((Theta + 1.0f) * PI / 180.0f), 0.0f);
@@ -215,14 +215,14 @@ void readVertext(std::vector<float> &Arr) {
             pos1.x = p1.x;
             pos1.y = p1.y;
             pos1.z = p1.z;
-            Rotatez(p1, 1.0f);
+            rotatez(p1, 1.0f);
             pos4.x = p1.x;
             pos4.y = p1.y;
             pos4.z = p1.z;
             pos2.x = p2.x;
             pos2.y = p2.y;
             pos2.z = p2.z;
-            Rotatez(p2, 1.0f);
+            rotatez(p2, 1.0f);
             pos3.x = p2.x;
             pos3.y = p2.y;
             pos3.z = p2.z;
@@ -348,11 +348,11 @@ void readVertext(std::vector<float> &Arr) {
     }
 }
 
-void Rotatez(glm::vec3 &a, float Thta) {
+void rotatez(glm::vec3 &a, float theta) {
     float a1 = a.z;
     float b1 = a.x;
-    a.x = b1 * cos(Thta * PI / 180.0f) - a1 * sin(Thta * PI / 180.0f);
-    a.z = b1 * sin(Thta * PI / 180.0f) + a1 * cos(Thta * PI / 180.0f);
+    a.x = b1 * cos(theta * PI / 180.0f) - a1 * sin(theta * PI / 180.0f);
+    a.z = b1 * sin(theta * PI / 180.0f) + a1 * cos(theta * PI / 180.0f);
 }
 
 unsigned int loadTexture(char const *path) {

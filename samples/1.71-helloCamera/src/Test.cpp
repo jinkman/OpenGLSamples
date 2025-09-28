@@ -11,16 +11,16 @@
 void processInput(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 unsigned int loadTexture(char const *path);
-void DrawObject();
+void drawObject();
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int scrWidth = 800;
+const unsigned int scrHeight = 600;
 unsigned int objectVAO = 0, objectVBO;
 float camX = 0.0f;
 float camZ = 10.0f;
 float camY = 0.0f;
-float thta = 90.0f, phi = 0.0f, length = 10.0f;
+float theta = 90.0f, phi = 0.0f, length = 10.0f;
 
 int main() {
     // init glfw
@@ -33,7 +33,7 @@ int main() {
 #endif
 
     // create window
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(scrWidth, scrHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -83,7 +83,7 @@ int main() {
         view = glm::lookAt(glm::vec3(camX, camY, camZ),
                            glm::vec3(0.0f, 0.0f, 0.0f),
                            glm::vec3(0.0f, 1.0f, 0.0f));
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)scrWidth / (float)scrHeight, 0.1f, 50.0f);
 
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
@@ -95,7 +95,7 @@ int main() {
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
-            DrawObject();
+            drawObject();
         }
 
         glfwSwapBuffers(window);
@@ -109,7 +109,7 @@ int main() {
     return 0;
 }
 
-void DrawObject() {
+void drawObject() {
     static unsigned int texture1 = 0;
     static unsigned int texture2 = 0;
     if (objectVAO == 0) {
@@ -188,9 +188,9 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         phi += speed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        thta -= speed;
+        theta -= speed;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        thta += speed;
+        theta += speed;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         length -= 0.01f;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -199,13 +199,13 @@ void processInput(GLFWwindow *window) {
         camX = 0.0f;
         camZ = 10.0f;
         camY = 0.0f;
-        thta = 90.0f;
+        theta = 90.0f;
         phi = 0.0f;
         length = 10.0f;
     }
-    camZ = length * sin(glm::radians(thta)) * cos(glm::radians(phi));
-    camX = length * sin(glm::radians(thta)) * sin(glm::radians(phi));
-    camY = length * cos(glm::radians(thta));
+    camZ = length * sin(glm::radians(theta)) * cos(glm::radians(phi));
+    camX = length * sin(glm::radians(theta)) * sin(glm::radians(phi));
+    camY = length * cos(glm::radians(theta));
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
