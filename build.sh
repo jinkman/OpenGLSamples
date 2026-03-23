@@ -17,7 +17,7 @@ target=""
 
 cd ${workdir} && \
 mkdir -p ${workdir}/build && \
-cmake -B ${workdir}/build -DCMAKE_BUILD_TYPE=${build_type} && \
+cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -B ${workdir}/build -DCMAKE_BUILD_TYPE=${build_type} && \
 cmake --build ${workdir}/build ${target} -- -j 12
 
 if [[ $? -ne 0 ]]; then

@@ -8,7 +8,8 @@ echo "--- build ${package} ---"
 
 cd "$workdir/" && \
 mkdir -p "$workdir/build" && cd "$workdir/build/" && \
-cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
+cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 \
+  -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
 make -j 12 && \
 make install
 

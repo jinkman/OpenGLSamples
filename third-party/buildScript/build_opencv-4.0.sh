@@ -8,7 +8,7 @@ echo "--- build ${package} ---"
 
 cd "$workdir/" && \
 mkdir -p "$workdir/build" && cd "$workdir/build/" && \
-cmake -DCMAKE_CXX_STANDARD=17 -DBUILD_ZLIB=OFF -DENABLE_PRECOMPILED_HEADERS=OFF -DWITH_FFMPEG=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
+cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_STANDARD=17 -DBUILD_ZLIB=OFF -DENABLE_PRECOMPILED_HEADERS=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
 make -j 12 && \
 make install
 

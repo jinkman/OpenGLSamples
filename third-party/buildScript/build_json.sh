@@ -8,7 +8,7 @@ echo "--- build ${package} ---"
 
 cd "$workdir/" && \
 mkdir -p "$workdir/build" && cd "$workdir/build/" && \
-cmake -DJSON_BuildTests=OFF -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
+cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DJSON_BuildTests=OFF -DCMAKE_INSTALL_PREFIX="$workdir/../deploy/$package" ../ && \
 make -j 12 && \
 make install
 
