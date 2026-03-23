@@ -1,5 +1,5 @@
 # 最低指定的CMake版本
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 # 括号里面填你的工程名
 PROJECT(OpenGLSamples)
